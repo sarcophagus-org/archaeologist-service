@@ -10,5 +10,6 @@ require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/joho/godotenv v1.3.0
 	github.com/rs/cors v1.7.0 // indirect
+	github.com/spf13/viper v1.7.1 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 )
