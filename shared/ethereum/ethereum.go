@@ -38,7 +38,7 @@ func init() {
 	}
 
 	Pub := ethPrivateKey.Public()
-	ethPublicKey, ok := Pub.(*ecdsa.Pub)
+	ethPublicKey, ok := Pub.(*ecdsa.PublicKey)
 	if !ok {
 		log.Fatal("error casting public key to ECDSA")
 	}
