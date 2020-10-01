@@ -24,6 +24,14 @@ func ArchBalance() *big.Int {
 	return balance
 }
 
+func GetSuggestedGasPrice() (*big.Int, error) {
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		fmt.Println("couldn't get the suggested gas price", err)
+	}
+	return gasPrice, err
+}
+
 func init() {
 	err := godotenv.Load()
 	if err != nil {
