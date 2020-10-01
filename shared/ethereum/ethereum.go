@@ -3,9 +3,9 @@ package ethereum
 import (
 	"context"
 	"log"
-	"fmt"
 	"crypto/ecdsa"
 	"os"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -18,33 +18,34 @@ var ethPrivateKey *ecdsa.PrivateKey
 var ethPublicKey *ecdsa.PublicKey
 var ethAddress common.Address
 
-func init() {
-	ctx := context.Background()
+func ArchBalance() *big.Int {
+	balance, _ := client.BalanceAt(context.Background(), ethAddress, nil)
 
+	return balance
+}
+
+func init() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	client, err := ethclient.Dial(os.Getenv("ETH_GATEWAY"))
+	client, err = ethclient.Dial(os.Getenv("ETH_GATEWAY"))
 	if err != nil {
 		log.Fatal("could not connect to Ethereum gateway: %v\n", err)
 	}
 	defer client.Close()
 
-	ethPrivateKey, err  := crypto.HexToECDSA(os.Getenv("ETH_PRIVATE_KEY")[2:])
+	ethPrivateKey, err  = crypto.HexToECDSA(os.Getenv("ETH_PRIVATE_KEY")[2:])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	Pub := ethPrivateKey.Public()
-	ethPublicKey, ok := Pub.(*ecdsa.PublicKey)
+	pub := ethPrivateKey.Public()
+	ethPublicKey, ok := pub.(*ecdsa.PublicKey)
 	if !ok {
 		log.Fatal("error casting public key to ECDSA")
 	}
 
-	ethAddress := crypto.PubkeyToAddress(*ethPublicKey).Hex()
-
-	balance, _ := client.BalanceAt(ctx, ethAddress, nil)
-	fmt.Printf("Balance: %d\n",balance)
+	ethAddress = common.HexToAddress(crypto.PubkeyToAddress(*ethPublicKey).Hex())
 }
