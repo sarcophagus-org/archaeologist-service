@@ -3,6 +3,7 @@ module github.com/decent-labs/airfoil-sarcophagus-archaeologist-service
 go 1.15
 
 require (
+	github.com/Dev43/arweave-go v0.0.2
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aristanetworks/goarista v0.0.0-20200812190859-4cb0e71f3c0e // indirect
 	github.com/deckarep/golang-set v1.7.1 // indirect
