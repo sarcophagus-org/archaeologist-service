@@ -4,13 +4,12 @@ import (
 	"context"
 	"log"
 	"crypto/ecdsa"
-	"os"
 	"math/big"
 
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/joho/godotenv"
 )
 
 var client *ethclient.Client
@@ -18,7 +17,7 @@ var ethPrivateKey *ecdsa.PrivateKey
 var ethPublicKey *ecdsa.PublicKey
 var ethAddress common.Address
 
-func ArchBalance() *big.Int {
+func EthBalance() *big.Int {
 	balance, _ := client.BalanceAt(context.Background(), ethAddress, nil)
 
 	return balance
@@ -32,28 +31,24 @@ func GetSuggestedGasPrice() (*big.Int, error) {
 	return gasPrice, err
 }
 
-func init() {
-	err := godotenv.Load()
+func InitEthVars(config *models.Config) {
+	cli, err := ethclient.Dial(config.ETH_NODE)
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("could not connect to Ethereum node. Please check the ETH_NODE value in the config file. Error: %v\n", err)
 	}
 
-	client, err = ethclient.Dial(os.Getenv("ETH_GATEWAY"))
+	ethPrivateKey, err = crypto.HexToECDSA(config.ETH_PRIVATE_KEY[2:])
 	if err != nil {
-		log.Fatal("could not connect to Ethereum gateway: %v\n", err)
-	}
-	defer client.Close()
-
-	ethPrivateKey, err  = crypto.HexToECDSA(os.Getenv("ETH_PRIVATE_KEY")[2:])
-	if err != nil {
-		log.Fatal(err)
+		log.Fatal("could not load eth private key.  Please check the ETH_NODE value in the config file. Error: %v\n", err)
 	}
 
 	pub := ethPrivateKey.Public()
-	ethPublicKey, ok := pub.(*ecdsa.PublicKey)
+	publicKey, ok := pub.(*ecdsa.PublicKey)
 	if !ok {
 		log.Fatal("error casting public key to ECDSA")
 	}
 
+	client = cli
+	ethPublicKey = publicKey
 	ethAddress = common.HexToAddress(crypto.PubkeyToAddress(*ethPublicKey).Hex())
 }
