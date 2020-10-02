@@ -13,7 +13,7 @@ func init() {
 	// create a new wallet instance
 	w := wallet.NewWallet()
 	// extract the key from the wallet instance
-	err := w.LoadKeyFromFile("./arweave.json")
+	err := w.LoadKeyFromFile("config/arweave.json")
 	if err != nil {
 		log.Fatal(err)
 	}
