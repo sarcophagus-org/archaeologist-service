@@ -34,6 +34,7 @@ func loadConfig() *models.Config {
 
 func validateConfig(config *models.Config){
 	ethereum.InitEthVars(config)
+	ethereum.ValidateContractAddress(config.SARCO_CONTRACT_ADDRESS)
 	arweave.InitArweaveVars(config)
 }
 

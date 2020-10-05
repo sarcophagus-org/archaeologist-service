@@ -23,6 +23,19 @@ func EthBalance() *big.Int {
 	return balance
 }
 
+func ValidateContractAddress(contractAddress string){
+	// Instantiate the contract and display its name
+	token, err := NewToken(common.HexToAddress(contractAddress), client)
+	if err != nil {
+		log.Fatalf("Failed to instantiate a Token contract: %v", err)
+	}
+	name, err := token.Name(nil)
+	if err != nil {
+		log.Fatalf("Failed to retrieve token name: %v", err)
+	}
+	log.Println("Token name:", name)
+}
+
 func GetSuggestedGasPrice() (*big.Int, error) {
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
