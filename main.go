@@ -33,8 +33,9 @@ func loadConfig() *models.Config {
 }
 
 func validateConfig(config *models.Config){
-	ethereum.InitEthVars(config)
-	ethereum.ValidateContractAddress(config.SARCO_CONTRACT_ADDRESS)
+	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY[2:])
+	ethereum.InitEthClient(config.ETH_NODE)
+	ethereum.InitSarcophagusContract(config.SARCO_CONTRACT_ADDRESS)
 	arweave.InitArweaveVars(config)
 }
 
@@ -47,4 +48,7 @@ func main(){
 
 	arweaveBalance := arweave.ArweaveBalance()
 	fmt.Printf("Arweave Balance: %s\n", arweaveBalance)
+
+	archCount := ethereum.ArchaeologistCount()
+	log.Println("Archaeologist Count:", archCount)
 }

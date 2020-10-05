@@ -6,16 +6,18 @@ import (
 	"crypto/ecdsa"
 	"math/big"
 
-	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	sarcophagus "github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 )
 
 var client *ethclient.Client
 var ethPrivateKey *ecdsa.PrivateKey
 var ethPublicKey *ecdsa.PublicKey
 var ethAddress common.Address
+var sarcophagusContract *sarcophagus.Sarcophagus
 
 func EthBalance() *big.Int {
 	balance, _ := client.BalanceAt(context.Background(), ethAddress, nil)
@@ -23,17 +25,22 @@ func EthBalance() *big.Int {
 	return balance
 }
 
-func ValidateContractAddress(contractAddress string){
-	// Instantiate the contract and display its name
-	token, err := NewToken(common.HexToAddress(contractAddress), client)
+func ArchaeologistCount() *big.Int {
+	archCount, err := sarcophagusContract.ArchaeologistCount(nil)
 	if err != nil {
-		log.Fatalf("Failed to instantiate a Token contract: %v", err)
+		log.Fatalf("Failed to retrieve archaeologist count: %v", err)
 	}
-	name, err := token.Name(nil)
+
+	return archCount
+}
+
+func InitSarcophagusContract(contractAddress string){
+	sarcoContract, err := sarcophagus.NewSarcophagus(common.HexToAddress(contractAddress), client)
 	if err != nil {
-		log.Fatalf("Failed to retrieve token name: %v", err)
+		log.Fatalf("Failed to instantiate Sarcophagus contract: %v", err)
 	}
-	log.Println("Token name:", name)
+
+	sarcophagusContract = sarcoContract
 }
 
 func GetSuggestedGasPrice() (*big.Int, error) {
@@ -44,24 +51,28 @@ func GetSuggestedGasPrice() (*big.Int, error) {
 	return gasPrice, err
 }
 
-func InitEthVars(config *models.Config) {
-	cli, err := ethclient.Dial(config.ETH_NODE)
+func InitEthClient(ethNode string) {
+	cli, err := ethclient.Dial(ethNode)
 	if err != nil {
 		log.Fatal("could not connect to Ethereum node. Please check the ETH_NODE value in the config file. Error: %v\n", err)
 	}
 
-	ethPrivateKey, err = crypto.HexToECDSA(config.ETH_PRIVATE_KEY[2:])
+	client = cli
+}
+
+func InitEthKeysAndAddress(privateKey string) {
+	ethPrivKey, err := crypto.HexToECDSA(privateKey)
 	if err != nil {
 		log.Fatal("could not load eth private key.  Please check the ETH_NODE value in the config file. Error: %v\n", err)
 	}
 
-	pub := ethPrivateKey.Public()
+	pub := ethPrivKey.Public()
 	publicKey, ok := pub.(*ecdsa.PublicKey)
 	if !ok {
 		log.Fatal("error casting public key to ECDSA")
 	}
 
-	client = cli
+	ethPrivateKey = ethPrivKey
 	ethPublicKey = publicKey
 	ethAddress = common.HexToAddress(crypto.PubkeyToAddress(*ethPublicKey).Hex())
 }
