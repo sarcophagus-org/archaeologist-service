@@ -1,13 +1,11 @@
 package main
 
 import (
-	"log"
-	"fmt"
-
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/spf13/viper"
-	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
-	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
+	"log"
 )
 
 func loadConfig() *models.Config {
@@ -45,10 +43,10 @@ func main(){
 	validateConfig(config)
 
 	ethBalance := ethereum.EthBalance()
-	fmt.Printf("Eth Balance: %d\n", ethBalance)
+	log.Printf("Eth Balance:", ethBalance)
 
 	arweaveBalance := arweave.ArweaveBalance()
-	fmt.Printf("Arweave Balance: %s\n", arweaveBalance)
+	log.Println("Arweave Balance:", arweaveBalance)
 
 	archCount := ethereum.ArchaeologistCount()
 	log.Println("Archaeologist Count:", archCount)
