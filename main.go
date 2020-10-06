@@ -27,6 +27,11 @@ func loadConfig() *models.Config {
 		log.Fatal("Could not load config file. Please check it is configured correctly. Error: %s \n", err)
 	}
 
+	// Reset Free Bond Values to 0. They have already been loaded into config.
+	viper.Set("ADD_TO_FREE_BOND", 0)
+	viper.Set("REMOVE_FROM_FREE_BOND", 0)
+	viper.WriteConfig()
+
 	return &config
 }
 
@@ -43,7 +48,7 @@ func main(){
 	validateConfig(config)
 
 	ethBalance := ethereum.EthBalance()
-	log.Printf("Eth Balance:", ethBalance)
+	log.Printf("Eth Balance: %v", ethBalance)
 
 	arweaveBalance := arweave.ArweaveBalance()
 	log.Println("Arweave Balance:", arweaveBalance)
@@ -53,4 +58,6 @@ func main(){
 
 	tokenName := ethereum.TokenName()
 	log.Println("Token name:", tokenName)
+
+	log.Println("Free Bond:", config.ADD_TO_FREE_BOND)
 }
