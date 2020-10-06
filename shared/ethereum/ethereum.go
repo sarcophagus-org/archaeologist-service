@@ -2,6 +2,7 @@ package ethereum
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"log"
 	"crypto/ecdsa"
 	"math/big"
@@ -10,19 +11,30 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/crypto"
 
-	sarcophagus "github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 )
 
 var client *ethclient.Client
 var ethPrivateKey *ecdsa.PrivateKey
 var ethPublicKey *ecdsa.PublicKey
 var ethAddress common.Address
-var sarcophagusContract *sarcophagus.Sarcophagus
+var sarcophagusContract *contracts.Sarcophagus
+var sarcophagusTokenContract *contracts.Token
 
 func EthBalance() *big.Int {
 	balance, _ := client.BalanceAt(context.Background(), ethAddress, nil)
 
 	return balance
+}
+
+func IsContract(address common.Address) bool {
+	bytecode, err := client.CodeAt(context.Background(), address, nil)
+	if err != nil {
+		log.Fatalf("Could not get bytecode from contract address: %v", err)
+	}
+
+	isContract := len(bytecode) > 0
+	return isContract
 }
 
 func ArchaeologistCount() *big.Int {
@@ -34,13 +46,14 @@ func ArchaeologistCount() *big.Int {
 	return archCount
 }
 
-func InitSarcophagusContract(contractAddress string){
-	sarcoContract, err := sarcophagus.NewSarcophagus(common.HexToAddress(contractAddress), client)
+func TokenName() string {
+	tokenName, err := sarcophagusTokenContract.Name(&bind.CallOpts{})
+
 	if err != nil {
-		log.Fatalf("Failed to instantiate Sarcophagus contract: %v", err)
+		log.Fatalf("Failed to retrieve token name: %v", err)
 	}
 
-	sarcophagusContract = sarcoContract
+	return tokenName
 }
 
 func GetSuggestedGasPrice() (*big.Int, error) {
@@ -49,6 +62,34 @@ func GetSuggestedGasPrice() (*big.Int, error) {
 		log.Println("couldn't get the suggested gas price", err)
 	}
 	return gasPrice, err
+}
+
+func InitSarcophagusContract(contractAddress string){
+	address := common.HexToAddress(contractAddress)
+	if isContract := IsContract(address); !isContract {
+		log.Fatal("Contract for config value CONTRACT_ADDRESS is not valid. Please check the value is correct.")
+	}
+
+	sarcoContract, err := contracts.NewSarcophagus(address, client)
+	if err != nil {
+		log.Fatalf("Failed to instantiate Sarcophagus contract: %v", err)
+	}
+
+	sarcophagusContract = sarcoContract
+}
+
+func InitSarcophagusTokenContract(tokenAddress string){
+	address := common.HexToAddress(tokenAddress)
+	if isContract := IsContract(address); !isContract {
+		log.Fatal("config value TOKEN_ADDRESS is not a valid contract. Please check the value is correct.")
+	}
+
+	tokenContract, err := contracts.NewToken(address, client)
+	if err != nil {
+		log.Fatalf("Failed to instantiate Sarcophagus Token contract: %v", err)
+	}
+
+	sarcophagusTokenContract = tokenContract
 }
 
 func InitEthClient(ethNode string) {

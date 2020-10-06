@@ -35,7 +35,8 @@ func loadConfig() *models.Config {
 func validateConfig(config *models.Config){
 	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY[2:])
 	ethereum.InitEthClient(config.ETH_NODE)
-	ethereum.InitSarcophagusContract(config.SARCO_CONTRACT_ADDRESS)
+	ethereum.InitSarcophagusContract(config.CONTRACT_ADDRESS)
+	ethereum.InitSarcophagusTokenContract(config.TOKEN_ADDRESS)
 	arweave.InitArweaveVars(config)
 }
 
@@ -51,4 +52,7 @@ func main(){
 
 	archCount := ethereum.ArchaeologistCount()
 	log.Println("Archaeologist Count:", archCount)
+
+	tokenName := ethereum.TokenName()
+	log.Println("Token name:", tokenName)
 }
