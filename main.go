@@ -47,7 +47,7 @@ func validateConfig(config *models.Config){
 func main(){
 	config := loadConfig()
 	validateConfig(config)
-	// ethereum.RegisterOrUpdateArchaeologist(config)
+	ethereum.RegisterOrUpdateArchaeologist(config)
 
 	ethBalance := ethereum.EthBalance()
 	log.Printf("Eth Balance: %v", ethBalance)

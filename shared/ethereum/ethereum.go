@@ -3,6 +3,7 @@ package ethereum
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/hex"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"log"
 	"math/big"
@@ -17,6 +18,7 @@ import (
 var client *ethclient.Client
 var archPrivateKey *ecdsa.PrivateKey
 var archPublicKey *ecdsa.PublicKey
+var archPublicKeyBytes []byte
 var archAddress common.Address
 var sarcophagusContract *contracts.Sarcophagus
 var sarcophagusTokenContract *contracts.Token
@@ -72,12 +74,21 @@ func TokenName() string {
 	return tokenName
 }
 
-func GetSuggestedGasPrice() (*big.Int, error) {
+func GetSuggestedGasPrice() *big.Int {
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
-		log.Println("couldn't get the suggested gas price", err)
+		log.Fatalf("couldn't get the suggested gas price: %v", err)
 	}
-	return gasPrice, err
+	return gasPrice
+}
+
+func GetNonce() uint64 {
+	nonce, err := client.PendingNonceAt(context.Background(), archAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nonce
 }
 
 func InitSarcophagusContract(contractAddress string) {
@@ -133,7 +144,8 @@ func InitEthKeysAndAddress(privateKey string) {
 		log.Fatal("error casting public key to ECDSA")
 	}
 
+	archAddress = crypto.PubkeyToAddress(*publicKey)
 	archPrivateKey = ethPrivKey
-	archPublicKey = publicKey
-	archAddress = common.HexToAddress(crypto.PubkeyToAddress(*archPublicKey).Hex())
+	archPublicKeyBytes, _ = hex.DecodeString(archAddress.Hex())
+	//archAddress = common.HexToAddress(archPublicKey.Hex())
 }
