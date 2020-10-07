@@ -3,7 +3,6 @@ package ethereum
 import (
 	"context"
 	"crypto/ecdsa"
-	"encoding/hex"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"log"
 	"math/big"
@@ -144,8 +143,7 @@ func InitEthKeysAndAddress(privateKey string) {
 		log.Fatal("error casting public key to ECDSA")
 	}
 
+	archPublicKeyBytes = crypto.FromECDSAPub(publicKey)[1:]
 	archAddress = crypto.PubkeyToAddress(*publicKey)
 	archPrivateKey = ethPrivKey
-	archPublicKeyBytes, _ = hex.DecodeString(archAddress.Hex())
-	//archAddress = common.HexToAddress(archPublicKey.Hex())
 }

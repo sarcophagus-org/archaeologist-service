@@ -22,7 +22,7 @@ func RegisterOrUpdateArchaeologist(config *models.Config) {
 	auth.GasPrice = gasPrice
 
 	if archaeologist.Exists {
-		// Update arch
+		// TODO: Update arch
 		log.Println("Arch exists!")
 	} else {
 		tx, err := sarcophagusContract.RegisterArchaeologist(
@@ -38,7 +38,7 @@ func RegisterOrUpdateArchaeologist(config *models.Config) {
 		)
 
 		if err != nil {
-			log.Fatalf("Error registering Archaeologist: %v", err)
+			log.Fatalf("Transaction reverted. Error registering Archaeologist: %v", err)
 		}
 
 		log.Println("tx sent: %s", tx.Hash().Hex())
