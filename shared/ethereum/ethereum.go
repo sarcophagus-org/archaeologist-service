@@ -20,6 +20,7 @@ var archPublicKey *ecdsa.PublicKey
 var archAddress common.Address
 var sarcophagusContract *contracts.Sarcophagus
 var sarcophagusTokenContract *contracts.Token
+var freeBond *big.Int
 
 func EthBalance() *big.Int {
 	balance, _ := client.BalanceAt(context.Background(), archAddress, nil)
@@ -27,9 +28,20 @@ func EthBalance() *big.Int {
 	return balance
 }
 
-//func SetFreeBond(addFreeBond, removeFreeBond) {
-//
-//}
+func SetFreeBond(addFreeBond int64, removeFreeBond int64) {
+	var archFreeBond int64 = 0
+
+	if addFreeBond > 0 {
+		if removeFreeBond > 0 {
+			log.Fatal("ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND cannot both be > 0")
+		}
+		archFreeBond = addFreeBond
+	} else if removeFreeBond > 0 {
+		archFreeBond = removeFreeBond
+	}
+
+	freeBond = big.NewInt(archFreeBond)
+}
 
 func IsContract(address common.Address) bool {
 	bytecode, err := client.CodeAt(context.Background(), address, nil)

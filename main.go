@@ -28,8 +28,8 @@ func loadConfig() *models.Config {
 	}
 
 	// Reset Free Bond Values to 0. They have already been loaded into config.
-	viper.Set("ADD_TO_FREE_BOND", 0)
-	viper.Set("REMOVE_FROM_FREE_BOND", 0)
+	//viper.Set("ADD_TO_FREE_BOND", 0)
+	//viper.Set("REMOVE_FROM_FREE_BOND", 0)
 	viper.WriteConfig()
 
 	return &config
