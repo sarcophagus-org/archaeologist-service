@@ -36,6 +36,7 @@ func loadConfig() *models.Config {
 }
 
 func validateConfig(config *models.Config){
+	ethereum.SetFreeBond(config.ADD_TO_FREE_BOND, config.REMOVE_FROM_FREE_BOND)
 	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY[2:])
 	ethereum.InitEthClient(config.ETH_NODE)
 	ethereum.InitSarcophagusContract(config.CONTRACT_ADDRESS)

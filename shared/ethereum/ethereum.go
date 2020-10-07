@@ -27,6 +27,8 @@ func EthBalance() *big.Int {
 	return balance
 }
 
+func SetFreeBond(addFreeBond, removeFreeBond)
+
 func IsContract(address common.Address) bool {
 	bytecode, err := client.CodeAt(context.Background(), address, nil)
 	if err != nil {
