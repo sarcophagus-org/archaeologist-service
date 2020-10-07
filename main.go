@@ -46,7 +46,7 @@ func validateConfig(config *models.Config){
 func main(){
 	config := loadConfig()
 	validateConfig(config)
-	ethereum.registerOrUpdateArchaeologist()
+	ethereum.RegisterOrUpdateArchaeologist(config)
 
 	ethBalance := ethereum.EthBalance()
 	log.Printf("Eth Balance: %v", ethBalance)
@@ -59,6 +59,4 @@ func main(){
 
 	tokenName := ethereum.TokenName()
 	log.Println("Token name:", tokenName)
-
-	log.Println("Free Bond:", config.ADD_TO_FREE_BOND)
 }

@@ -15,14 +15,14 @@ import (
 )
 
 var client *ethclient.Client
-var ethPrivateKey *ecdsa.PrivateKey
-var ethPublicKey *ecdsa.PublicKey
-var ethAddress common.Address
+var archPrivateKey *ecdsa.PrivateKey
+var archPublicKey *ecdsa.PublicKey
+var archAddress common.Address
 var sarcophagusContract *contracts.Sarcophagus
 var sarcophagusTokenContract *contracts.Token
 
 func EthBalance() *big.Int {
-	balance, _ := client.BalanceAt(context.Background(), ethAddress, nil)
+	balance, _ := client.BalanceAt(context.Background(), archAddress, nil)
 
 	return balance
 }
@@ -113,7 +113,7 @@ func InitEthKeysAndAddress(privateKey string) {
 		log.Fatal("error casting public key to ECDSA")
 	}
 
-	ethPrivateKey = ethPrivKey
-	ethPublicKey = publicKey
-	ethAddress = common.HexToAddress(crypto.PubkeyToAddress(*ethPublicKey).Hex())
+	archPrivateKey = ethPrivKey
+	archPublicKey = publicKey
+	archAddress = common.HexToAddress(crypto.PubkeyToAddress(*archPublicKey).Hex())
 }
