@@ -2,14 +2,14 @@ package ethereum
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"log"
-	"crypto/ecdsa"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 )
@@ -27,7 +27,9 @@ func EthBalance() *big.Int {
 	return balance
 }
 
-func SetFreeBond(addFreeBond, removeFreeBond)
+//func SetFreeBond(addFreeBond, removeFreeBond) {
+//
+//}
 
 func IsContract(address common.Address) bool {
 	bytecode, err := client.CodeAt(context.Background(), address, nil)
@@ -66,7 +68,7 @@ func GetSuggestedGasPrice() (*big.Int, error) {
 	return gasPrice, err
 }
 
-func InitSarcophagusContract(contractAddress string){
+func InitSarcophagusContract(contractAddress string) {
 	address := common.HexToAddress(contractAddress)
 	if isContract := IsContract(address); !isContract {
 		log.Fatal("Contract for config value CONTRACT_ADDRESS is not valid. Please check the value is correct.")
@@ -80,7 +82,7 @@ func InitSarcophagusContract(contractAddress string){
 	sarcophagusContract = sarcoContract
 }
 
-func InitSarcophagusTokenContract(tokenAddress string){
+func InitSarcophagusTokenContract(tokenAddress string) {
 	address := common.HexToAddress(tokenAddress)
 	if isContract := IsContract(address); !isContract {
 		log.Fatal("config value TOKEN_ADDRESS is not a valid contract. Please check the value is correct.")
@@ -97,16 +99,20 @@ func InitSarcophagusTokenContract(tokenAddress string){
 func InitEthClient(ethNode string) {
 	cli, err := ethclient.Dial(ethNode)
 	if err != nil {
-		log.Fatal("could not connect to Ethereum node. Please check the ETH_NODE value in the config file. Error: %v\n", err)
+		log.Fatalf("could not connect to Ethereum node. Please check the ETH_NODE value in the config file. Error: %v\n", err)
 	}
 
 	client = cli
 }
 
 func InitEthKeysAndAddress(privateKey string) {
+	if privateKey[0:2] == "0x" {
+		privateKey = privateKey[2:]
+	}
+
 	ethPrivKey, err := crypto.HexToECDSA(privateKey)
 	if err != nil {
-		log.Fatal("could not load eth private key.  Please check the ETH_NODE value in the config file. Error: %v\n", err)
+		log.Fatalf("could not load eth private key.  Please check the ETH_NODE value in the config file. Error: %v\n", err)
 	}
 
 	pub := ethPrivKey.Public()

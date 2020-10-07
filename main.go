@@ -17,14 +17,14 @@ func loadConfig() *models.Config {
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Fatal("Could not find config file. It should be setup under config/config.yml")
+			log.Fatalf("Could not find config file. It should be setup under config/config.yml")
 		} else {
-			log.Fatal("Could not read config file. Please check it is configured correctly. Error: %s \n", err)
+			log.Fatalf("Could not read config file. Please check it is configured correctly. Error: %v \n", err)
 		}
 	}
 
 	if err := viper.Unmarshal(&config); err != nil {
-		log.Fatal("Could not load config file. Please check it is configured correctly. Error: %s \n", err)
+		log.Fatalf("Could not load config file. Please check it is configured correctly. Error: %v \n", err)
 	}
 
 	// Reset Free Bond Values to 0. They have already been loaded into config.
@@ -37,7 +37,7 @@ func loadConfig() *models.Config {
 
 func validateConfig(config *models.Config){
 	ethereum.SetFreeBond(config.ADD_TO_FREE_BOND, config.REMOVE_FROM_FREE_BOND)
-	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY[2:])
+	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY)
 	ethereum.InitEthClient(config.ETH_NODE)
 	ethereum.InitSarcophagusContract(config.CONTRACT_ADDRESS)
 	ethereum.InitSarcophagusTokenContract(config.TOKEN_ADDRESS)
@@ -47,7 +47,7 @@ func validateConfig(config *models.Config){
 func main(){
 	config := loadConfig()
 	validateConfig(config)
-	ethereum.RegisterOrUpdateArchaeologist(config)
+	// ethereum.RegisterOrUpdateArchaeologist(config)
 
 	ethBalance := ethereum.EthBalance()
 	log.Printf("Eth Balance: %v", ethBalance)
