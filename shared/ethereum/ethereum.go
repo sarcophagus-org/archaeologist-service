@@ -21,7 +21,7 @@ var archPublicKeyBytes []byte
 var archAddress common.Address
 var sarcophagusContract *contracts.Sarcophagus
 var sarcophagusTokenContract *contracts.Token
-var freeBond *big.Int
+var freeBond int64
 
 func EthBalance() *big.Int {
 	balance, _ := client.BalanceAt(context.Background(), archAddress, nil)
@@ -41,7 +41,7 @@ func SetFreeBond(addFreeBond int64, removeFreeBond int64) {
 		archFreeBond = removeFreeBond
 	}
 
-	freeBond = big.NewInt(archFreeBond)
+	freeBond = archFreeBond
 }
 
 func IsContract(address common.Address) bool {

@@ -21,6 +21,20 @@ func RegisterOrUpdateArchaeologist(config *models.Config) {
 	auth.GasLimit = uint64(300000) // in units
 	auth.GasPrice = gasPrice
 
+	if freeBond > 0 {
+		tx, err := sarcophagusTokenContract.Approve(
+			auth,
+			archAddress,
+			big.NewInt(freeBond),
+		)
+
+		if err != nil {
+			log.Fatalf("Transaction reverted. Error registering Archaeologist: %v", err)
+		}
+
+		log.Println("Approve transfer to Free Bond tx sent: %s", tx.Hash().Hex())
+	}
+
 	if archaeologist.Exists {
 		// TODO: Update arch
 		log.Println("Arch exists!")
@@ -34,13 +48,13 @@ func RegisterOrUpdateArchaeologist(config *models.Config) {
 			big.NewInt(config.MIN_BOUNTY),
 			big.NewInt(config.MIN_DIGGING_FEE),
 			big.NewInt(config.MAX_RESURRECTION_TIME),
-			freeBond,
+			big.NewInt(freeBond),
 		)
 
 		if err != nil {
 			log.Fatalf("Transaction reverted. Error registering Archaeologist: %v", err)
 		}
 
-		log.Println("tx sent: %s", tx.Hash().Hex())
+		log.Println("Register Archaeologist tx sent: %s", tx.Hash().Hex())
 	}
 }
