@@ -30,7 +30,7 @@ func ArchBalance() *big.Int {
 	return balance
 }
 
-func BalanceNeededForApproval(gasPrice *big.Int, gasLimit uint64, freeBondBigInt *big.Int) *big.Int {
+func EstimateGasCost(gasPrice *big.Int, gasLimit uint64) *big.Int {
 	var limit = new(big.Int).SetUint64(gasLimit)
 
 	if gasLimit == uint64(0) {
@@ -38,7 +38,13 @@ func BalanceNeededForApproval(gasPrice *big.Int, gasLimit uint64, freeBondBigInt
 	}
 
 	totalGas := new(big.Int).Mul(gasPrice, limit)
-	totalCost := new(big.Int).Add(totalGas, freeBondBigInt)
+
+	return totalGas
+}
+
+func BalanceNeededForApproval(gasPrice *big.Int, gasLimit uint64, transVal *big.Int) *big.Int {
+	totalGas := EstimateGasCost(gasPrice, gasLimit)
+	totalCost := new(big.Int).Add(totalGas, transVal)
 
 	return totalCost
 }
