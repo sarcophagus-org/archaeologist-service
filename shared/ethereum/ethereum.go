@@ -19,7 +19,9 @@ var archPrivateKey *ecdsa.PrivateKey
 var archPublicKey *ecdsa.PublicKey
 var archPublicKeyBytes []byte
 var archAddress common.Address
+var sarcoAddress common.Address
 var sarcophagusContract *contracts.Sarcophagus
+var sarcoTokenAddress common.Address
 var sarcophagusTokenContract *contracts.Token
 var freeBond int64
 
@@ -73,14 +75,6 @@ func TokenName() string {
 	return tokenName
 }
 
-func GetSuggestedGasPrice() *big.Int {
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatalf("couldn't get the suggested gas price: %v", err)
-	}
-	return gasPrice
-}
-
 func GetNonce() uint64 {
 	nonce, err := client.PendingNonceAt(context.Background(), archAddress)
 	if err != nil {
@@ -96,6 +90,7 @@ func InitSarcophagusContract(contractAddress string) {
 		log.Fatal("Contract for config value CONTRACT_ADDRESS is not valid. Please check the value is correct.")
 	}
 
+	sarcoAddress = address
 	sarcoContract, err := contracts.NewSarcophagus(address, client)
 	if err != nil {
 		log.Fatalf("Failed to instantiate Sarcophagus contract: %v", err)
@@ -110,6 +105,7 @@ func InitSarcophagusTokenContract(tokenAddress string) {
 		log.Fatal("config value TOKEN_ADDRESS is not a valid contract. Please check the value is correct.")
 	}
 
+	sarcoTokenAddress = address
 	tokenContract, err := contracts.NewToken(address, client)
 	if err != nil {
 		log.Fatalf("Failed to instantiate Sarcophagus Token contract: %v", err)

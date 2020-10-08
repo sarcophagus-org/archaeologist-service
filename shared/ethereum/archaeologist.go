@@ -1,11 +1,49 @@
 package ethereum
 
 import (
+	"context"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"log"
 	"math/big"
 )
+
+func registerArchaeologist(session *contracts.SarcophagusSession, config *models.Config) {
+	tx, err := session.RegisterArchaeologist(
+		archPublicKeyBytes,
+		config.FILE_PORT,
+		archAddress,
+		big.NewInt(config.FEE_PER_BYTE),
+		big.NewInt(config.MIN_BOUNTY),
+		big.NewInt(config.MIN_DIGGING_FEE),
+		big.NewInt(config.MAX_RESURRECTION_TIME),
+		big.NewInt(freeBond),
+	)
+
+	if err != nil {
+		log.Fatalf("Transaction reverted. Error registering Archaeologist: %v", err)
+	}
+
+	log.Println("Register Archaeologist tx sent: %s", tx.Hash().Hex())
+}
+
+func handleFreeBondTransactions(session *contracts.TokenSession) {
+	if freeBond > 0 {
+		amountToApprove := big.NewInt(0).Add(session.TransactOpts.GasPrice, big.NewInt(freeBond))
+		tx, err := session.Approve(
+			sarcoAddress,
+			amountToApprove,
+		)
+
+		if err != nil {
+			log.Fatalf("Transaction reverted. Error Approving Transaction: %v", err)
+		}
+
+		log.Println("Allow transfer of to Free Bond tx sent:", amountToApprove, tx.Hash().Hex())
+		log.Printf("Eth Balance: %v", EthBalance())
+	}
+}
 
 func RegisterOrUpdateArchaeologist(config *models.Config) {
 	archaeologist, err := sarcophagusContract.Archaeologists(&bind.CallOpts{}, archAddress)
@@ -13,48 +51,15 @@ func RegisterOrUpdateArchaeologist(config *models.Config) {
 		log.Fatalf("Call to Archaeologists in Sarcophagus Contract failed: %v", err)
 	}
 
-	nonce := GetNonce()
-	gasPrice := GetSuggestedGasPrice()
-	auth := bind.NewKeyedTransactor(archPrivateKey)
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
-	auth.GasPrice = gasPrice
+	tokenSession := NewSarcophagusTokenSession(context.Background())
+	handleFreeBondTransactions(&tokenSession)
 
-	if freeBond > 0 {
-		tx, err := sarcophagusTokenContract.Approve(
-			auth,
-			archAddress,
-			big.NewInt(freeBond),
-		)
-
-		if err != nil {
-			log.Fatalf("Transaction reverted. Error registering Archaeologist: %v", err)
-		}
-
-		log.Println("Approve transfer to Free Bond tx sent: %s", tx.Hash().Hex())
-	}
+	sarcoSession := NewSarcophagusSession(context.Background())
 
 	if archaeologist.Exists {
 		// TODO: Update arch
 		log.Println("Arch exists!")
 	} else {
-		tx, err := sarcophagusContract.RegisterArchaeologist(
-			auth,
-			archPublicKeyBytes,
-			config.FILE_PORT,
-			archAddress,
-			big.NewInt(config.FEE_PER_BYTE),
-			big.NewInt(config.MIN_BOUNTY),
-			big.NewInt(config.MIN_DIGGING_FEE),
-			big.NewInt(config.MAX_RESURRECTION_TIME),
-			big.NewInt(freeBond),
-		)
-
-		if err != nil {
-			log.Fatalf("Transaction reverted. Error registering Archaeologist: %v", err)
-		}
-
-		log.Println("Register Archaeologist tx sent: %s", tx.Hash().Hex())
+		registerArchaeologist(&sarcoSession, config)
 	}
 }
