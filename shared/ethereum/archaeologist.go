@@ -30,9 +30,13 @@ func registerArchaeologist(session *contracts.SarcophagusSession, config *models
 
 func handleFreeBondTransactions(session *contracts.TokenSession, archExists bool) {
 	if freeBond > 0 {
-		balanceNeededToApprove := big.NewInt(0).Add(session.TransactOpts.GasPrice, big.NewInt(freeBond))
-		if balanceNeededToApprove.Cmp(ArchBalance()) == -1 {
-			log.Fatalf("Your balance is too low to cover the free bond transfer. \n Balance Needed: %v \n Current Balance: %v", balanceNeededToApprove, ArchBalance)
+		freeBondBigInt := big.NewInt(freeBond)
+		balanceNeededForApproval := BalanceNeededForApproval(session.TransactOpts.GasPrice, session.TransactOpts.GasLimit, freeBondBigInt)
+		currentBalance := ArchBalance()
+
+		// Check if currentBalance < balanceNeededToApprove
+		if currentBalance.Cmp(balanceNeededForApproval) == -1 {
+			log.Fatalf("Your balance is too low to cover the free bond transfer. \n Balance Needed: %v \n Current Balance: %v", balanceNeededForApproval, currentBalance)
 		}
 
 		tx, err := session.Approve(
@@ -41,14 +45,14 @@ func handleFreeBondTransactions(session *contracts.TokenSession, archExists bool
 		)
 
 		if err != nil {
-			log.Fatalf("Transaction reverted. Error Approving Transaction: %v \n Config value ADD_TO_FREE_BOND has been reset to 0. You will need to reset this.", err)
+			log.Fatalf("Transaction reverted. Error Approving RegisterArchaeologit or UpdateArchaeologist Transaction: %v \n Config value ADD_TO_FREE_BOND has been reset to 0. You will need to reset this.", err)
 		}
 
-		log.Printf("Approval Transaction successful. Approved for amount: %v \n Transaction ID: %v", freeBond, tx.Hash().Hex())
-		log.Printf("Gas Estimate: %v", session.TransactOpts.GasPrice)
-		log.Printf("Gas Used: %v", tx.GasPrice())
+		log.Printf("Approval Transaction successful. \n Approved for amount: %v \n Transaction ID: %v", freeBond, tx.Hash().Hex())
+		log.Printf("Gas Price: %v", tx.GasPrice())
+		log.Printf("Gas Used: %v", tx.Gas())
 	} else if freeBond < 0 && archExists {
-		
+
 	}
 }
 
@@ -66,8 +70,7 @@ func RegisterOrUpdateArchaeologist(config *models.Config) {
 	sarcoSession := NewSarcophagusSession(context.Background())
 
 	if archExists {
-		// TODO: Update arch
-		log.Println("Arch exists!")
+		// updateArchaeologist(&sarcoSession, config)
 	} else {
 		registerArchaeologist(&sarcoSession, config)
 	}

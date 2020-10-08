@@ -3,7 +3,6 @@ package ethereum
 import (
 	"context"
 	"crypto/ecdsa"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"log"
 	"math/big"
 
@@ -31,6 +30,36 @@ func ArchBalance() *big.Int {
 	return balance
 }
 
+func BalanceNeededForApproval(gasPrice *big.Int, gasLimit uint64, freeBondBigInt *big.Int) *big.Int {
+	var limit = new(big.Int).SetUint64(gasLimit)
+
+	if gasLimit == uint64(0) {
+		limit = big.NewInt(40000) // Arbitrary estimation until we get dynamic estimation in place
+	}
+
+	totalGas := new(big.Int).Mul(gasPrice, limit)
+	totalCost := new(big.Int).Add(totalGas, freeBondBigInt)
+
+	return totalCost
+}
+
+func GetSuggestedGasPrice() *big.Int {
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		log.Fatalf("couldn't get the suggested gas price: %v", err)
+	}
+	return gasPrice
+}
+
+func EstimateGasLimit() uint64 {
+	// TODO: Make dynamic using client.EstimateGas
+	// RegisterArchaeologist is currently failing for any manual value set here (not sure why yet)
+	// https://github.com/ethereum/go-ethereum/issues/21007#issuecomment-664680665
+
+	gasLimit := uint64(0) // estimates gas limit
+	return gasLimit
+}
+
 func SetFreeBond(addFreeBond int64, removeFreeBond int64) {
 	var archFreeBond int64 = 0
 
@@ -54,34 +83,6 @@ func IsContract(address common.Address) bool {
 
 	isContract := len(bytecode) > 0
 	return isContract
-}
-
-func ArchaeologistCount() *big.Int {
-	archCount, err := sarcophagusContract.ArchaeologistCount(nil)
-	if err != nil {
-		log.Fatalf("Failed to retrieve archaeologist count: %v", err)
-	}
-
-	return archCount
-}
-
-func TokenName() string {
-	tokenName, err := sarcophagusTokenContract.Name(&bind.CallOpts{})
-
-	if err != nil {
-		log.Fatalf("Failed to retrieve token name: %v", err)
-	}
-
-	return tokenName
-}
-
-func GetNonce() uint64 {
-	nonce, err := client.PendingNonceAt(context.Background(), archAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return nonce
 }
 
 func InitSarcophagusContract(contractAddress string) {

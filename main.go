@@ -54,10 +54,4 @@ func main(){
 
 	arweaveBalance := arweave.ArweaveBalance()
 	log.Println("Arweave Balance:", arweaveBalance)
-
-	archCount := ethereum.ArchaeologistCount()
-	log.Println("Archaeologist Count:", archCount)
-
-	tokenName := ethereum.TokenName()
-	log.Println("Token name:", tokenName)
 }
