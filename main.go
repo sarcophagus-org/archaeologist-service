@@ -49,7 +49,7 @@ func main(){
 	validateConfig(config)
 	ethereum.RegisterOrUpdateArchaeologist(config)
 
-	ethBalance := ethereum.EthBalance()
+	ethBalance := ethereum.ArchBalance()
 	log.Printf("Eth Balance: %v", ethBalance)
 
 	arweaveBalance := arweave.ArweaveBalance()

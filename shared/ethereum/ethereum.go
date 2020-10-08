@@ -25,7 +25,7 @@ var sarcoTokenAddress common.Address
 var sarcophagusTokenContract *contracts.Token
 var freeBond int64
 
-func EthBalance() *big.Int {
+func ArchBalance() *big.Int {
 	balance, _ := client.BalanceAt(context.Background(), archAddress, nil)
 
 	return balance
