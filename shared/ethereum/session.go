@@ -11,8 +11,8 @@ func initAuth () *bind.TransactOpts {
 	auth := bind.NewKeyedTransactor(archPrivateKey)
 	auth.Nonce = nil // uses nonce of pending state
 	auth.Value = big.NewInt(0)
-	auth.GasLimit = EstimateGasLimit()
-	auth.GasPrice = GetSuggestedGasPrice() // estimates gas price
+	auth.GasLimit = 0 // 0 estimates gas limit
+	auth.GasPrice = nil // nil suggests gas price
 
 	return auth
 }

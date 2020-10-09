@@ -4,15 +4,15 @@ import (
 	"context"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"log"
 	"math/big"
 )
 
 func registerArchaeologist(session *contracts.SarcophagusSession, config *models.Config) {
+	log.Println("***REGISTERING ARCHAEOLOGIST***")
 	tx, err := session.RegisterArchaeologist(
 		archPublicKeyBytes,
-		config.FILE_PORT,
+		config.ENDPOINT,
 		archAddress,
 		big.NewInt(config.FEE_PER_BYTE),
 		big.NewInt(config.MIN_BOUNTY),
@@ -25,14 +25,14 @@ func registerArchaeologist(session *contracts.SarcophagusSession, config *models
 		log.Fatalf("Transaction reverted. Error registering Archaeologist: %v Config values ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND have been reset to 0. You will need to reset this.", err)
 	}
 
-	log.Printf("Register Archaeologist tx sent: %s", tx.Hash().Hex())
+	log.Printf("Register Archaeologist Successful. Transaction ID: %s", tx.Hash().Hex())
+	log.Printf("Gas Used: %v", tx.Gas())
 }
 
 func updateArchaeologist(session *contracts.SarcophagusSession, config *models.Config) {
-	log.Println("UPDATING ARCHAEOLOGIST")
-
+	log.Println("***UPDATING ARCHAEOLOGIST***")
 	tx, err := session.UpdateArchaeologist(
-		config.FILE_PORT,
+		config.ENDPOINT,
 		archAddress,
 		big.NewInt(config.FEE_PER_BYTE),
 		big.NewInt(config.MIN_BOUNTY),
@@ -45,26 +45,17 @@ func updateArchaeologist(session *contracts.SarcophagusSession, config *models.C
 		log.Fatalf("Transaction reverted. Error updating Archaeologist: %v Config values ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND have been reset to 0. You will need to reset these.", err)
 	}
 
-	log.Printf("Register Archaeologist tx sent: %s", tx.Hash().Hex())
+	log.Printf("Update Archaeologist Successful. Transaction ID: %s", tx.Hash().Hex())
+	log.Printf("Gas Used: %v", tx.Gas())
 }
 
 func handleFreeBondTransactions(session *contracts.TokenSession, archExists bool) {
 	if freeBond > 0 {
-		gasPrice := session.TransactOpts.GasPrice
-		gasLimit := session.TransactOpts.GasLimit
+		archSarcoBalance := ArchSarcoBalance()
 
-		// TODO: Consider how to get a true estimate for balanceNeededForApproval
-		// We need the gas estimate for the approval transaction *and* the transaction the approval is for
-		// The gas costs may be different for each of these.
-		// EstimateGasLimit() needs to be implemented
-
-		freeBondBigInt := big.NewInt(freeBond)
-		balanceNeededForApproval := BalanceNeededForApproval(gasPrice, gasLimit, freeBondBigInt)
-		currentBalance := ArchBalance()
-
-		// Check if currentBalance < balanceNeededToApprove
-		if currentBalance.Cmp(balanceNeededForApproval) == -1 {
-			log.Fatalf("Your balance is too low to cover the free bond transfer. \n Balance Needed: %v \n Current Balance: %v", balanceNeededForApproval, currentBalance)
+		// Check if archSarcoBalance < freeBond
+		if archSarcoBalance.Cmp(big.NewInt(freeBond)) == -1 {
+			log.Fatalf("Your balance is too low to cover the free bond transfer. \n Balance Needed: %v \n Current Balance: %v", freeBond, archSarcoBalance)
 		}
 
 		tx, err := session.Approve(
@@ -73,40 +64,45 @@ func handleFreeBondTransactions(session *contracts.TokenSession, archExists bool
 		)
 
 		if err != nil {
-			log.Fatalf("Transaction reverted. Error Approving Transaction: %v \n Config value ADD_TO_FREE_BOND has been reset to 0. You will need to reset this.", err)
+			log.Fatalf("Transaction reverted. Error Approving Transaction: %v \n Config values ADD_TO_FREE_BOND has been reset to 0. You will need to reset this.", err)
 		}
 
-		log.Printf("Approval Transaction successful. \n Approved for amount: %v \n Transaction ID: %v", freeBond, tx.Hash().Hex())
-		log.Printf("Gas Price: %v", tx.GasPrice())
-		log.Printf("Gas Used: %v", tx.Gas())
+		log.Printf("Approval Transaction for %v Sarco Tokens successful. Transaction ID: %v", freeBond, tx.Hash().Hex())
+		log.Printf("Gas Used for Approval: %v", tx.Gas())
 	} else if freeBond < 0 && archExists {
 
 	}
 }
 
 func RegisterOrUpdateArchaeologist(config *models.Config) {
-	archaeologist, err := sarcophagusContract.Archaeologists(&bind.CallOpts{}, archAddress)
+	sarcoSession := NewSarcophagusSession(context.Background())
+
+	archaeologist, err := sarcoSession.Archaeologists(archAddress)
 	if err != nil {
 		log.Fatalf("Call to Archaeologists in Sarcophagus Contract failed: %v", err)
 	}
 
 	archExists := archaeologist.Exists
-
 	tokenSession := NewSarcophagusTokenSession(context.Background())
 	handleFreeBondTransactions(&tokenSession, archExists)
 
-	sarcoSession := NewSarcophagusSession(context.Background())
-
 	if archExists {
 		if freeBond > 0 ||
-			archaeologist.PaymentAddress != config.PAYMENT_ADDRESS ||
-			archaeologist.FeePerByte != config.FEE_PER_BYTE ||
-			archaeologist.MinimumBounty != config.MIN_BOUNTY ||
-			archaeologist.MinimumDiggingFee != config.MIN_DIGGING_FEE ||
-			archaeologist.MaximumResurrectionTime != config.MAX_RESURRECTION_TIME {
+			archaeologist.Endpoint != config.ENDPOINT ||
+			archaeologist.PaymentAddress != archAddress ||
+			archaeologist.FeePerByte.Cmp(big.NewInt(config.FEE_PER_BYTE)) != 0 ||
+			archaeologist.MinimumBounty.Cmp(big.NewInt(config.MIN_BOUNTY)) != 0 ||
+			archaeologist.MinimumDiggingFee.Cmp(big.NewInt(config.MIN_DIGGING_FEE)) != 0 ||
+			archaeologist.MaximumResurrectionTime.Cmp(big.NewInt(config.MAX_RESURRECTION_TIME)) != 0 {
 			updateArchaeologist(&sarcoSession, config)
+		} else {
+			log.Printf("Archaeologist did not need to get updated, no config values have changed.")
 		}
 	} else {
 		registerArchaeologist(&sarcoSession, config)
 	}
+
+	archaeologistUpdated, _ := sarcoSession.Archaeologists(archAddress)
+	log.Printf("Current Free Bond: %v", archaeologistUpdated.FreeBond)
+	log.Printf("Current Cursed Bond: %v", archaeologistUpdated.CursedBond)
 }

@@ -28,8 +28,8 @@ func loadConfig() *models.Config {
 	}
 
 	// Reset Free Bond Values to 0. They have already been loaded into config.
-	//viper.Set("ADD_TO_FREE_BOND", 0)
-	//viper.Set("REMOVE_FROM_FREE_BOND", 0)
+	viper.Set("ADD_TO_FREE_BOND", 0)
+	viper.Set("REMOVE_FROM_FREE_BOND", 0)
 	viper.WriteConfig()
 
 	return &config
@@ -37,7 +37,7 @@ func loadConfig() *models.Config {
 
 func validateConfig(config *models.Config){
 	ethereum.SetFreeBond(config.ADD_TO_FREE_BOND, config.REMOVE_FROM_FREE_BOND)
-	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY)
+	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY, config.PAYMENT_ADDRESS)
 	ethereum.InitEthClient(config.ETH_NODE)
 	ethereum.InitSarcophagusContract(config.CONTRACT_ADDRESS)
 	ethereum.InitSarcophagusTokenContract(config.TOKEN_ADDRESS)
@@ -49,9 +49,7 @@ func main(){
 	validateConfig(config)
 	ethereum.RegisterOrUpdateArchaeologist(config)
 
-	ethBalance := ethereum.ArchBalance()
-	log.Printf("Eth Balance: %v", ethBalance)
-
-	arweaveBalance := arweave.ArweaveBalance()
-	log.Println("Arweave Balance:", arweaveBalance)
+	log.Printf("Eth Balance: %v", ethereum.ArchEthBalance())
+	log.Printf("Sarco Token Balance: %v", ethereum.ArchSarcoBalance())
+	log.Println("Arweave Balance:", arweave.ArweaveBalance())
 }

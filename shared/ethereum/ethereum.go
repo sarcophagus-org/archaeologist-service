@@ -3,8 +3,10 @@ package ethereum
 import (
 	"context"
 	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"log"
 	"math/big"
+	"regexp"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -24,46 +26,24 @@ var sarcoTokenAddress common.Address
 var sarcophagusTokenContract *contracts.Token
 var freeBond int64
 
-func ArchBalance() *big.Int {
-	balance, _ := client.BalanceAt(context.Background(), archAddress, nil)
+func ArchEthBalance() *big.Int {
+	balance, err := client.BalanceAt(context.Background(), archAddress, nil)
+
+	if err != nil {
+		log.Fatalf("Could not get eth balance. Please check your config PRIVATE_KEY value is correct.")
+	}
 
 	return balance
 }
 
-func EstimateGasCost(gasPrice *big.Int, gasLimit uint64) *big.Int {
-	var limit = new(big.Int).SetUint64(gasLimit)
+func ArchSarcoBalance() *big.Int {
+	balance, err := sarcophagusTokenContract.BalanceOf(&bind.CallOpts{}, archAddress)
 
-	if gasLimit == uint64(0) {
-		limit = big.NewInt(40000) // Arbitrary estimation until we get dynamic estimation in place
-	}
-
-	totalGas := new(big.Int).Mul(gasPrice, limit)
-
-	return totalGas
-}
-
-func BalanceNeededForApproval(gasPrice *big.Int, gasLimit uint64, transVal *big.Int) *big.Int {
-	totalGas := EstimateGasCost(gasPrice, gasLimit)
-	totalCost := new(big.Int).Add(totalGas, transVal)
-
-	return totalCost
-}
-
-func GetSuggestedGasPrice() *big.Int {
-	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
-		log.Fatalf("couldn't get the suggested gas price: %v", err)
+		log.Fatalf("Could not get sarcophagus balance. Please check your config PRIVATE_KEY value is correct.")
 	}
-	return gasPrice
-}
 
-func EstimateGasLimit() uint64 {
-	// TODO: Make dynamic using client.EstimateGas
-	// RegisterArchaeologist is currently failing for any manual value set here (not sure why yet)
-	// https://github.com/ethereum/go-ethereum/issues/21007#issuecomment-664680665
-
-	gasLimit := uint64(0) // estimates gas limit
-	return gasLimit
+	return balance
 }
 
 func SetFreeBond(addFreeBond int64, removeFreeBond int64) {
@@ -79,6 +59,11 @@ func SetFreeBond(addFreeBond int64, removeFreeBond int64) {
 	}
 
 	freeBond = archFreeBond
+}
+
+func IsValidAddress(ethAddress string) bool {
+	re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
+	return re.MatchString(ethAddress)
 }
 
 func IsContract(address common.Address) bool {
@@ -130,7 +115,7 @@ func InitEthClient(ethNode string) {
 	client = cli
 }
 
-func InitEthKeysAndAddress(privateKey string) {
+func InitEthKeysAndAddress(privateKey string, paymentAddress string) {
 	if privateKey[0:2] == "0x" {
 		privateKey = privateKey[2:]
 	}
@@ -147,6 +132,16 @@ func InitEthKeysAndAddress(privateKey string) {
 	}
 
 	archPublicKeyBytes = crypto.FromECDSAPub(publicKey)[1:]
-	archAddress = crypto.PubkeyToAddress(*publicKey)
 	archPrivateKey = ethPrivKey
+
+	// If a payment address is supplied, verify it is a valid address
+	if paymentAddress != "" {
+		if IsValidAddress(paymentAddress) && !IsContract(common.HexToAddress(paymentAddress)) {
+			archAddress = common.HexToAddress(paymentAddress)
+		} else {
+			log.Fatal("Payment address supplied in config is invalid. Please check that address.")
+		}
+	} else {
+		archAddress = crypto.PubkeyToAddress(*publicKey)
+	}
 }

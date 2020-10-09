@@ -6,6 +6,7 @@ type Config struct {
 	ARWEAVE_KEY_FILE string
 	ARWEAVE_NODE string
 	FILE_PORT string
+	ENDPOINT string
 	FEE_PER_BYTE int64
 	MIN_BOUNTY int64
 	MIN_DIGGING_FEE int64
