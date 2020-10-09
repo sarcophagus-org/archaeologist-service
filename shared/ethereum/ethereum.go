@@ -55,7 +55,7 @@ func SetFreeBond(addFreeBond int64, removeFreeBond int64) {
 		}
 		archFreeBond = addFreeBond
 	} else if removeFreeBond > 0 {
-		archFreeBond = removeFreeBond
+		archFreeBond = int64(-1) * removeFreeBond
 	}
 
 	freeBond = archFreeBond
