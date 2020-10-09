@@ -134,7 +134,7 @@ func InitEthKeysAndAddress(privateKey string, paymentAddress string) {
 	archPublicKeyBytes = crypto.FromECDSAPub(publicKey)[1:]
 	archPrivateKey = ethPrivKey
 
-	// If a payment address is supplied, verify it is a valid address
+	// If the optional payment address is supplied, verify it is a valid address
 	if paymentAddress != "" {
 		if IsValidAddress(paymentAddress) && !IsContract(common.HexToAddress(paymentAddress)) {
 			archAddress = common.HexToAddress(paymentAddress)

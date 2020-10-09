@@ -27,7 +27,8 @@ func loadConfig() *models.Config {
 		log.Fatalf("Could not load config file. Please check it is configured correctly. Error: %v \n", err)
 	}
 
-	// Reset Free Bond Values to 0. They have already been loaded into config.
+	// Write Free Bond Values to 0 in the config file.
+	// They have already been loaded into the config struct.
 	viper.Set("ADD_TO_FREE_BOND", 0)
 	viper.Set("REMOVE_FROM_FREE_BOND", 0)
 	viper.WriteConfig()
@@ -37,8 +38,8 @@ func loadConfig() *models.Config {
 
 func validateConfig(config *models.Config){
 	ethereum.SetFreeBond(config.ADD_TO_FREE_BOND, config.REMOVE_FROM_FREE_BOND)
-	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY, config.PAYMENT_ADDRESS)
 	ethereum.InitEthClient(config.ETH_NODE)
+	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY, config.PAYMENT_ADDRESS)
 	ethereum.InitSarcophagusContract(config.CONTRACT_ADDRESS)
 	ethereum.InitSarcophagusTokenContract(config.TOKEN_ADDRESS)
 	arweave.InitArweaveVars(config)
