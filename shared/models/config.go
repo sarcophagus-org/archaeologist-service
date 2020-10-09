@@ -1,0 +1,19 @@
+package models
+
+type Config struct {
+	ETH_NODE string
+	ETH_PRIVATE_KEY string
+	ARWEAVE_KEY_FILE string
+	ARWEAVE_NODE string
+	FILE_PORT string
+	FEE_PER_BYTE int
+	MIN_BOUNTY int
+	MIN_DIGGING_FEE int
+	MAX_RESURRECTION_TIME int
+	CONTRACT_ADDRESS string
+	TOKEN_ADDRESS string
+	ADD_TO_FREE_BOND int
+	REMOVE_FROM_FREE_BOND int
+	PAYMENT_ADDRESS string
+	GAS_PRICE_OVERRIDE int
+}

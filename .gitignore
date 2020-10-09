@@ -1,2 +1,4 @@
 .env
 .idea/
+config/config.yml
+config/arweave.json

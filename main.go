@@ -1,54 +1,63 @@
 package main
 
 import (
-	"context"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
+	"github.com/spf13/viper"
 	"log"
-	"fmt"
-	"crypto/ecdsa"
-	"os"
-
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/joho/godotenv"
 )
 
-func publicKeyECDSAFromPrivKey(privKey string) *ecdsa.PublicKey {
-	privKeyECDSA, err := crypto.HexToECDSA(privKey)
-	if err != nil {
-		log.Fatal(err)
-	}
-	publicKey := privKeyECDSA.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Fatal("error casting public key to ECDSA")
+func loadConfig() *models.Config {
+	viper.SetConfigName("config")
+	viper.AddConfigPath("config")
+	viper.AutomaticEnv()
+	viper.SetConfigType("yml")
+	var config models.Config
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Fatal("Could not find config file. It should be setup under config/config.yml")
+		} else {
+			log.Fatal("Could not read config file. Please check it is configured correctly. Error: %s \n", err)
+		}
 	}
 
-	return publicKeyECDSA
+	if err := viper.Unmarshal(&config); err != nil {
+		log.Fatal("Could not load config file. Please check it is configured correctly. Error: %s \n", err)
+	}
+
+	// Reset Free Bond Values to 0. They have already been loaded into config.
+	viper.Set("ADD_TO_FREE_BOND", 0)
+	viper.Set("REMOVE_FROM_FREE_BOND", 0)
+	viper.WriteConfig()
+
+	return &config
 }
 
-func addressFromPrivKey(privKey string) string {
-	publicKeyECDSA := publicKeyECDSAFromPrivKey(privKey)
-	address := crypto.PubkeyToAddress(*publicKeyECDSA).Hex()
-
-	return address
+func validateConfig(config *models.Config){
+	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY[2:])
+	ethereum.InitEthClient(config.ETH_NODE)
+	ethereum.InitSarcophagusContract(config.CONTRACT_ADDRESS)
+	ethereum.InitSarcophagusTokenContract(config.TOKEN_ADDRESS)
+	arweave.InitArweaveVars(config)
 }
 
 func main(){
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	config := loadConfig()
+	validateConfig(config)
 
-	ctx := context.Background()
-	client, err := ethclient.Dial(os.Getenv("ETH_GATEWAY"))
-	if err != nil {
-		log.Fatalf("could not connect to Ethereum gateway: %v\n", err)
-	}
-	defer client.Close()
+	ethBalance := ethereum.EthBalance()
+	log.Printf("Eth Balance: %v", ethBalance)
 
-	archaeologistAddressHex := addressFromPrivKey(os.Getenv("ETH_PRIVATE_KEY")[2:])
-	archaeologistAddress := common.HexToAddress(archaeologistAddressHex)
-	balance, _ := client.BalanceAt(ctx, archaeologistAddress, nil)
-	fmt.Printf("Balance: %d\n",balance)
+	arweaveBalance := arweave.ArweaveBalance()
+	log.Println("Arweave Balance:", arweaveBalance)
+
+	archCount := ethereum.ArchaeologistCount()
+	log.Println("Archaeologist Count:", archCount)
+
+	tokenName := ethereum.TokenName()
+	log.Println("Token name:", tokenName)
+
+	log.Println("Free Bond:", config.ADD_TO_FREE_BOND)
 }
