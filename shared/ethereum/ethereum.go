@@ -143,5 +143,6 @@ func InitEthKeysAndAddress(privateKey string, paymentAddress string) {
 		}
 	} else {
 		archAddress = crypto.PubkeyToAddress(*publicKey)
+		log.Printf(archAddress.Hex())
 	}
 }

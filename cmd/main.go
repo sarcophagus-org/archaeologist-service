@@ -10,7 +10,7 @@ import (
 
 func loadConfig() *models.Config {
 	viper.SetConfigName("config")
-	viper.AddConfigPath("config")
+	viper.AddConfigPath("../config")
 	viper.AutomaticEnv()
 	viper.SetConfigType("yml")
 	var config models.Config
