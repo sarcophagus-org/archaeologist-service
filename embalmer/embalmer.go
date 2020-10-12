@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"github.com/miguelmota/go-solidity-sha3"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
-	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -63,11 +62,12 @@ func InitEthClient(ethNode string) {
 }
 
 func InitKeys(archPrivateKey string, embalmerPrivKey string) {
-	ethPrivKey, err := crypto.HexToECDSA(embalmerPrivKey)
 	ethPrivKey, err := crypto.HexToECDSA(archPrivateKey)
 	if err != nil {
 		log.Fatalf("could not load eth private key.  Please check the ETH_NODE value in the config file. Error: %v\n", err)
 	}
+
+	embalmerPrivateKey, _ = crypto.HexToECDSA(embalmerPrivKey)
 
 	pub := ethPrivKey.Public()
 	publicKey, ok := pub.(*ecdsa.PublicKey)
@@ -85,8 +85,6 @@ func CreateSarcophagus() {
 	pub := ethPrivKey.Public()
 	pubKey, _ := pub.(*ecdsa.PublicKey)
 	recipientPublicKeyBytes := crypto.FromECDSAPub(pubKey)[1:]
-
-	session := ethereum.NewSarcophagusSession(context.Background())
 
 	/* Sarc init values. */
 	resurrectionTime := big.NewInt(2000)
@@ -119,6 +117,8 @@ func CreateSarcophagus() {
 	copy(assetDoubleHashBytes[:], assetDoubleHashString)
 
 	log.Println("***CREATING SARCOPHAGUS***")
+
+	session := NewSarcophagusSession(context.Background())
 	tx, err := session.CreateSarcophagus(
 	"My Sarcophagus",
 		archPublicKeyBytes,
@@ -129,4 +129,11 @@ func CreateSarcophagus() {
 		assetDoubleHashBytes,
 		recipientPublicKeyBytes,
 	)
+
+	if err != nil {
+		log.Fatalf("Transaction reverted. Error creating Sarcophagus: %v", err)
+	}
+
+	log.Printf("Create Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+	log.Printf("Gas Used: %v", tx.Gas())
 }
