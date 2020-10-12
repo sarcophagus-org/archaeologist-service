@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/big"
 	"regexp"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -115,8 +116,12 @@ func InitEthClient(ethNode string) {
 	client = cli
 }
 
+func isHex(str string) bool {
+	return strings.HasPrefix(str, "0x")
+}
+
 func InitEthKeysAndAddress(privateKey string, paymentAddress string) {
-	if privateKey[0:2] == "0x" {
+	if isHex(privateKey) {
 		privateKey = privateKey[2:]
 	}
 
