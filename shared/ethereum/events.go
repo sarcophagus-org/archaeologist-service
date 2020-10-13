@@ -7,8 +7,8 @@ import (
 	"log"
 )
 
-func EventsSubscribe() {
-	wsClient, err := ethclient.Dial("ws://localhost:8545")
+func EventsSubscribe(websocketsAddress string) {
+	wsClient, err := ethclient.Dial(websocketsAddress)
 	if err != nil {
 		log.Fatalf("error with web socket address: %v", err)
 	}
@@ -16,6 +16,12 @@ func EventsSubscribe() {
 	sink := make(chan *contracts.EventsCreateSarcophagus)
 	sarcoEvents, err := contracts.NewEvents(sarcoAddress, wsClient)
 	sub, err := sarcoEvents.WatchCreateSarcophagus(&bind.WatchOpts{}, sink)
+
+	if err != nil {
+		log.Fatalf("Error subscribing to CreateSarcophagus event: %v", err)
+	}
+
+	log.Println("Listening For Events...")
 
 	for {
 		select {

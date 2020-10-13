@@ -2,6 +2,7 @@ package models
 
 type Config struct {
 	ETH_NODE string
+	ETH_NODE_WEBSOCKETS string
 	ETH_PRIVATE_KEY string
 	ARWEAVE_KEY_FILE string
 	ARWEAVE_NODE string
