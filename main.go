@@ -53,4 +53,6 @@ func main(){
 	log.Printf("Eth Balance: %v", ethereum.ArchEthBalance())
 	log.Printf("Sarco Token Balance: %v", ethereum.ArchSarcoBalance())
 	log.Println("Arweave Balance:", arweave.ArweaveBalance())
+
+	ethereum.EventsSubscribe()
 }
