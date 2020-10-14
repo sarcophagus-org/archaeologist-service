@@ -1,6 +1,7 @@
 package ethereum
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -8,15 +9,21 @@ import (
 	"os"
 	"os/signal"
 	"time"
-	"context"
 )
 
 const (
 	MB = 1 << 20
 )
 
+// Base64 encoded the string and send in a json object ---
+// payload will be bigger --- file transfers can be streamed --- like an API
+// Json payload will be all at once.
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("file")
+	signedAssetDoubleHash := r.Form.Get("signedAssetDoubleHash")
+	log.Println(signedAssetDoubleHash)
+
 
 	log.Println("File received with header:", header)
 
