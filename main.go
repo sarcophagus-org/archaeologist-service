@@ -17,17 +17,18 @@ func loadConfig() *models.Config {
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Fatal("Could not find config file. It should be setup under config/config.yml")
+			log.Fatalf("Could not find config file. It should be setup under config/config.yml")
 		} else {
-			log.Fatal("Could not read config file. Please check it is configured correctly. Error: %s \n", err)
+			log.Fatalf("Could not read config file. Please check it is configured correctly. Error: %v \n", err)
 		}
 	}
 
 	if err := viper.Unmarshal(&config); err != nil {
-		log.Fatal("Could not load config file. Please check it is configured correctly. Error: %s \n", err)
+		log.Fatalf("Could not load config file. Please check it is configured correctly. Error: %v \n", err)
 	}
 
-	// Reset Free Bond Values to 0. They have already been loaded into config.
+	// Write Free Bond Values to 0 in the config file.
+	// They have already been loaded into the config struct.
 	viper.Set("ADD_TO_FREE_BOND", 0)
 	viper.Set("REMOVE_FROM_FREE_BOND", 0)
 	viper.WriteConfig()
@@ -36,8 +37,9 @@ func loadConfig() *models.Config {
 }
 
 func validateConfig(config *models.Config){
-	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY[2:])
+	ethereum.SetFreeBond(config.ADD_TO_FREE_BOND, config.REMOVE_FROM_FREE_BOND)
 	ethereum.InitEthClient(config.ETH_NODE)
+	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY, config.PAYMENT_ADDRESS)
 	ethereum.InitSarcophagusContract(config.CONTRACT_ADDRESS)
 	ethereum.InitSarcophagusTokenContract(config.TOKEN_ADDRESS)
 	arweave.InitArweaveVars(config)
@@ -46,18 +48,9 @@ func validateConfig(config *models.Config){
 func main(){
 	config := loadConfig()
 	validateConfig(config)
+	ethereum.RegisterOrUpdateArchaeologist(config)
 
-	ethBalance := ethereum.EthBalance()
-	log.Printf("Eth Balance: %v", ethBalance)
-
-	arweaveBalance := arweave.ArweaveBalance()
-	log.Println("Arweave Balance:", arweaveBalance)
-
-	archCount := ethereum.ArchaeologistCount()
-	log.Println("Archaeologist Count:", archCount)
-
-	tokenName := ethereum.TokenName()
-	log.Println("Token name:", tokenName)
-
-	log.Println("Free Bond:", config.ADD_TO_FREE_BOND)
+	log.Printf("Eth Balance: %v", ethereum.ArchEthBalance())
+	log.Printf("Sarco Token Balance: %v", ethereum.ArchSarcoBalance())
+	log.Println("Arweave Balance:", arweave.ArweaveBalance())
 }
