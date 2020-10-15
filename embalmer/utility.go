@@ -14,6 +14,13 @@ import (
 	"strings"
 )
 
+/* Sarc init values. */
+/* For resurrection time, using: 1/11/2021 -- https://www.unixtimestamp.com/ */
+const resurrectionTime = 1610323200
+const storageFee = 2
+const diggingFee = 6
+const bounty = 6
+
 var client *ethclient.Client
 var archPublicKeyBytes []byte
 var embalmerPrivateKey *ecdsa.PrivateKey
@@ -22,11 +29,11 @@ var sarcoAddress common.Address
 var sarcophagusContract *contracts.Sarcophagus
 var sarcophagusTokenContract *contracts.Token
 
-func initAuth () *bind.TransactOpts {
+func initAuth() *bind.TransactOpts {
 	auth := bind.NewKeyedTransactor(embalmerPrivateKey)
 	auth.Nonce = nil // uses nonce of pending state
 	auth.Value = big.NewInt(0)
-	auth.GasLimit = 0 // 0 estimates gas limit
+	auth.GasLimit = 0   // 0 estimates gas limit
 	auth.GasPrice = nil // nil suggests gas price
 
 	return auth
@@ -36,7 +43,7 @@ func NewSarcophagusSession(ctx context.Context) (session contracts.SarcophagusSe
 	auth := initAuth()
 
 	return contracts.SarcophagusSession{
-		Contract: sarcophagusContract,
+		Contract:     sarcophagusContract,
 		TransactOpts: *auth,
 		CallOpts: bind.CallOpts{
 			From:    auth.From,
@@ -49,7 +56,7 @@ func NewSarcophagusTokenSession(ctx context.Context) (session contracts.TokenSes
 	auth := initAuth()
 
 	return contracts.TokenSession{
-		Contract: sarcophagusTokenContract,
+		Contract:     sarcophagusTokenContract,
 		TransactOpts: *auth,
 		CallOpts: bind.CallOpts{
 			From:    auth.From,
@@ -145,38 +152,42 @@ func CreateSarcophagus(recipientPrivateKey string) {
 	pub := recipPrivKey.Public().(*ecdsa.PublicKey)
 	recipientPublicKeyBytes := crypto.FromECDSAPub(pub)[1:]
 
-	/* Sarc init values. */
-	/* For resurrection time, using: 1/11/2021 -- https://www.unixtimestamp.com/ */
-	resurrectionTime := big.NewInt(1610323200)
-	storageFee := big.NewInt(2)
-	diggingFee := big.NewInt(6)
-	bounty := big.NewInt(6)
-
 	/* Setup Asset Double Hash */
+	/* Arbitrary initial value for sake of testing */
 	/* Note: We may need to use solsha3 library to make these hashes, undetermined yet */
 	/* https://github.com/miguelmota/go-solidity-sha3 */
 
 	assetSingleHash := crypto.Keccak256([]byte{1, 2, 3, 4})
 	assetDoubleHash := crypto.Keccak256(assetSingleHash)
 
-	assetDoubleHashString := hex.EncodeToString(assetDoubleHash)
+	/* Sign asset double hash */
+	signedAssetDoubleHash, err := crypto.Sign(assetDoubleHash, embalmerPrivateKey)
+	if err != nil {
+		log.Fatalf("error signing asset double hash: %v", err)
+	}
+
+	/* Convert Double Hash to 32 byte array */
 	var assetDoubleHashBytes [32]byte
-	copy(assetDoubleHashBytes[:], assetDoubleHashString)
+	copy(assetDoubleHashBytes[:], assetDoubleHash)
+
+	/* String for purposes of passing in as form param to arch http server */
+	signedAssetDoubleHashString := hex.EncodeToString(signedAssetDoubleHash)
 
 	log.Println("***CREATING SARCOPHAGUS***")
+	log.Println("Signed Asset Double Hash:", signedAssetDoubleHashString)
 
 	sarcoTokenSession := NewSarcophagusTokenSession(context.Background())
-	approvalAmount := new(big.Int).Add(new(big.Int).Add(bounty, diggingFee), storageFee)
+	approvalAmount := new(big.Int).Add(new(big.Int).Add(big.NewInt(bounty), big.NewInt(diggingFee)), big.NewInt(storageFee))
 	approveCreateSarcophagusTransfer(&sarcoTokenSession, approvalAmount)
 
 	sarcoSession := NewSarcophagusSession(context.Background())
 	tx, err := sarcoSession.CreateSarcophagus(
-	"My Sarcophagus",
+		"My Sarcophagus",
 		archPublicKeyBytes,
-		resurrectionTime,
-		storageFee,
-		diggingFee,
-		bounty,
+		big.NewInt(resurrectionTime),
+		big.NewInt(storageFee),
+		big.NewInt(diggingFee),
+		big.NewInt(bounty),
 		assetDoubleHashBytes,
 		recipientPublicKeyBytes,
 	)

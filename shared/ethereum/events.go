@@ -2,12 +2,13 @@ package ethereum
 
 import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/server"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"log"
 )
 
-func EventsSubscribe(websocketsAddress string) {
+func EventsSubscribe(websocketsAddress string, filePort string) {
 	wsClient, err := ethclient.Dial(websocketsAddress)
 	if err != nil {
 		log.Fatalf("error with web socket address: %v", err)
@@ -40,6 +41,7 @@ func EventsSubscribe(websocketsAddress string) {
 			log.Println("Storage Fee:", event.StorageFee)
 			log.Println("Digging Fee:", event.DiggingFee)
 			log.Println("CursedBond:", event.CursedBond)
+			server.HandleFileUpload(filePort, event.AssetDoubleHash, event.Embalmer)
 		}
 	}
 }

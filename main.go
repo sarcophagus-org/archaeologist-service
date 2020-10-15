@@ -54,6 +54,5 @@ func main(){
 	log.Printf("Sarco Token Balance: %v", ethereum.ArchSarcoBalance())
 	log.Println("Arweave Balance:", arweave.ArweaveBalance())
 
-	ethereum.ListenForFile(config.FILE_PORT)
-	// ethereum.EventsSubscribe(config.ETH_NODE_WEBSOCKETS)
+	ethereum.EventsSubscribe(config.ETH_NODE_WEBSOCKETS, config.FILE_PORT)
 }
