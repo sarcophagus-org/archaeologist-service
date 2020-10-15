@@ -111,7 +111,7 @@ func HandleFileUpload(filePort string, doubleHash [32]byte, embalmerAddy common.
 		}
 	}()
 
-	// Setting up signal capturing
+	// Stop the server if the program exits
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 
