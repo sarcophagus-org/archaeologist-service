@@ -1,9 +1,12 @@
 package server
 
 import (
+	"bytes"
 	"context"
+	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"io"
@@ -20,11 +23,12 @@ const (
 
 var assetDoubleHash [32]byte
 var embalmerAddress common.Address
+var archPrivateKey *ecdsa.PrivateKey
 
 func embalmerSignatureValid(signedAssetDoubleHash string) bool {
 	signedAssetDoubleHashBytes, err := hex.DecodeString(signedAssetDoubleHash)
 	if err != nil {
-		log.Printf("Could not decode singature: %v", err)
+		log.Printf("Could not decode signature: %v", err)
 		return false
 	}
 
@@ -39,6 +43,31 @@ func embalmerSignatureValid(signedAssetDoubleHash string) bool {
 		log.Printf("Address derived from embalmers signature does not match")
 		return false
 	}
+
+	log.Printf("embalmers signature is valid!")
+
+	return true
+}
+
+func canDecryptFile(file *os.File) bool {
+	buf := bytes.NewBuffer(nil)
+	if _, err := io.Copy(buf, file); err != nil {
+		log.Printf("Error copying file to buffer: %v", err)
+		return false
+	}
+
+	fileBytes := buf.Bytes()
+
+	privateKeyBytes := crypto.FromECDSA(archPrivateKey)
+	privKey, _ := btcec.PrivKeyFromBytes(btcec.S256(), privateKeyBytes)
+
+	_, decryptError := btcec.Decrypt(privKey, fileBytes)
+	if decryptError != nil {
+		log.Printf("Error decrypting file: %v", decryptError)
+		return false
+	}
+
+	log.Printf("file decrypted successfully!")
 
 	return true
 }
@@ -56,6 +85,8 @@ func fileUploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("File received with header:", header)
+
 	if header.Size > (3 * MB) {
 		http.Error(w, "The file sent is larger than the limit of 3MB.", http.StatusBadRequest)
 		return
@@ -67,38 +98,38 @@ func fileUploadHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "The signature from the embalmer could not be verified.", http.StatusBadRequest)
 	}
 
-	/*
-		Validations have passed.
-		TODO: Handle server upload to arweave
-	*/
-
-	log.Println("File received with header:", header)
-
+	/* Save temp file and validate the file 2nd layer of file encryption can be decrypted */
 	defer file.Close()
 
-	if err != nil {
-		fmt.Fprintln(w, err)
-		return
-	}
-
-	out, err := os.Create("/tmp/file")
+	tmpFile, err := os.Create("tmp/file")
 	if err != nil {
 		fmt.Fprintf(w, "Failed to open the file for writing")
 		return
 	}
-	defer out.Close()
-	_, err = io.Copy(out, file)
+	defer tmpFile.Close()
+	_, err = io.Copy(tmpFile, file)
 	if err != nil {
 		fmt.Fprintln(w, err)
 	}
 
-	// the header contains useful info, like the original file name
-	fmt.Fprintf(w, "File %s uploaded successfully.", header.Filename)
+	osFile, err := os.Open("tmp/file")
+
+	if !canDecryptFile(osFile) {
+		http.Error(w, "The file cannot be decrypted", http.StatusBadRequest)
+	}
+
+	/*
+		Validations have passed.
+		TODO: Handle file upload to arweave
+	*/
+
+	fmt.Fprintf(w, "File %s was uploaded and validated successfully.", header.Filename)
 }
 
-func HandleFileUpload(filePort string, doubleHash [32]byte, embalmerAddy common.Address) {
+func HandleFileUpload(filePort string, doubleHash [32]byte, embalmerAddy common.Address, archPrivKey *ecdsa.PrivateKey) {
 	assetDoubleHash = doubleHash
 	embalmerAddress = embalmerAddy
+	archPrivateKey = archPrivKey
 
 	sm := http.NewServeMux()
 	sm.Handle("/file", http.HandlerFunc(fileUploadHandler))

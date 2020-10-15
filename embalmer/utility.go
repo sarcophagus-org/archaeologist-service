@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -110,10 +111,10 @@ func isHex(str string) bool {
 }
 
 func InitKeys(archPrivateKey string, embalmerPrivKey string) {
-	if isHex(archPrivateKey) {
+	if utility.IsHex(archPrivateKey) {
 		archPrivateKey = archPrivateKey[2:]
 	}
-	if isHex(embalmerPrivKey) {
+	if utility.IsHex(embalmerPrivKey) {
 		embalmerPrivKey = embalmerPrivKey[2:]
 	}
 	ethPrivKey, err := crypto.HexToECDSA(archPrivateKey)
@@ -145,7 +146,7 @@ func approveCreateSarcophagusTransfer(session *contracts.TokenSession, approvalA
 
 func CreateSarcophagus(recipientPrivateKey string) {
 	/* Initialize recipient public key bytes */
-	if isHex(recipientPrivateKey) {
+	if utility.IsHex(recipientPrivateKey) {
 		recipientPrivateKey = recipientPrivateKey[2:]
 	}
 	recipPrivKey, _ := crypto.HexToECDSA(recipientPrivateKey)

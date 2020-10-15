@@ -3,15 +3,14 @@ package ethereum
 import (
 	"context"
 	"crypto/ecdsa"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"log"
-	"math/big"
-	"regexp"
-	"strings"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"log"
+	"math/big"
+	"regexp"
 
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 )
@@ -116,12 +115,8 @@ func InitEthClient(ethNode string) {
 	client = cli
 }
 
-func isHex(str string) bool {
-	return strings.HasPrefix(str, "0x")
-}
-
 func InitEthKeysAndAddress(privateKey string, paymentAddress string) {
-	if isHex(privateKey) {
+	if utility.IsHex(privateKey) {
 		privateKey = privateKey[2:]
 	}
 

@@ -41,7 +41,12 @@ func EventsSubscribe(websocketsAddress string, filePort string) {
 			log.Println("Storage Fee:", event.StorageFee)
 			log.Println("Digging Fee:", event.DiggingFee)
 			log.Println("CursedBond:", event.CursedBond)
-			server.HandleFileUpload(filePort, event.AssetDoubleHash, event.Embalmer)
+			server.HandleFileUpload(
+				filePort,
+				event.AssetDoubleHash,
+				event.Embalmer,
+				archPrivateKey,
+			)
 		}
 	}
 }

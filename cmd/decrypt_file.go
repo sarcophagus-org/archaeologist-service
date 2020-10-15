@@ -2,17 +2,19 @@ package main
 
 import (
 	"bytes"
-	"encoding/hex"
+	"crypto/ecdsa"
 	"github.com/btcsuite/btcd/btcec"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/spf13/viper"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 )
 
 const fileToDecrypt = "/tmp/encrypted.txt"
-const decryptedOutputFilePath = "/tmp/decrypted.txt"
+const decryptedOutputFilePath = "/tmp/decryptedtwo.txt"
 
 func archPrivateKeyString() string {
 	viper.SetConfigName("config")
@@ -30,11 +32,17 @@ func archPrivateKeyString() string {
 
 	privateKey := viper.GetString("eth_private_key")
 
-	if isHex(privateKey) {
+	if utility.IsHex(privateKey) {
 		privateKey = privateKey[2:]
 	}
 
 	return privateKey
+}
+
+func archPrivateKeyECDSA(privateKey string) *ecdsa.PrivateKey {
+	privateKeyECDSA, _ := crypto.HexToECDSA(privateKey)
+
+	return privateKeyECDSA
 }
 
 func main() {
@@ -46,10 +54,8 @@ func main() {
 
 	fileBytes := buf.Bytes()
 
-	pkBytes, err := hex.DecodeString(archPrivateKeyString())
-	if err != nil {
-		log.Fatalf("Error decoding private key: %v", err)
-	}
+	pkBytes := crypto.FromECDSA(archPrivateKeyECDSA(archPrivateKeyString()))
+
 	// note that we already have corresponding pubKey
 	privKey, _ := btcec.PrivKeyFromBytes(btcec.S256(), pkBytes)
 

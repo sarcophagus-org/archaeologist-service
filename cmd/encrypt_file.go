@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 )
 
 const fileToEncrypt = "/tmp/test.txt"
@@ -20,10 +20,6 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
-}
-
-func isHex(str string) bool {
-	return strings.HasPrefix(str, "0x")
 }
 
 func archPrivateKey() *ecdsa.PrivateKey {
@@ -43,7 +39,7 @@ func archPrivateKey() *ecdsa.PrivateKey {
 	privateKey := viper.GetString("eth_private_key")
 	log.Println("Private Key", privateKey)
 
-	if isHex(privateKey) {
+	if utility.IsHex(privateKey) {
 		privateKey = privateKey[2:]
 	}
 
