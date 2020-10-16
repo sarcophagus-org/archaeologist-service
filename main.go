@@ -40,7 +40,7 @@ func main(){
 	config := loadConfig()
 	arch := new(models.Archaeologist)
 	archaeologist.InitializeArchaeologist(arch, config)
-	// archaeologist.RegisterOrUpdateArchaeologist(config)
+	archaeologist.RegisterOrUpdateArchaeologist(arch)
 
 	log.Printf("Eth Balance: %v", arch.EthBalance())
 	log.Printf("Sarco Token Balance: %v", arch.SarcoBalance())

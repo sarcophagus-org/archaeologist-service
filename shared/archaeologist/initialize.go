@@ -26,12 +26,13 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.PublicKeyBytes = crypto.FromECDSAPub(arch.PublicKey)[1:]
 	arch.ArchAddress = initArchAddress(config.PAYMENT_ADDRESS, arch.PublicKey, arch.Client)
 	arch.SarcoAddress = initSarcoAddress(config.CONTRACT_ADDRESS, arch.Client)
-	arch.SarcoSession = initSarcophagusSession(arch.ArchAddress, arch.Client, arch.PrivateKey)
+	arch.SarcoSession = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
 	arch.TokenSession = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
 	arch.FeePerByte = config.FEE_PER_BYTE
 	arch.MinBounty = config.MIN_BOUNTY
 	arch.MinDiggingFee = config.MIN_DIGGING_FEE
 	arch.MaxResurectionTime = config.MAX_RESURRECTION_TIME
+	arch.Endpoint = config.ENDPOINT
 }
 
 func calculateFreeBond(addFreeBond int64, removeFreeBond int64) int64 {
