@@ -22,7 +22,7 @@ const (
 	MB = 1 << 20
 )
 
-type SarcoServer struct {
+type FileHandler struct {
 	AssetDoubleHash [32]byte
 	EmbalmerAddress common.Address
 	ArchPrivateKey *ecdsa.PrivateKey
@@ -30,21 +30,21 @@ type SarcoServer struct {
 	FilePort string
 }
 
-func (sarcoServer *SarcoServer) embalmerSignatureValid(signedAssetDoubleHash string) bool {
+func (fileHandler *FileHandler) embalmerSignatureValid(signedAssetDoubleHash string) bool {
 	signedAssetDoubleHashBytes, err := hex.DecodeString(signedAssetDoubleHash)
 	if err != nil {
 		log.Printf("Could not decode signature: %v", err)
 		return false
 	}
 
-	hopefullyEmbalmerPubKey, err := crypto.SigToPub(assetDoubleHash[:], signedAssetDoubleHashBytes)
+	hopefullyEmbalmerPubKey, err := crypto.SigToPub(fileHandler.AssetDoubleHash[:], signedAssetDoubleHashBytes)
 	if err != nil {
 		log.Printf("Could not derive embalmers public key from hash and signature: %v", err)
 		return false
 	}
 
 	hopefullyEmbalmerAddress := crypto.PubkeyToAddress(*hopefullyEmbalmerPubKey)
-	if hopefullyEmbalmerAddress != embalmerAddress {
+	if hopefullyEmbalmerAddress != fileHandler.EmbalmerAddress {
 		log.Printf("Address derived from the provided signature does not match the address of embalmer that created the Sarcophagus")
 		return false
 	}
@@ -54,7 +54,7 @@ func (sarcoServer *SarcoServer) embalmerSignatureValid(signedAssetDoubleHash str
 	return true
 }
 
-func (sarcoServer *SarcoServer) canDecryptFile(file *os.File) bool {
+func (fileHandler *FileHandler) canDecryptFile(file *os.File) bool {
 	buf := bytes.NewBuffer(nil)
 	if _, err := io.Copy(buf, file); err != nil {
 		log.Printf("Error copying file to buffer: %v", err)
@@ -63,7 +63,7 @@ func (sarcoServer *SarcoServer) canDecryptFile(file *os.File) bool {
 
 	fileBytes := buf.Bytes()
 
-	privateKeyBytes := crypto.FromECDSA(archPrivateKey)
+	privateKeyBytes := crypto.FromECDSA(fileHandler.ArchPrivateKey)
 	privKey, _ := btcec.PrivKeyFromBytes(btcec.S256(), privateKeyBytes)
 
 	_, decryptError := btcec.Decrypt(privKey, fileBytes)
@@ -77,7 +77,7 @@ func (sarcoServer *SarcoServer) canDecryptFile(file *os.File) bool {
 	return true
 }
 
-func (sarcoServer *SarcoServer) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
+func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -99,7 +99,7 @@ func (sarcoServer *SarcoServer) fileUploadHandler(w http.ResponseWriter, r *http
 
 	/* Validate embalmers signature */
 	signedAssetDoubleHash := r.Form.Get("signedAssetDoubleHash")
-	if !embalmerSignatureValid(signedAssetDoubleHash) {
+	if !fileHandler.embalmerSignatureValid(signedAssetDoubleHash) {
 		http.Error(w, "The signature from the embalmer could not be verified.", http.StatusBadRequest)
 		return
 	}
@@ -120,7 +120,7 @@ func (sarcoServer *SarcoServer) fileUploadHandler(w http.ResponseWriter, r *http
 
 	osFile, err := os.Open("tmp/file")
 
-	if !canDecryptFile(osFile) {
+	if !fileHandler.canDecryptFile(osFile) {
 		http.Error(w, "The file cannot be decrypted", http.StatusBadRequest)
 	}
 
@@ -139,11 +139,11 @@ func (sarcoServer *SarcoServer) fileUploadHandler(w http.ResponseWriter, r *http
 	// Could potentially set KeepAlivesEnabled to false: https://golang.org/src/net/http/server.go?s=96272:96319#L3068
 }
 
-func (sarcoServer *SarcoServer) HandleFileUpload() {
+func (fileHandler *FileHandler) HandleFileUpload() {
 	sm := http.NewServeMux()
-	sm.Handle("/file", http.HandlerFunc(sarcoServer.fileUploadHandler))
+	sm.Handle("/file", http.HandlerFunc(fileHandler.fileUploadHandler))
 
-	server := &http.Server{Addr: ":" + sarcoServer.FilePort, Handler: sm}
+	server := &http.Server{Addr: ":" + fileHandler.FilePort, Handler: sm}
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {

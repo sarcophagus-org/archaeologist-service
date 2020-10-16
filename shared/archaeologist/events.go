@@ -37,14 +37,14 @@ func EventsSubscribe(arch *models.Archaeologist) {
 			log.Println("Digging Fee:", event.DiggingFee)
 			log.Println("CursedBond:", event.CursedBond)
 
-			sarcoServer := &models.SarcoServer{
+			fileHandler := &models.FileHandler{
 				event.AssetDoubleHash,
 				event.Embalmer,
 				arch.PrivateKey,
 				big.NewInt(arch.FeePerByte),
 				arch.FilePort,
 			}
-			sarcoServer.HandleFileUpload()
+			fileHandler.HandleFileUpload()
 		}
 	}
 }
