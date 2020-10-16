@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"io"
 	"log"
+	"math/big"
 	"net/http"
 	"os"
 	"os/signal"
@@ -24,6 +25,7 @@ const (
 var assetDoubleHash [32]byte
 var embalmerAddress common.Address
 var archPrivateKey *ecdsa.PrivateKey
+var feePerByte big.Int
 
 func embalmerSignatureValid(signedAssetDoubleHash string) bool {
 	signedAssetDoubleHashBytes, err := hex.DecodeString(signedAssetDoubleHash)
@@ -40,7 +42,7 @@ func embalmerSignatureValid(signedAssetDoubleHash string) bool {
 
 	hopefullyEmbalmerAddress := crypto.PubkeyToAddress(*hopefullyEmbalmerPubKey)
 	if hopefullyEmbalmerAddress != embalmerAddress {
-		log.Printf("Address derived from embalmers signature does not match")
+		log.Printf("Address derived from the provided signature does not match the address of embalmer that created the Sarcophagus")
 		return false
 	}
 
@@ -96,20 +98,21 @@ func fileUploadHandler(w http.ResponseWriter, r *http.Request) {
 	signedAssetDoubleHash := r.Form.Get("signedAssetDoubleHash")
 	if !embalmerSignatureValid(signedAssetDoubleHash) {
 		http.Error(w, "The signature from the embalmer could not be verified.", http.StatusBadRequest)
+		return
 	}
 
 	/* Save temp file and validate the file 2nd layer of file encryption can be decrypted */
 	defer file.Close()
-
 	tmpFile, err := os.Create("tmp/file")
 	if err != nil {
-		fmt.Fprintf(w, "Failed to open the file for writing")
+		http.Error(w, "Failed to open the file for writing.", http.StatusBadRequest)
 		return
 	}
 	defer tmpFile.Close()
 	_, err = io.Copy(tmpFile, file)
 	if err != nil {
-		fmt.Fprintln(w, err)
+		http.Error(w, "Failed to copy the file to disk.", http.StatusBadRequest)
+		return
 	}
 
 	osFile, err := os.Open("tmp/file")
@@ -124,6 +127,13 @@ func fileUploadHandler(w http.ResponseWriter, r *http.Request) {
 	*/
 
 	fmt.Fprintf(w, "File %s was uploaded and validated successfully.", header.Filename)
+
+	/* TODO: Potentially Close Connection if there is an error? */
+	// We may not want to close it b/c user may re-try file upload
+	// Perhaps limit # of attempts before closing?
+	// defer bufrw.Flush()
+	// defer conn.Close()
+	// Could potentially set KeepAlivesEnabled to false: https://golang.org/src/net/http/server.go?s=96272:96319#L3068
 }
 
 func HandleFileUpload(filePort string, doubleHash [32]byte, embalmerAddy common.Address, archPrivKey *ecdsa.PrivateKey) {
