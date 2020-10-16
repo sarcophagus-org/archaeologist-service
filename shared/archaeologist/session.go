@@ -1,14 +1,15 @@
-package ethereum
+package archaeologist
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"math/big"
 )
 
-func initAuth () *bind.TransactOpts {
-	auth := bind.NewKeyedTransactor(archPrivateKey)
+func initAuth (privateKey *ecdsa.PrivateKey) *bind.TransactOpts {
+	auth := bind.NewKeyedTransactor(privateKey)
 	auth.Nonce = nil // uses nonce of pending state
 	auth.Value = big.NewInt(0)
 	auth.GasLimit = 0 // 0 estimates gas limit
@@ -17,8 +18,8 @@ func initAuth () *bind.TransactOpts {
 	return auth
 }
 
-func NewSarcophagusSession(ctx context.Context) (session contracts.SarcophagusSession) {
-	auth := initAuth()
+func NewSarcophagusSession(ctx context.Context, sarcophagusContract *contracts.Sarcophagus, privateKey *ecdsa.PrivateKey) contracts.SarcophagusSession {
+	auth := initAuth(privateKey)
 
 	return contracts.SarcophagusSession{
 		Contract: sarcophagusContract,
@@ -30,11 +31,11 @@ func NewSarcophagusSession(ctx context.Context) (session contracts.SarcophagusSe
 	}
 }
 
-func NewSarcophagusTokenSession(ctx context.Context) (session contracts.TokenSession) {
-	auth := initAuth()
+func NewTokenSession(ctx context.Context, tokenContract *contracts.Token, privateKey *ecdsa.PrivateKey)  contracts.TokenSession {
+	auth := initAuth(privateKey)
 
 	return contracts.TokenSession{
-		Contract: sarcophagusTokenContract,
+		Contract: tokenContract,
 		TransactOpts: *auth,
 		CallOpts: bind.CallOpts{
 			From:    auth.From,

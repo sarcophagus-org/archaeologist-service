@@ -1,4 +1,4 @@
-package ethereum
+package archaeologist
 
 import (
 	"context"
@@ -72,44 +72,30 @@ func approveFreeBondTransfer(session *contracts.TokenSession) {
 	log.Printf("Gas Used for Approval: %v", tx.Gas())
 }
 
-func WithdrawBond(session *contracts.SarcophagusSession, bondToWithdraw *big.Int) {
-	tx, err := session.WithdrawalBond(bondToWithdraw)
-
-	if err != nil {
-		log.Fatalf("Transaction reverted. Error Withdrawing Bond: %v \n Config value REMOVE_FROM_FREE_BOND has been reset to 0. You will need to reset this.", err)
-	}
-
-	log.Printf("Withdrawal of %v Sarco Tokens successful. Transaction ID: %v", bondToWithdraw, tx.Hash().Hex())
-	log.Printf("Gas Used for Withdrawal: %v", tx.Gas())
-}
-
-func RegisterOrUpdateArchaeologist(config *models.Config) {
-	sarcoSession := NewSarcophagusSession(context.Background())
-
-	archaeologist, err := sarcoSession.Archaeologists(archAddress)
+func RegisterOrUpdateArchaeologist(arch *models.Archaeologist) {
+	contractArch, err := arch.SarcoSession.Archaeologists(arch.ArchAddress)
 	if err != nil {
 		log.Fatalf("Call to Archaeologists in Sarcophagus Contract failed: %v", err)
 	}
 
-	if freeBond > 0 {
-		tokenSession := NewSarcophagusTokenSession(context.Background())
-		approveFreeBondTransfer(&tokenSession)
+	if arch.FreeBond > 0 {
+		approveFreeBondTransfer(&arch.TokenSession)
 	}
 
-	if archaeologist.Exists {
-		if freeBond < 0 {
-			withdrawAmount := new(big.Int).Abs(big.NewInt(freeBond))
-			WithdrawBond(&sarcoSession, withdrawAmount)
-			freeBond = 0
+	if contractArch.Exists {
+		if arch.FreeBond < 0 {
+			withdrawAmount := new(big.Int).Abs(big.NewInt(arch.FreeBond))
+			arch.WithdrawBond(withdrawAmount)
+			arch.FreeBond = 0
 		}
 
-		if freeBond > 0 ||
-			archaeologist.Endpoint != config.ENDPOINT ||
-			archaeologist.PaymentAddress != archAddress ||
-			archaeologist.FeePerByte.Cmp(big.NewInt(config.FEE_PER_BYTE)) != 0 ||
-			archaeologist.MinimumBounty.Cmp(big.NewInt(config.MIN_BOUNTY)) != 0 ||
-			archaeologist.MinimumDiggingFee.Cmp(big.NewInt(config.MIN_DIGGING_FEE)) != 0 ||
-			archaeologist.MaximumResurrectionTime.Cmp(big.NewInt(config.MAX_RESURRECTION_TIME)) != 0 {
+		if arch.FreeBond > 0 ||
+			contractArch.Endpoint != arch.EndPoint ||
+			contractArch.PaymentAddress != arch.ArchAddress ||
+			contractArch.FeePerByte.Cmp(big.NewInt(arch.FeePerByte)) != 0 ||
+			contractArch.MinimumBounty.Cmp(big.NewInt(arch.MinBounty)) != 0 ||
+			contractArch.MinimumDiggingFee.Cmp(big.NewInt(arch.MinDiggingFee)) != 0 ||
+			contractArch.MaximumResurrectionTime.Cmp(big.NewInt(arch.MaxResurectionTime)) != 0 {
 			updateArchaeologist(&sarcoSession, config)
 		} else {
 			log.Printf("Archaeologist did not need to get updated, no config values have changed.")
