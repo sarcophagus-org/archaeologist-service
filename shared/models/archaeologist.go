@@ -26,6 +26,7 @@ type Archaeologist struct {
 	MinDiggingFee      int64
 	MaxResurectionTime int64
 	Endpoint           string
+	FilePort           string
 }
 
 func (arch *Archaeologist) SarcoBalance() *big.Int {

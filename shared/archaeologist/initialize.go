@@ -33,6 +33,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.MinDiggingFee = config.MIN_DIGGING_FEE
 	arch.MaxResurectionTime = config.MAX_RESURRECTION_TIME
 	arch.Endpoint = config.ENDPOINT
+	arch.FilePort = config.FILE_PORT
 }
 
 func calculateFreeBond(addFreeBond int64, removeFreeBond int64) int64 {

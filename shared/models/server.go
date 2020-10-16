@@ -1,4 +1,4 @@
-package server
+package models
 
 import (
 	"bytes"
@@ -22,12 +22,15 @@ const (
 	MB = 1 << 20
 )
 
-var assetDoubleHash [32]byte
-var embalmerAddress common.Address
-var archPrivateKey *ecdsa.PrivateKey
-var feePerByte big.Int
+type SarcoServer struct {
+	AssetDoubleHash [32]byte
+	EmbalmerAddress common.Address
+	ArchPrivateKey *ecdsa.PrivateKey
+	FeePerByte *big.Int
+	FilePort string
+}
 
-func embalmerSignatureValid(signedAssetDoubleHash string) bool {
+func (sarcoServer *SarcoServer) embalmerSignatureValid(signedAssetDoubleHash string) bool {
 	signedAssetDoubleHashBytes, err := hex.DecodeString(signedAssetDoubleHash)
 	if err != nil {
 		log.Printf("Could not decode signature: %v", err)
@@ -51,7 +54,7 @@ func embalmerSignatureValid(signedAssetDoubleHash string) bool {
 	return true
 }
 
-func canDecryptFile(file *os.File) bool {
+func (sarcoServer *SarcoServer) canDecryptFile(file *os.File) bool {
 	buf := bytes.NewBuffer(nil)
 	if _, err := io.Copy(buf, file); err != nil {
 		log.Printf("Error copying file to buffer: %v", err)
@@ -74,7 +77,7 @@ func canDecryptFile(file *os.File) bool {
 	return true
 }
 
-func fileUploadHandler(w http.ResponseWriter, r *http.Request) {
+func (sarcoServer *SarcoServer) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -136,15 +139,11 @@ func fileUploadHandler(w http.ResponseWriter, r *http.Request) {
 	// Could potentially set KeepAlivesEnabled to false: https://golang.org/src/net/http/server.go?s=96272:96319#L3068
 }
 
-func HandleFileUpload(filePort string, doubleHash [32]byte, embalmerAddy common.Address, archPrivKey *ecdsa.PrivateKey) {
-	assetDoubleHash = doubleHash
-	embalmerAddress = embalmerAddy
-	archPrivateKey = archPrivKey
-
+func (sarcoServer *SarcoServer) HandleFileUpload() {
 	sm := http.NewServeMux()
-	sm.Handle("/file", http.HandlerFunc(fileUploadHandler))
+	sm.Handle("/file", http.HandlerFunc(sarcoServer.fileUploadHandler))
 
-	server := &http.Server{Addr: ":" + filePort, Handler: sm}
+	server := &http.Server{Addr: ":" + sarcoServer.FilePort, Handler: sm}
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {

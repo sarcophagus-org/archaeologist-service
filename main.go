@@ -46,5 +46,5 @@ func main(){
 	log.Printf("Sarco Token Balance: %v", arch.SarcoBalance())
 	// log.Println("Arweave Balance:", arweave.ArweaveBalance())
 
-	// archaeologist.EventsSubscribe(config.ETH_NODE_WEBSOCKETS, config.FILE_PORT)
+	archaeologist.EventsSubscribe(arch)
 }
