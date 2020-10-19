@@ -41,6 +41,7 @@ func EventsSubscribe(arch *models.Archaeologist) {
 				event.AssetDoubleHash,
 				event.Embalmer,
 				arch.PrivateKey,
+				event.StorageFee,
 				big.NewInt(arch.FeePerByte),
 				arch.FilePort,
 			}

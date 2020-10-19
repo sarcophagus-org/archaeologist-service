@@ -26,6 +26,7 @@ type FileHandler struct {
 	AssetDoubleHash [32]byte
 	EmbalmerAddress common.Address
 	ArchPrivateKey *ecdsa.PrivateKey
+	StorageFee *big.Int
 	FeePerByte *big.Int
 	FilePort string
 }
@@ -68,7 +69,7 @@ func (fileHandler *FileHandler) canDecryptFile(file *os.File) bool {
 
 	_, decryptError := btcec.Decrypt(privKey, fileBytes)
 	if decryptError != nil {
-		log.Printf("Error decrypting file: %v", decryptError)
+		log.Printf("Error decrypting file with your private key. Error: %v", decryptError)
 		return false
 	}
 
@@ -92,8 +93,17 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 
 	log.Println("File received with header:", header)
 
+	/* Validate Size. */
 	if header.Size > (3 * MB) {
 		http.Error(w, "The file sent is larger than the limit of 3MB.", http.StatusBadRequest)
+		return
+	}
+
+	/* Validate Storage Fee is sufficient */
+	storageExpectation := new(big.Int).Mul(big.NewInt(header.Size), fileHandler.FeePerByte)
+	if storageExpectation.Cmp(fileHandler.StorageFee) == 1 {
+		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", storageExpectation, fileHandler.StorageFee)
+		http.Error(w, errMsg, http.StatusBadRequest)
 		return
 	}
 
@@ -104,7 +114,7 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	/* Save temp file and validate the file 2nd layer of file encryption can be decrypted */
+	/* Save temp file needed for decryption validation */
 	defer file.Close()
 	tmpFile, err := os.Create("tmp/file")
 	if err != nil {
@@ -120,8 +130,10 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 
 	osFile, err := os.Open("tmp/file")
 
+	/* Validate the 2nd layer of file encryption can be decrypted */
 	if !fileHandler.canDecryptFile(osFile) {
-		http.Error(w, "The file cannot be decrypted", http.StatusBadRequest)
+		http.Error(w, "The file cannot be decrypted by archaeologist. Confirm it was encrypted with the correct public key.", http.StatusBadRequest)
+		return
 	}
 
 	/*
