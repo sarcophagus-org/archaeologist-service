@@ -1,14 +1,16 @@
 package utility
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"log"
+	"net"
 	"regexp"
 	"strings"
-	"context"
+	"time"
 )
 
 func IsHex(str string) bool {
@@ -47,4 +49,31 @@ func PrivateToPublicKeyECDSA(privateKey *ecdsa.PrivateKey) *ecdsa.PublicKey {
 	}
 
 	return publicKey
+}
+
+func ValidatePositiveNumber(num int64, numField string) int64 {
+	if num <= 0 {
+		log.Fatalf("%s must be greater than 0. Please check the value in the config file", numField)
+	}
+
+	return num
+}
+
+func ValidateIpAddress(ip string, ipField string) string {
+	if net.ParseIP(ip) == nil {
+		log.Fatalf("%s IP Address is invalid. Please check the value in the config file", ipField)
+	}
+
+	return ip
+}
+
+func ValidateTimeInFuture(unixTimestamp int64, timeField string) int64 {
+	now := time.Now()
+	unixNow := now.Unix()
+
+	if unixTimestamp <= unixNow {
+		log.Fatalf("%s must be in the future. Please check the value in the config file", timeField)
+	}
+
+	return unixTimestamp
 }

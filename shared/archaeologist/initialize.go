@@ -13,6 +13,9 @@ import (
 )
 
 func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) {
+	// TODO: Program exits on first error. Update to track # of errors in config and output messages for all.
+	// TODO: Validations for Port and IP Address -- consider testing opening/closing port
+
 	var err error
 
 	arch.FreeBond = calculateFreeBond(config.ADD_TO_FREE_BOND, config.REMOVE_FROM_FREE_BOND)
@@ -28,11 +31,11 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.SarcoAddress = initSarcoAddress(config.CONTRACT_ADDRESS, arch.Client)
 	arch.SarcoSession = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
 	arch.TokenSession = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
-	arch.FeePerByte = config.FEE_PER_BYTE
-	arch.MinBounty = config.MIN_BOUNTY
-	arch.MinDiggingFee = config.MIN_DIGGING_FEE
-	arch.MaxResurectionTime = config.MAX_RESURRECTION_TIME
-	arch.Endpoint = config.ENDPOINT
+	arch.FeePerByte = utility.ValidatePositiveNumber(config.FEE_PER_BYTE, "FEE_PER_BYTE")
+	arch.MinBounty = utility.ValidatePositiveNumber(config.MIN_BOUNTY, "MIN_BOUNTY")
+	arch.MinDiggingFee = utility.ValidatePositiveNumber(config.MIN_DIGGING_FEE, "MIN_DIGGING_FEE")
+	arch.MaxResurectionTime = utility.ValidateTimeInFuture(config.MAX_RESURRECTION_TIME, "MAX_RESURRECTION_TIME")
+	arch.Endpoint = utility.ValidateIpAddress(config.ENDPOINT, "ENDPOINT")
 	arch.FilePort = config.FILE_PORT
 }
 
