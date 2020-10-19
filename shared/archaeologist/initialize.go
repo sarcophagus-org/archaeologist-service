@@ -80,7 +80,7 @@ func initArchAddress(paymentAddress string, publicKey *ecdsa.PublicKey, client *
 func initSarcoAddress(contractAddress string, client *ethclient.Client) common.Address {
 	address := common.HexToAddress(contractAddress)
 	if isContract := utility.IsContract(address, client); !isContract {
-		log.Fatal("Contract for config value CONTRACT_ADDRESS is not valid. Please check the value is correct.")
+		log.Fatal("Config value CONTRACT_ADDRESS is not a valid contract. Please check the value is correct.")
 	}
 
 	return address
