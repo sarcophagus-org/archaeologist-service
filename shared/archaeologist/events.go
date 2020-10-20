@@ -44,6 +44,8 @@ func EventsSubscribe(arch *models.Archaeologist) {
 				event.StorageFee,
 				big.NewInt(arch.FeePerByte),
 				arch.FilePort,
+				arch.ArweaveTransactor,
+				arch.ArweaveWallet,
 			}
 			fileHandler.HandleFileUpload()
 		}

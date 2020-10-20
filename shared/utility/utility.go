@@ -1,13 +1,16 @@
 package utility
 
 import (
+	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"io"
 	"log"
 	"net"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -76,4 +79,11 @@ func ValidateTimeInFuture(unixTimestamp int64, timeField string) int64 {
 	}
 
 	return unixTimestamp
+}
+
+func FileToBytes(file *os.File) ([]byte, error) {
+	buf := bytes.NewBuffer(nil)
+	_, err := io.Copy(buf, file)
+
+	return buf.Bytes(), err
 }

@@ -6,7 +6,10 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
+	"github.com/Dev43/arweave-go/transactor"
+	"github.com/Dev43/arweave-go/wallet"
 	"github.com/btcsuite/btcd/btcec"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"io"
@@ -29,6 +32,46 @@ type FileHandler struct {
 	StorageFee *big.Int
 	FeePerByte *big.Int
 	FilePort string
+	ArweaveTransactor *transactor.Transactor
+	ArweaveWallet *wallet.Wallet
+}
+
+func (fileHandler *FileHandler) uploadFileToArweave(file *os.File) {
+	// create a transaction
+
+	ar := fileHandler.ArweaveTransactor
+	w := fileHandler.ArweaveWallet
+	fileBytes, _ := utility.FileToBytes(file)
+
+	/*
+		Arweave Transaction:
+		Amount and Target are blank, as we aren't sending arweave tokens to anyone
+	 */
+
+	txBuilder, err := ar.CreateTransaction(context.TODO(), w, "0", fileBytes, "")
+	if err != nil {
+		log.
+	}
+
+	// sign the transaction
+	txn, err := txBuilder.Sign(w)
+	if err != nil {
+		//...
+	}
+
+	// send the transaction
+	resp, err := ar.SendTransaction(context.Background(), txn)
+	if err != nil {
+		//...
+	}
+
+	// wait for the transaction to get mined
+	finalTx, err := ar.WaitMined(context.Background(), txn)
+	if err != nil {
+		//...
+	}
+	// get the hash of the transaction
+	fmt.Println(finalTx.Hash())
 }
 
 func (fileHandler *FileHandler) embalmerSignatureValid(signedAssetDoubleHash string) bool {
@@ -56,13 +99,11 @@ func (fileHandler *FileHandler) embalmerSignatureValid(signedAssetDoubleHash str
 }
 
 func (fileHandler *FileHandler) canDecryptFile(file *os.File) bool {
-	buf := bytes.NewBuffer(nil)
-	if _, err := io.Copy(buf, file); err != nil {
+	fileBytes, err := utility.FileToBytes(file)
+	if err != nil {
 		log.Printf("Error copying file to buffer: %v", err)
 		return false
 	}
-
-	fileBytes := buf.Bytes()
 
 	privateKeyBytes := crypto.FromECDSA(fileHandler.ArchPrivateKey)
 	privKey, _ := btcec.PrivKeyFromBytes(btcec.S256(), privateKeyBytes)
