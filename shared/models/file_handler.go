@@ -116,7 +116,14 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 
 	/* Save temp file needed for decryption validation */
 	defer file.Close()
-	tmpFile, err := os.Create("tmp/file")
+	if _, err := os.Stat("tmp"); os.IsNotExist(err) {
+		if err := os.Mkdir("tmp", 0755); err != nil {
+			log.Fatalf("Failed to create tmp directory")
+		}
+	}
+
+	filePath := fmt.Sprintf("tmp/%s", header.Filename)
+	tmpFile, err := os.Create(filePath)
 	if err != nil {
 		http.Error(w, "Failed to open the file for writing.", http.StatusBadRequest)
 		return
@@ -128,7 +135,7 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	osFile, err := os.Open("tmp/file")
+	osFile, err := os.Open(filePath)
 
 	/* Validate the 2nd layer of file encryption can be decrypted */
 	if !fileHandler.canDecryptFile(osFile) {
@@ -140,8 +147,10 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 		Validations have passed.
 		TODO: Handle file upload to arweave
 	*/
-
 	fmt.Fprintf(w, "File %s was uploaded and validated successfully.", header.Filename)
+
+	os.Remove(filePath)
+	os.Remove("tmp")
 
 	/* TODO: Potentially Close Connection if there is an error? */
 	// We may not want to close it b/c user may re-try file upload

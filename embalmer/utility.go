@@ -18,7 +18,7 @@ import (
 /* Sarc init values. */
 /* For resurrection time, using: 1/11/2021 -- https://www.unixtimestamp.com/ */
 const resurrectionTime = 1610323200
-const storageFee = 2
+const storageFee = 140
 const diggingFee = 6
 const bounty = 6
 
