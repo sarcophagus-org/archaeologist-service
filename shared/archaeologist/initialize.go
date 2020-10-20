@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"github.com/Dev43/arweave-go/api"
+	"github.com/Dev43/arweave-go/transactor"
 	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
@@ -23,7 +23,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 
 	arch.FreeBond = calculateFreeBond(config.ADD_TO_FREE_BOND, config.REMOVE_FROM_FREE_BOND)
 	arch.Client = initEthClient(config.ETH_NODE)
-	arch.ArweaveClient = initArweaveClient(config.ARWEAVE_NODE)
+	arch.ArweaveTransactor = initArweaveTransactor(config.ARWEAVE_NODE)
 	arch.ArweaveWallet = initArweaveWallet(config.ARWEAVE_KEY_FILE)
 	arch.PrivateKey, err = utility.PrivateKeyHexToECDSA(config.ETH_PRIVATE_KEY)
 	if err != nil {
@@ -68,13 +68,14 @@ func initEthClient(ethNode string) *ethclient.Client {
 	return cli
 }
 
-func initArweaveClient(arweaveNode string) *api.Client {
-	cli, err := api.Dial(arweaveNode)
+func initArweaveTransactor(arweaveNode string) *transactor.Transactor {
+	ar, err := transactor.NewTransactor(arweaveNode)
+
 	if err != nil {
 		log.Fatal("Could not connect to arweave node. Error: %v\n", err)
 	}
 
-	return cli
+	return ar
 }
 
 func initArweaveWallet(arweaveKeyFileName string) *wallet.Wallet {

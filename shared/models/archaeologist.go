@@ -3,7 +3,7 @@ package models
 import (
 	"context"
 	"crypto/ecdsa"
-	"github.com/Dev43/arweave-go/api"
+	"github.com/Dev43/arweave-go/transactor"
 	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/ethereum/go-ethereum/common"
@@ -14,8 +14,8 @@ import (
 
 type Archaeologist struct {
 	Client             *ethclient.Client
-	ArweaveClient      *api.Client
 	ArweaveWallet      *wallet.Wallet
+	ArweaveTransactor  *transactor.Transactor
 	PrivateKey         *ecdsa.PrivateKey
 	PublicKey          *ecdsa.PublicKey
 	PublicKeyBytes     []byte
