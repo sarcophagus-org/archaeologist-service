@@ -1,12 +1,13 @@
 package models
 
 import (
-	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
+	"github.com/Dev43/arweave-go"
 	"github.com/Dev43/arweave-go/transactor"
+	"github.com/Dev43/arweave-go/tx"
 	"github.com/Dev43/arweave-go/wallet"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
@@ -36,7 +37,40 @@ type FileHandler struct {
 	ArweaveWallet *wallet.Wallet
 }
 
-func (fileHandler *FileHandler) uploadFileToArweave(file *os.File) {
+/*
+	Note: The CreateTransaction function exists in arweave/transactor
+	However, it uses tr.Client.TxAnchor to get the last Tx.
+	That does not work locally, but using tr.Client.LastTransaction does, so that's why this function exists below.
+
+	TODO: Test this works on live arweave blockchain (or testnet) when the time comes
+ */
+
+func (fileHandler *FileHandler) CreateTransaction(ctx context.Context, w arweave.WalletSigner, amount string, data []byte, target string) (*tx.Transaction, error) {
+	tr := fileHandler.ArweaveTransactor
+	lastTx, err := tr.Client.LastTransaction(ctx, w.Address())
+	if err != nil {
+		return nil, err
+	}
+
+	price, err := tr.Client.GetReward(ctx, []byte(data))
+	if err != nil {
+		return nil, err
+	}
+
+	// Non encoded transaction fields
+	tx := tx.NewTransaction(
+		lastTx,
+		w.PubKeyModulus(),
+		amount,
+		target,
+		data,
+		price,
+	)
+
+	return tx, nil
+}
+
+func (fileHandler *FileHandler) uploadFileToArweave(file *os.File) (*tx.Transaction, error){
 	// create a transaction
 
 	ar := fileHandler.ArweaveTransactor
@@ -48,30 +82,37 @@ func (fileHandler *FileHandler) uploadFileToArweave(file *os.File) {
 		Amount and Target are blank, as we aren't sending arweave tokens to anyone
 	 */
 
-	txBuilder, err := ar.CreateTransaction(context.TODO(), w, "0", fileBytes, "")
+	txBuilder, err := fileHandler.CreateTransaction(context.TODO(), w, "0", fileBytes, "")
 	if err != nil {
-		log.
+		log.Printf("Error creating transaction: %v", err)
+		return &tx.Transaction{}, err
 	}
 
 	// sign the transaction
 	txn, err := txBuilder.Sign(w)
 	if err != nil {
-		//...
+		log.Printf("Error signing transaction: %v", err)
+		return &tx.Transaction{}, err
 	}
 
 	// send the transaction
-	resp, err := ar.SendTransaction(context.Background(), txn)
+	resp, err := ar.SendTransaction(context.TODO(), txn)
+
 	if err != nil {
-		//...
+		log.Printf("Error sending transaction: %v", err)
+		return &tx.Transaction{}, err
 	}
 
+	log.Printf("Arweave Transaction Sent: %v", resp)
+
 	// wait for the transaction to get mined
-	finalTx, err := ar.WaitMined(context.Background(), txn)
+	finalTx, err := ar.WaitMined(context.TODO(), txn)
 	if err != nil {
-		//...
+		log.Printf("Error with transaction getting mined: %v", err)
+		return &tx.Transaction{}, err
 	}
-	// get the hash of the transaction
-	fmt.Println(finalTx.Hash())
+
+	return finalTx, nil
 }
 
 func (fileHandler *FileHandler) embalmerSignatureValid(signedAssetDoubleHash string) bool {
@@ -159,20 +200,22 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	defer file.Close()
 	if _, err := os.Stat("tmp"); os.IsNotExist(err) {
 		if err := os.Mkdir("tmp", 0755); err != nil {
-			log.Fatalf("Failed to create tmp directory")
+			log.Fatalf("Failed to create tmp directory for file.")
 		}
 	}
 
 	filePath := fmt.Sprintf("tmp/%s", header.Filename)
 	tmpFile, err := os.Create(filePath)
 	if err != nil {
-		http.Error(w, "Failed to open the file for writing.", http.StatusBadRequest)
+		log.Println("Failed to open the file for writing.")
+		http.Error(w, "The archaeologist had an issue receiving the file. Please try again.", http.StatusBadRequest)
 		return
 	}
 	defer tmpFile.Close()
 	_, err = io.Copy(tmpFile, file)
 	if err != nil {
-		http.Error(w, "Failed to copy the file to disk.", http.StatusBadRequest)
+		log.Println("Failed to copy the file to disk.")
+		http.Error(w, "The archaeologist had an issue receiving the file. Please try again.", http.StatusBadRequest)
 		return
 	}
 
@@ -184,12 +227,16 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	/*
-		Validations have passed.
-		TODO: Handle file upload to arweave
-	*/
-	fmt.Fprintf(w, "File %s was uploaded and validated successfully.", header.Filename)
+	log.Printf("File %s was uploaded and validated successfully:", header.Filename)
 
+	arweaveTx, err := fileHandler.uploadFileToArweave(osFile)
+	if err != nil {
+		log.Println("Arweave Transaction Failed")
+	}
+
+	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
+
+	/* Cleanup local file */
 	os.Remove(filePath)
 	os.Remove("tmp")
 
@@ -206,6 +253,8 @@ func (fileHandler *FileHandler) HandleFileUpload() {
 	sm.Handle("/file", http.HandlerFunc(fileHandler.fileUploadHandler))
 
 	server := &http.Server{Addr: ":" + fileHandler.FilePort, Handler: sm}
+
+	log.Printf("Listening for file on port %s:", fileHandler.FilePort)
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {

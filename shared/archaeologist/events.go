@@ -47,6 +47,7 @@ func EventsSubscribe(arch *models.Archaeologist) {
 				arch.ArweaveTransactor,
 				arch.ArweaveWallet,
 			}
+
 			fileHandler.HandleFileUpload()
 		}
 	}
