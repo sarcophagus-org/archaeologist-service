@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/embalmer"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/spf13/viper"
 	"log"
 )
@@ -31,6 +32,8 @@ func loadEmbalmerConfig() *embalmer.EmbalmerConfig {
 
 func main(){
 	config := loadEmbalmerConfig()
+	embalmer := new(embalmer.Embalmer)
+	embalmer.InitEmbalmer(embalmer, config)
 	embalmer.InitEthClient(config.ETH_NODE)
 	embalmer.InitKeys(config.ARCH_PRIVATE_KEY, config.EMBALMER_PRIVATE_KEY)
 	embalmer.InitSarcophagusContract(config.CONTRACT_ADDRESS)

@@ -5,6 +5,8 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -15,23 +17,35 @@ import (
 	"strings"
 )
 
-/* Sarc init values. */
-/* For resurrection time, using: 1/11/2021 -- https://www.unixtimestamp.com/ */
-const resurrectionTime = 1610323200
-const storageFee = 140
-const diggingFee = 6
-const bounty = 6
+type Embalmer struct {
+	Client *ethclient.Client
+	ArchPublicKeyBytes []byte
+	EmbalmerPrivateKey *ecdsa.PrivateKey
+	EmbalmerAddress common.Address
+	SarcoAddress common.Address
+	SarcophagusContract *contracts.Sarcophagus
+	SarcophagusTokenContract *contracts.Token
+	ResurrectionTime int64
+	StorageFee int64
+	DiggingFee int64
+	Bounty int64
+}
 
-var client *ethclient.Client
-var archPublicKeyBytes []byte
-var embalmerPrivateKey *ecdsa.PrivateKey
-var embalmerAddress common.Address
-var sarcoAddress common.Address
-var sarcophagusContract *contracts.Sarcophagus
-var sarcophagusTokenContract *contracts.Token
+func InitEmbalmer(embalmer *Embalmer, config *models.Config) {
+	embalmer.Client = ethereum.InitEthClient(config.ETH_NODE)
+	embalmer.EmbalmerPrivateKey, _ = utility.PrivateKeyHexToECDSA(config.EMBALMER_PRIVATE_KEY)
+	archPrivateKey, _ := utility.PrivateKeyHexToECDSA(config.ARCH_PRIVATE_KEY)
+	publicKey := utility.PrivateToPublicKeyECDSA(archPrivateKey)
+	embalmer.ArchPublicKeyBytes = crypto.FromECDSAPub(publicKey)[1:]
+	embalmerPubKey := embalmer.EmbalmerPrivateKey.Public().(*ecdsa.PublicKey)
+	embalmer.EmbalmerAddress = crypto.PubkeyToAddress(*embalmerPubKey)
+	embalmer.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, embalmer.Client)
+	embalmer.SarcophagusContract, _ = contracts.NewSarcophagus(embalmer.SarcoAddress, embalmer.Client)
+	embalmer.SarcophagusTokenContract, _ = contracts.NewToken(conif, client)
+}
 
-func initAuth() *bind.TransactOpts {
-	auth := bind.NewKeyedTransactor(embalmerPrivateKey)
+func (embalmer *Embalmer)  initAuth() *bind.TransactOpts {
+	auth := bind.NewKeyedTransactor(embalmer.EmbalmerPrivateKey)
 	auth.Nonce = nil // uses nonce of pending state
 	auth.Value = big.NewInt(0)
 	auth.GasLimit = 0   // 0 estimates gas limit
@@ -40,11 +54,11 @@ func initAuth() *bind.TransactOpts {
 	return auth
 }
 
-func NewSarcophagusSession(ctx context.Context) (session contracts.SarcophagusSession) {
-	auth := initAuth()
+func (embalmer *Embalmer) NewSarcophagusSession(ctx context.Context) (session contracts.SarcophagusSession) {
+	auth := embalmer.initAuth()
 
 	return contracts.SarcophagusSession{
-		Contract:     sarcophagusContract,
+		Contract:     embalmer.SarcophagusContract,
 		TransactOpts: *auth,
 		CallOpts: bind.CallOpts{
 			From:    auth.From,
@@ -53,11 +67,11 @@ func NewSarcophagusSession(ctx context.Context) (session contracts.SarcophagusSe
 	}
 }
 
-func NewSarcophagusTokenSession(ctx context.Context) (session contracts.TokenSession) {
-	auth := initAuth()
+func (embalmer *Embalmer) NewSarcophagusTokenSession(ctx context.Context) (session contracts.TokenSession) {
+	auth := embalmer.initAuth()
 
 	return contracts.TokenSession{
-		Contract:     sarcophagusTokenContract,
+		Contract:     embalmer.SarcophagusTokenContract,
 		TransactOpts: *auth,
 		CallOpts: bind.CallOpts{
 			From:    auth.From,
@@ -66,29 +80,8 @@ func NewSarcophagusTokenSession(ctx context.Context) (session contracts.TokenSes
 	}
 }
 
-func InitSarcophagusContract(contractAddress string) {
-	address := common.HexToAddress(contractAddress)
-	sarcoContract, err := contracts.NewSarcophagus(address, client)
-	sarcoAddress = address
-	if err != nil {
-		log.Fatalf("Failed to instantiate Sarcophagus contract: %v", err)
-	}
-
-	sarcophagusContract = sarcoContract
-}
-
-func InitSarcophagusTokenContract(tokenAddress string) {
-	address := common.HexToAddress(tokenAddress)
-	tokenContract, err := contracts.NewToken(address, client)
-	if err != nil {
-		log.Fatalf("Failed to instantiate Sarcophagus Token contract: %v", err)
-	}
-
-	sarcophagusTokenContract = tokenContract
-}
-
-func EmbalmerSarcoBalance() *big.Int {
-	balance, err := sarcophagusTokenContract.BalanceOf(&bind.CallOpts{}, embalmerAddress)
+func (embalmer *Embalmer) EmbalmerSarcoBalance() *big.Int {
+	balance, err := embalmer.SarcophagusTokenContract.BalanceOf(&bind.CallOpts{}, embalmer.EmbalmerAddress)
 
 	if err != nil {
 		log.Fatalf("Could not get sarcophagus balance. Please check your config PRIVATE_KEY value is correct.")
@@ -97,42 +90,13 @@ func EmbalmerSarcoBalance() *big.Int {
 	return balance
 }
 
-func InitEthClient(ethNode string) {
-	cli, err := ethclient.Dial(ethNode)
-	if err != nil {
-		log.Fatalf("could not connect to Ethereum node. Please check the ETH_NODE value in the config file. Error: %v\n", err)
-	}
-
-	client = cli
-}
-
 func isHex(str string) bool {
 	return strings.HasPrefix(str, "0x")
 }
 
-func InitKeys(archPrivateKey string, embalmerPrivKey string) {
-	if utility.IsHex(archPrivateKey) {
-		archPrivateKey = archPrivateKey[2:]
-	}
-	if utility.IsHex(embalmerPrivKey) {
-		embalmerPrivKey = embalmerPrivKey[2:]
-	}
-	ethPrivKey, err := crypto.HexToECDSA(archPrivateKey)
-	if err != nil {
-		log.Fatalf("could not load eth private key.  Please check the ETH_NODE value in the config file. Error: %v\n", err)
-	}
-	pub := ethPrivKey.Public()
-	publicKey, _ := pub.(*ecdsa.PublicKey)
-	archPublicKeyBytes = crypto.FromECDSAPub(publicKey)[1:]
-
-	embalmerPrivateKey, _ = crypto.HexToECDSA(embalmerPrivKey)
-	embalmerPubKey := embalmerPrivateKey.Public().(*ecdsa.PublicKey)
-	embalmerAddress = crypto.PubkeyToAddress(*embalmerPubKey)
-}
-
-func approveCreateSarcophagusTransfer(session *contracts.TokenSession, approvalAmount *big.Int) {
+func (embalmer *Embalmer) approveCreateSarcophagusTransfer(session *contracts.TokenSession, approvalAmount *big.Int) {
 	tx, err := session.Approve(
-		sarcoAddress,
+		embalmer.SarcoAddress,
 		approvalAmount,
 	)
 
@@ -144,7 +108,7 @@ func approveCreateSarcophagusTransfer(session *contracts.TokenSession, approvalA
 	log.Printf("Gas Used for Approval: %v", tx.Gas())
 }
 
-func CreateSarcophagus(recipientPrivateKey string) {
+func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string) {
 	/* Initialize recipient public key bytes */
 	if utility.IsHex(recipientPrivateKey) {
 		recipientPrivateKey = recipientPrivateKey[2:]
@@ -162,7 +126,7 @@ func CreateSarcophagus(recipientPrivateKey string) {
 	assetDoubleHash := crypto.Keccak256(assetSingleHash)
 
 	/* Sign asset double hash */
-	signedAssetDoubleHash, err := crypto.Sign(assetDoubleHash, embalmerPrivateKey)
+	signedAssetDoubleHash, err := crypto.Sign(assetDoubleHash, embalmer.EmbalmerPrivateKey)
 	if err != nil {
 		log.Fatalf("error signing asset double hash: %v", err)
 	}
