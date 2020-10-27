@@ -18,6 +18,10 @@ docker run --rm --publish 8000:8000 rootmos/loom
 ```
 
 ##### Create Arweave Key
+Install arweave-deploy
+https://docs.arweave.org/developers/tools/arweave-deploy
+
+Generate arweave key:
 ```
 arweave key-create your-arweave-key.json
 ```
@@ -36,7 +40,7 @@ See https://github.com/rootmos/loom for more information
 ### Redeploy Contract
 If the Sarcophagus contract gets updated, you need to re-compile the contract for the service to use.
 
-__TODO: Work on automating the process below using go generage: https://geth.ethereum.org/docs/dapp/native-bindings
+__TODO: Work on automating the process below using go generate: https://geth.ethereum.org/docs/dapp/native-bindings
 .__
 
 Install ethereum and solidity. Below are instructions for homebrew. See this link for other methods:
@@ -79,3 +83,10 @@ If you have any issues with the compiled go code, you may need to download an ol
 https://geth.ethereum.org/downloads/
 
 The latest tested version working with the service is Geth & Tools 1.9.22
+
+### Sending a file
+If you want to test sending a file locally (the Sarcophagus payload) after creating a sarcophagus: 
+
+```
+curl -v -X POST -F file=@<your file> -F "signedAssetDoubleHash=<your double hash>" http://127.0.0.1:<your port>/file
+```

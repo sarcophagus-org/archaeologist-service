@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
-	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
+	// "github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/archaeologist"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/spf13/viper"
 	"log"
@@ -36,21 +36,15 @@ func loadConfig() *models.Config {
 	return &config
 }
 
-func validateConfig(config *models.Config){
-	ethereum.SetFreeBond(config.ADD_TO_FREE_BOND, config.REMOVE_FROM_FREE_BOND)
-	ethereum.InitEthClient(config.ETH_NODE)
-	ethereum.InitEthKeysAndAddress(config.ETH_PRIVATE_KEY, config.PAYMENT_ADDRESS)
-	ethereum.InitSarcophagusContract(config.CONTRACT_ADDRESS)
-	ethereum.InitSarcophagusTokenContract(config.TOKEN_ADDRESS)
-	arweave.InitArweaveVars(config)
-}
-
 func main(){
 	config := loadConfig()
-	validateConfig(config)
-	ethereum.RegisterOrUpdateArchaeologist(config)
+	arch := new(models.Archaeologist)
+	archaeologist.InitializeArchaeologist(arch, config)
+	archaeologist.RegisterOrUpdateArchaeologist(arch)
 
-	log.Printf("Eth Balance: %v", ethereum.ArchEthBalance())
-	log.Printf("Sarco Token Balance: %v", ethereum.ArchSarcoBalance())
-	log.Println("Arweave Balance:", arweave.ArweaveBalance())
+	log.Printf("Eth Balance: %v", arch.EthBalance())
+	log.Printf("Sarco Token Balance: %v", arch.SarcoBalance())
+	// log.Println("Arweave Balance:", arweave.ArweaveBalance())
+
+	archaeologist.EventsSubscribe(arch)
 }
