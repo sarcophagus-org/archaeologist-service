@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/embalmer"
-	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/spf13/viper"
 	"log"
 )
@@ -32,12 +31,8 @@ func loadEmbalmerConfig() *embalmer.EmbalmerConfig {
 
 func main(){
 	config := loadEmbalmerConfig()
-	embalmer := new(embalmer.Embalmer)
-	embalmer.InitEmbalmer(embalmer, config)
-	embalmer.InitEthClient(config.ETH_NODE)
-	embalmer.InitKeys(config.ARCH_PRIVATE_KEY, config.EMBALMER_PRIVATE_KEY)
-	embalmer.InitSarcophagusContract(config.CONTRACT_ADDRESS)
-	embalmer.InitSarcophagusTokenContract(config.TOKEN_ADDRESS)
+	emb := new(embalmer.Embalmer)
+	embalmer.InitEmbalmer(emb, config)
 
 	// We may not need this flag. Setting up in case we need more control on what to call.
 	sarcoFlag := flag.String("type", "create", "Create or Update a Sarcophagus")
@@ -45,7 +40,7 @@ func main(){
 	flag.Parse()
 
 	if *sarcoFlag == "create" {
-		embalmer.CreateSarcophagus(config.RECIPIENT_PRIVATE_KEY)
-		log.Println("Embalmer Sarco Balance:", embalmer.EmbalmerSarcoBalance())
+		emb.CreateSarcophagus(config.RECIPIENT_PRIVATE_KEY)
+		log.Println("Embalmer Sarco Balance:", emb.EmbalmerSarcoBalance())
 	}
 }

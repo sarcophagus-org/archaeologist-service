@@ -5,8 +5,6 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
-	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
-	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -29,19 +27,6 @@ type Embalmer struct {
 	StorageFee int64
 	DiggingFee int64
 	Bounty int64
-}
-
-func InitEmbalmer(embalmer *Embalmer, config *models.Config) {
-	embalmer.Client = ethereum.InitEthClient(config.ETH_NODE)
-	embalmer.EmbalmerPrivateKey, _ = utility.PrivateKeyHexToECDSA(config.EMBALMER_PRIVATE_KEY)
-	archPrivateKey, _ := utility.PrivateKeyHexToECDSA(config.ARCH_PRIVATE_KEY)
-	publicKey := utility.PrivateToPublicKeyECDSA(archPrivateKey)
-	embalmer.ArchPublicKeyBytes = crypto.FromECDSAPub(publicKey)[1:]
-	embalmerPubKey := embalmer.EmbalmerPrivateKey.Public().(*ecdsa.PublicKey)
-	embalmer.EmbalmerAddress = crypto.PubkeyToAddress(*embalmerPubKey)
-	embalmer.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, embalmer.Client)
-	embalmer.SarcophagusContract, _ = contracts.NewSarcophagus(embalmer.SarcoAddress, embalmer.Client)
-	embalmer.SarcophagusTokenContract, _ = contracts.NewToken(conif, client)
 }
 
 func (embalmer *Embalmer)  initAuth() *bind.TransactOpts {
@@ -141,18 +126,18 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string) {
 	log.Println("***CREATING SARCOPHAGUS***")
 	log.Println("Signed Asset Double Hash:", signedAssetDoubleHashString)
 
-	sarcoTokenSession := NewSarcophagusTokenSession(context.Background())
-	approvalAmount := new(big.Int).Add(new(big.Int).Add(big.NewInt(bounty), big.NewInt(diggingFee)), big.NewInt(storageFee))
-	approveCreateSarcophagusTransfer(&sarcoTokenSession, approvalAmount)
+	sarcoTokenSession := embalmer.NewSarcophagusTokenSession(context.Background())
+	approvalAmount := new(big.Int).Add(new(big.Int).Add(big.NewInt(embalmer.Bounty), big.NewInt(embalmer.DiggingFee)), big.NewInt(embalmer.StorageFee))
+	embalmer.approveCreateSarcophagusTransfer(&sarcoTokenSession, approvalAmount)
 
-	sarcoSession := NewSarcophagusSession(context.Background())
+	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
 	tx, err := sarcoSession.CreateSarcophagus(
 		"My Sarcophagus",
-		archPublicKeyBytes,
-		big.NewInt(resurrectionTime),
-		big.NewInt(storageFee),
-		big.NewInt(diggingFee),
-		big.NewInt(bounty),
+		embalmer.ArchPublicKeyBytes,
+		big.NewInt(embalmer.ResurrectionTime),
+		big.NewInt(embalmer.StorageFee),
+		big.NewInt(embalmer.DiggingFee),
+		big.NewInt(embalmer.Bounty),
 		assetDoubleHashBytes,
 		recipientPublicKeyBytes,
 	)
