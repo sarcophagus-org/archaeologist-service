@@ -1,16 +1,14 @@
 package main
 
 import (
-	"bytes"
 	"crypto/ecdsa"
 	"github.com/btcsuite/btcd/btcec"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/spf13/viper"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
-	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 )
 
 const fileToEncrypt = "/tmp/test.txt"
@@ -73,12 +71,7 @@ func main() {
 	file, err := os.Open(fileToEncrypt)
 	check(err)
 
-	buf := bytes.NewBuffer(nil)
-	if _, err := io.Copy(buf, file); err != nil {
-		log.Fatalf("Issue copying file to buffer")
-	}
-
-	fileBytes := buf.Bytes()
+	fileBytes, _ := utility.FileToBytes(file)
 
 	encryptedBytes, err := btcec.Encrypt(archPublicKey(), fileBytes)
 

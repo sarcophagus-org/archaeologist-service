@@ -3,9 +3,13 @@ package main
 import (
 	"flag"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/embalmer"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/spf13/viper"
 	"log"
+	"os"
 )
+
+const fileToDoubleHash = "/tmp/test.txt"
 
 func loadEmbalmerConfig() *embalmer.EmbalmerConfig {
 	viper.SetConfigName("embalmer_config")
@@ -33,6 +37,12 @@ func main(){
 	config := loadEmbalmerConfig()
 	emb := new(embalmer.Embalmer)
 	embalmer.InitEmbalmer(emb, config)
+	file, err := os.Open(fileToDoubleHash)
+	if err != nil {
+		log.Fatalf("Couldnt open file to double hash")
+	}
+
+	fileBytes, _ := utility.FileToBytes(file)
 
 	// We may not need this flag. Setting up in case we need more control on what to call.
 	sarcoFlag := flag.String("type", "create", "Create or Update a Sarcophagus")
@@ -40,7 +50,7 @@ func main(){
 	flag.Parse()
 
 	if *sarcoFlag == "create" {
-		emb.CreateSarcophagus(config.RECIPIENT_PRIVATE_KEY)
+		emb.CreateSarcophagus(config.RECIPIENT_PRIVATE_KEY, fileBytes)
 		log.Println("Embalmer Sarco Balance:", emb.EmbalmerSarcoBalance())
 	}
 }

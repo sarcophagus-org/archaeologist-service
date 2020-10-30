@@ -1,19 +1,18 @@
 package models
 
 import (
+	"bytes"
 	"context"
 	"crypto/ecdsa"
-	"encoding/hex"
 	"fmt"
 	"github.com/Dev43/arweave-go"
 	"github.com/Dev43/arweave-go/transactor"
 	"github.com/Dev43/arweave-go/tx"
 	"github.com/Dev43/arweave-go/wallet"
-	"github.com/btcsuite/btcd/btcec"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"io"
+	"io/ioutil"
 	"log"
 	"math/big"
 	"net/http"
@@ -115,47 +114,14 @@ func (fileHandler *FileHandler) uploadFileToArweave(file *os.File) (*tx.Transact
 	return finalTx, nil
 }
 
-func (fileHandler *FileHandler) embalmerSignatureValid(signedAssetDoubleHash string) bool {
-	signedAssetDoubleHashBytes, err := hex.DecodeString(signedAssetDoubleHash)
-	if err != nil {
-		log.Printf("Could not decode signature: %v", err)
+func (fileHandler *FileHandler) doubleHashesMatch(fileBytes []byte) bool {
+	assetSingleHash := crypto.Keccak256(fileBytes)
+	assetDoubleHash := crypto.Keccak256(assetSingleHash)
+
+	compareVal := bytes.Compare(assetDoubleHash, fileHandler.AssetDoubleHash[:])
+	if compareVal != 0 {
 		return false
 	}
-
-	hopefullyEmbalmerPubKey, err := crypto.SigToPub(fileHandler.AssetDoubleHash[:], signedAssetDoubleHashBytes)
-	if err != nil {
-		log.Printf("Could not derive embalmers public key from hash and signature: %v", err)
-		return false
-	}
-
-	hopefullyEmbalmerAddress := crypto.PubkeyToAddress(*hopefullyEmbalmerPubKey)
-	if hopefullyEmbalmerAddress != fileHandler.EmbalmerAddress {
-		log.Printf("Address derived from the provided signature does not match the address of embalmer that created the Sarcophagus")
-		return false
-	}
-
-	log.Printf("embalmers signature is valid!")
-
-	return true
-}
-
-func (fileHandler *FileHandler) canDecryptFile(file *os.File) bool {
-	fileBytes, err := utility.FileToBytes(file)
-	if err != nil {
-		log.Printf("Error copying file to buffer: %v", err)
-		return false
-	}
-
-	privateKeyBytes := crypto.FromECDSA(fileHandler.ArchPrivateKey)
-	privKey, _ := btcec.PrivKeyFromBytes(btcec.S256(), privateKeyBytes)
-
-	_, decryptError := btcec.Decrypt(privKey, fileBytes)
-	if decryptError != nil {
-		log.Printf("Error decrypting file with your private key. Error: %v", decryptError)
-		return false
-	}
-
-	log.Printf("file decrypted successfully!")
 
 	return true
 }
@@ -167,7 +133,6 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	}
 
 	file, header, err := r.FormFile("file")
-
 	if err != nil {
 		http.Error(w, "There was an error receiving your file:" + err.Error(), http.StatusBadRequest)
 		return
@@ -175,70 +140,56 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 
 	log.Println("File received with header:", header)
 
+	fileBytes, _ := ioutil.ReadAll(file)
+	fileByteLen := len(fileBytes)
+
 	/* Validate Size. */
-	if header.Size > (3 * MB) {
+	if fileByteLen > (3 * MB) {
 		http.Error(w, "The file sent is larger than the limit of 3MB.", http.StatusBadRequest)
 		return
 	}
 
 	/* Validate Storage Fee is sufficient */
-	storageExpectation := new(big.Int).Mul(big.NewInt(header.Size), fileHandler.FeePerByte)
+	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), fileHandler.FeePerByte)
 	if storageExpectation.Cmp(fileHandler.StorageFee) == 1 {
 		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", storageExpectation, fileHandler.StorageFee)
 		http.Error(w, errMsg, http.StatusBadRequest)
 		return
 	}
 
-	/* Validate embalmers signature */
-	signedAssetDoubleHash := r.Form.Get("signedAssetDoubleHash")
-	if !fileHandler.embalmerSignatureValid(signedAssetDoubleHash) {
-		http.Error(w, "The signature from the embalmer could not be verified.", http.StatusBadRequest)
-		return
-	}
-
 	/* Save temp file needed for decryption validation */
 	defer file.Close()
-	if _, err := os.Stat("tmp"); os.IsNotExist(err) {
-		if err := os.Mkdir("tmp", 0755); err != nil {
-			log.Fatalf("Failed to create tmp directory for file.")
-		}
-	}
 
-	filePath := fmt.Sprintf("tmp/%s", header.Filename)
-	tmpFile, err := os.Create(filePath)
+	/* Decrypt the outer layer of file */
+	decryptedFileBytes, err := utility.DecryptFile(fileBytes, fileHandler.ArchPrivateKey)
 	if err != nil {
-		log.Println("Failed to open the file for writing.")
-		http.Error(w, "The archaeologist had an issue receiving the file. Please try again.", http.StatusBadRequest)
-		return
-	}
-	defer tmpFile.Close()
-	_, err = io.Copy(tmpFile, file)
-	if err != nil {
-		log.Println("Failed to copy the file to disk.")
-		http.Error(w, "The archaeologist had an issue receiving the file. Please try again.", http.StatusBadRequest)
-		return
-	}
-
-	osFile, err := os.Open(filePath)
-
-	/* Validate the 2nd layer of file encryption can be decrypted */
-	if !fileHandler.canDecryptFile(osFile) {
 		http.Error(w, "The file cannot be decrypted by archaeologist. Confirm it was encrypted with the correct public key.", http.StatusBadRequest)
 		return
 	}
 
-	log.Printf("File %s was uploaded and validated successfully:", header.Filename)
+	/* Validate the inner layer double hash matches double hash */
+	if !fileHandler.doubleHashesMatch(decryptedFileBytes) {
+		http.Error(w, "The double hash of the file does not match the asset double hash provided.", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("File %s was validated successfully:", header.Filename)
+
+	osFile, err := os.Open(header.Filename)
+	if err != nil {
+		log.Printf("File could not be opened: %v", err)
+		http.Error(w, "The file could not be opened by the archaeologist.", http.StatusBadRequest)
+		return
+	}
 
 	arweaveTx, err := fileHandler.uploadFileToArweave(osFile)
 	if err != nil {
-		log.Println("Arweave Transaction Failed")
+		log.Printf("Arweave Transaction Failed: %v", err)
+		http.Error(w, "There was an error with the file. Please try again.", http.StatusBadRequest)
+		return
 	}
 
 	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
-
-	/* Cleanup local file */
-	os.Remove(filePath)
-	os.Remove("tmp")
 
 	/* TODO: Potentially Close Connection if there is an error? */
 	// We may not want to close it b/c user may re-try file upload

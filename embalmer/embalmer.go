@@ -3,7 +3,6 @@ package embalmer
 import (
 	"context"
 	"crypto/ecdsa"
-	"encoding/hex"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -12,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"log"
 	"math/big"
-	"strings"
 )
 
 type Embalmer struct {
@@ -75,10 +73,6 @@ func (embalmer *Embalmer) EmbalmerSarcoBalance() *big.Int {
 	return balance
 }
 
-func isHex(str string) bool {
-	return strings.HasPrefix(str, "0x")
-}
-
 func (embalmer *Embalmer) approveCreateSarcophagusTransfer(session *contracts.TokenSession, approvalAmount *big.Int) {
 	tx, err := session.Approve(
 		embalmer.SarcoAddress,
@@ -93,7 +87,7 @@ func (embalmer *Embalmer) approveCreateSarcophagusTransfer(session *contracts.To
 	log.Printf("Gas Used for Approval: %v", tx.Gas())
 }
 
-func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string) {
+func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, fileBytes []byte) {
 	/* Initialize recipient public key bytes */
 	if utility.IsHex(recipientPrivateKey) {
 		recipientPrivateKey = recipientPrivateKey[2:]
@@ -102,29 +96,14 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string) {
 	pub := recipPrivKey.Public().(*ecdsa.PublicKey)
 	recipientPublicKeyBytes := crypto.FromECDSAPub(pub)[1:]
 
-	/* Setup Asset Double Hash */
-	/* Arbitrary initial value for sake of testing */
-	/* Note: We may need to use solsha3 library to make these hashes, undetermined yet */
-	/* https://github.com/miguelmota/go-solidity-sha3 */
-
-	assetSingleHash := crypto.Keccak256([]byte{1, 2, 3, 4})
+	assetSingleHash := crypto.Keccak256(fileBytes)
 	assetDoubleHash := crypto.Keccak256(assetSingleHash)
-
-	/* Sign asset double hash */
-	signedAssetDoubleHash, err := crypto.Sign(assetDoubleHash, embalmer.EmbalmerPrivateKey)
-	if err != nil {
-		log.Fatalf("error signing asset double hash: %v", err)
-	}
 
 	/* Convert Double Hash to 32 byte array */
 	var assetDoubleHashBytes [32]byte
 	copy(assetDoubleHashBytes[:], assetDoubleHash)
 
-	/* String for purposes of passing in as form param to arch http server */
-	signedAssetDoubleHashString := hex.EncodeToString(signedAssetDoubleHash)
-
 	log.Println("***CREATING SARCOPHAGUS***")
-	log.Println("Signed Asset Double Hash:", signedAssetDoubleHashString)
 
 	sarcoTokenSession := embalmer.NewSarcophagusTokenSession(context.Background())
 	approvalAmount := new(big.Int).Add(new(big.Int).Add(big.NewInt(embalmer.Bounty), big.NewInt(embalmer.DiggingFee)), big.NewInt(embalmer.StorageFee))
