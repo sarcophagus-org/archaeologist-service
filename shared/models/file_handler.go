@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/ecdsa"
+	"encoding/json"
 	"fmt"
 	"github.com/Dev43/arweave-go"
 	"github.com/Dev43/arweave-go/transactor"
@@ -12,7 +13,6 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/miguelmota/go-ethereum-hdwallet"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -191,6 +191,19 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	}
 
 	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
+
+	signature, err := crypto.Sign(hash.Bytes(), privateKey)
+
+	w.Header().Set("Content-Type", "application/json")
+	response := ResponseToEmbalmer {
+		SignedArweaveTxId: arweaveTx.Hash(),
+		AssetDoubleHash: fileHandler.AssetDoubleHash,
+		sigV: '',
+		sigR: '',
+		sigS: ''
+	}
+
+	json.NewEncoder(w).Encode(response)
 
 	/* TODO: Potentially Close Connection if there is an error? */
 	// We may not want to close it b/c user may re-try file upload
