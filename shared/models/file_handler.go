@@ -12,6 +12,7 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/miguelmota/go-ethereum-hdwallet"
 	"io/ioutil"
 	"log"
 	"math/big"
