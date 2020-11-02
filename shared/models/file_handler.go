@@ -15,7 +15,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"io"
-	"io/ioutil"
 	"log"
 	"math/big"
 	"net/http"
@@ -72,12 +71,11 @@ func (fileHandler *FileHandler) CreateTransaction(ctx context.Context, w arweave
 	return tx, nil
 }
 
-func (fileHandler *FileHandler) uploadFileToArweave(file *os.File) (*tx.Transaction, error){
+func (fileHandler *FileHandler) uploadFileToArweave(fileBytes []byte) (*tx.Transaction, error){
 	// create a transaction
 
 	ar := fileHandler.ArweaveTransactor
 	w := fileHandler.ArweaveWallet
-	fileBytes, _ := utility.FileToBytes(file)
 	log.Println("FILE BYTES 2:", fileBytes)
 	/*
 		Arweave Transaction:
@@ -141,9 +139,35 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 		return
 	}
 
+	defer file.Close()
+
+	/* TODO: Determine if we need to save file locally before uploading */
+	/* Use fileBytes, _ := ioutil.ReadAll(file) */
+
+	if _, err := os.Stat("tmp"); os.IsNotExist(err) {
+		if err := os.Mkdir("tmp", 0755); err != nil {
+			log.Fatalf("Failed to create tmp directory")
+		}
+	}
+
+	filePath := fmt.Sprintf("tmp/%s", header.Filename)
+	tmpFile, err := os.Create(filePath)
+	if err != nil {
+		http.Error(w, "Failed to open the file for writing.", http.StatusBadRequest)
+		return
+	}
+	defer tmpFile.Close()
+	_, err = io.Copy(tmpFile, file)
+	if err != nil {
+		http.Error(w, "Failed to copy the file to disk.", http.StatusBadRequest)
+		return
+	}
+
+	osFile, err := os.Open(filePath)
+
 	log.Println("File received with header:", header)
 
-	fileBytes, _ := ioutil.ReadAll(file)
+	fileBytes, _ := utility.FileToBytes(osFile)
 	fileByteLen := len(fileBytes)
 
 	/* Validate Size. */
@@ -160,12 +184,10 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	/* Save temp file needed for decryption validation */
-	defer file.Close()
-
 	/* Decrypt the outer layer of file */
 	decryptedFileBytes, err := utility.DecryptFile(fileBytes, fileHandler.ArchPrivateKey)
 	if err != nil {
+		log.Printf("Error decryping files: %v", err)
 		http.Error(w, "The file cannot be decrypted by archaeologist. Confirm it was encrypted with the correct public key.", http.StatusBadRequest)
 		return
 	}
@@ -178,31 +200,7 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 
 	log.Printf("File %s was validated successfully:", header.Filename)
 
-	if _, err := os.Stat("tmp"); os.IsNotExist(err) {
-		if err := os.Mkdir("tmp", 0755); err != nil {
-			log.Fatalf("Failed to create tmp directory for file.")
-		}
-	}
-
-	filePath := fmt.Sprintf("tmp/%s", header.Filename)
-	tmpFile, err := os.Create(filePath)
-	if err != nil {
-		log.Println("Failed to open the file for writing.")
-		http.Error(w, "The archaeologist had an issue receiving the file. Please try again.", http.StatusBadRequest)
-		return
-	}
-	defer tmpFile.Close()
-	_, err = io.Copy(tmpFile, file)
-	if err != nil {
-		log.Println("Failed to copy the file to disk.")
-		http.Error(w, "The archaeologist had an issue receiving the file. Please try again.", http.StatusBadRequest)
-		return
-	}
-	osFile, err := os.Open(filePath)
-
-	log.Println("FILE BYTES 1:", fileBytes)
-
-	arweaveTx, err := fileHandler.uploadFileToArweave(osFile)
+	arweaveTx, err := fileHandler.uploadFileToArweave(fileBytes)
 	if err != nil {
 		log.Printf("Arweave Transaction Failed: %v", err)
 		http.Error(w, "There was an error with the file. Please try again.", http.StatusBadRequest)
