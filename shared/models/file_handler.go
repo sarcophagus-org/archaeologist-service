@@ -12,6 +12,7 @@ import (
 	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"io/ioutil"
 	"log"
@@ -192,15 +193,23 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 
 	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
 
-	signature, err := crypto.Sign(hash.Bytes(), privateKey)
+	/* Sign Arweave TX and respond to the Embalmer */
+	assetSigBytes, err := crypto.Sign([]byte(arweaveTx.Hash()), fileHandler.ArchPrivateKey)
+	if err!= nil {
+		log.Printf("Couldnt sign the arweave tx: %v", err)
+		http.Error(w, "There was an error with the file. Please try again.", http.StatusBadRequest)
+		return
+	}
+
+	R, S, V := utility.SigRSV(assetSigBytes)
 
 	w.Header().Set("Content-Type", "application/json")
 	response := ResponseToEmbalmer {
-		SignedArweaveTxId: arweaveTx.Hash(),
+		AssetId: hexutil.Encode(assetSigBytes),
 		AssetDoubleHash: fileHandler.AssetDoubleHash,
-		sigV: '',
-		sigR: '',
-		sigS: ''
+		V: V,
+		R: R,
+		S: S,
 	}
 
 	json.NewEncoder(w).Encode(response)

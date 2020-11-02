@@ -1,9 +1,9 @@
 package models
 
 type ResponseToEmbalmer struct {
-	SignedArweaveTxId     string    `json:"ArweaveTxId"`
-	AssetDoubleHash [32]byte `json:"AssetDoubleHash"`
-	SigV            int    `json:"sigV"`
-	SigR            string `json:"sigR"`
-	SigS            string `json:"sigS"`
+	AssetId string   `json:"AssetId"`
+	AssetDoubleHash   [32]byte `json:"AssetDoubleHash"`
+	V              uint8    `json:"V"`
+	R              [32]byte `json:"R"`
+	S              [32]byte `json:"S"`
 }
