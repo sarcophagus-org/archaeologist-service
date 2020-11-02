@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"io"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -77,7 +78,7 @@ func (fileHandler *FileHandler) uploadFileToArweave(file *os.File) (*tx.Transact
 	ar := fileHandler.ArweaveTransactor
 	w := fileHandler.ArweaveWallet
 	fileBytes, _ := utility.FileToBytes(file)
-
+	log.Println("FILE BYTES 2:", fileBytes)
 	/*
 		Arweave Transaction:
 		Amount and Target are blank, as we aren't sending arweave tokens to anyone
@@ -177,12 +178,29 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 
 	log.Printf("File %s was validated successfully:", header.Filename)
 
-	osFile, err := os.Open(header.Filename)
+	if _, err := os.Stat("tmp"); os.IsNotExist(err) {
+		if err := os.Mkdir("tmp", 0755); err != nil {
+			log.Fatalf("Failed to create tmp directory for file.")
+		}
+	}
+
+	filePath := fmt.Sprintf("tmp/%s", header.Filename)
+	tmpFile, err := os.Create(filePath)
 	if err != nil {
-		log.Printf("File could not be opened: %v", err)
-		http.Error(w, "The file could not be opened by the archaeologist.", http.StatusBadRequest)
+		log.Println("Failed to open the file for writing.")
+		http.Error(w, "The archaeologist had an issue receiving the file. Please try again.", http.StatusBadRequest)
 		return
 	}
+	defer tmpFile.Close()
+	_, err = io.Copy(tmpFile, file)
+	if err != nil {
+		log.Println("Failed to copy the file to disk.")
+		http.Error(w, "The archaeologist had an issue receiving the file. Please try again.", http.StatusBadRequest)
+		return
+	}
+	osFile, err := os.Open(filePath)
+
+	log.Println("FILE BYTES 1:", fileBytes)
 
 	arweaveTx, err := fileHandler.uploadFileToArweave(osFile)
 	if err != nil {
@@ -194,18 +212,18 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
 
 	/* Sign Arweave TX and respond to the Embalmer */
-	assetSigBytes, err := crypto.Sign([]byte(arweaveTx.Hash()), fileHandler.ArchPrivateKey)
+	assetIdSig, err := crypto.Sign(arweaveTx.ID(), fileHandler.ArchPrivateKey)
 	if err!= nil {
 		log.Printf("Couldnt sign the arweave tx: %v", err)
 		http.Error(w, "There was an error with the file. Please try again.", http.StatusBadRequest)
 		return
 	}
 
-	R, S, V := utility.SigRSV(assetSigBytes)
+	R, S, V := utility.SigRSV(assetIdSig)
 
 	w.Header().Set("Content-Type", "application/json")
 	response := ResponseToEmbalmer {
-		AssetId: hexutil.Encode(assetSigBytes),
+		AssetId: hexutil.Encode(assetIdSig),
 		AssetDoubleHash: fileHandler.AssetDoubleHash,
 		V: V,
 		R: R,

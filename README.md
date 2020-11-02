@@ -67,6 +67,7 @@ Use abigen to compile abi -- below examples output to "abi" / "abiToken" directo
 ```
 solc --abi @openzeppelin/=/<local absolute path to repo>/node_modules/@openzeppelin/ contracts/Sarcophagus.sol -o abi
 solc --abi @openzeppelin/=/<local absolute path to repo>/node_modules/@openzeppelin/ contracts/SarcophagusToken.sol -o abiToken
+solc --abi @openzeppelin/=/<local absolute path to repo>/node_modules/@openzeppelin/ contracts/Events.sol -o abiEvents
 ```
 
 Compile Contracts to Go
@@ -74,6 +75,7 @@ Compile Contracts to Go
 ```
 abigen --abi=./abi/Sarcophagus.abi --pkg=contracts --out=Sarcophagus.go
 abigen --abi=./abiToken/SarcophagusToken.abi --pkg=contracts --out=SarcophagusToken.go
+abigen --abi=./abiEvents/Events.abi --pkg=contracts --out=Events.go
 ```
 
 Copy/Replace generated files into /contracts directory
