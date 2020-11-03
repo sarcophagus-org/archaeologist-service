@@ -145,31 +145,7 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	/* Use fileBytes, _ := ioutil.ReadAll(file) */
 
 	fileBytes, _ := ioutil.ReadAll(file)
-
-	//if _, err := os.Stat("tmp"); os.IsNotExist(err) {
-	//	if err := os.Mkdir("tmp", 0755); err != nil {
-	//		log.Fatalf("Failed to create tmp directory")
-	//	}
-	//}
-	//
-	//filePath := fmt.Sprintf("tmp/%s", header.Filename)
-	//tmpFile, err := os.Create(filePath)
-	//if err != nil {
-	//	http.Error(w, "Failed to open the file for writing.", http.StatusBadRequest)
-	//	return
-	//}
-	//defer tmpFile.Close()
-	//_, err = io.Copy(tmpFile, file)
-	//if err != nil {
-	//	http.Error(w, "Failed to copy the file to disk.", http.StatusBadRequest)
-	//	return
-	//}
-	//
-	//osFile, err := os.Open(filePath)
-	//
-	//log.Println("File received with header:", header)
-	//
-	//fileBytes, _ := utility.FileToBytes(osFile)
+	
 	fileByteLen := len(fileBytes)
 
 	/* Validate Size. */
