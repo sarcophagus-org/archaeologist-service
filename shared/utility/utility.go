@@ -58,6 +58,11 @@ func PrivateToPublicKeyECDSA(privateKey *ecdsa.PrivateKey) *ecdsa.PublicKey {
 	return publicKey
 }
 
+func PrivateToPublicKeyBytes(privateKey *ecdsa.PrivateKey) []byte {
+	pubKey := PrivateToPublicKeyECDSA(privateKey)
+	return crypto.FromECDSAPub(pubKey)
+}
+
 func ValidatePositiveNumber(num int64, numField string) int64 {
 	if num <= 0 {
 		log.Fatalf("%s must be greater than 0. Please check the value in the config file", numField)

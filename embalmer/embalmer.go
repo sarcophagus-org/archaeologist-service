@@ -148,7 +148,6 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filepath s
 	log.Printf("R", responseToEmbalmer.R)
 	log.Printf("S", responseToEmbalmer.S)
 
-
 	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
 	tx, err := sarcoSession.UpdateSarcophagus(
 		assetDoubleHash,

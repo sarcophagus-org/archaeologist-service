@@ -12,7 +12,6 @@ import (
 	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"io/ioutil"
 	"log"
@@ -140,12 +139,7 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	}
 
 	defer file.Close()
-
-	/* TODO: Determine if we need to save file locally before uploading */
-	/* Use fileBytes, _ := ioutil.ReadAll(file) */
-
 	fileBytes, _ := ioutil.ReadAll(file)
-	
 	fileByteLen := len(fileBytes)
 
 	/* Validate Size. */
@@ -188,8 +182,8 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
 
 	/* Sign Arweave TX and respond to the Embalmer */
-	arweaveTxHash := []byte(arweaveTx.Hash())
-	hash := crypto.Keccak256Hash(arweaveTxHash)
+	arweaveTxHash := arweaveTx.Hash()
+	hash := crypto.Keccak256Hash([]byte(arweaveTxHash))
 	assetIdSig, err := crypto.Sign(hash.Bytes(), fileHandler.ArchPrivateKey)
 	if err!= nil {
 		log.Printf("Couldnt sign the arweave tx: %v", err)
@@ -201,7 +195,7 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 
 	w.Header().Set("Content-Type", "application/json")
 	response := ResponseToEmbalmer {
-		AssetId: hexutil.Encode(assetIdSig),
+		AssetId: arweaveTxHash,
 		AssetDoubleHash: fileHandler.AssetDoubleHash,
 		V: V,
 		R: R,
