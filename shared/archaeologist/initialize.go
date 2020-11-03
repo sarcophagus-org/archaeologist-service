@@ -3,7 +3,11 @@ package archaeologist
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
+	"github.com/Dev43/arweave-go/transactor"
+	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,7 +23,9 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	var err error
 
 	arch.FreeBond = calculateFreeBond(config.ADD_TO_FREE_BOND, config.REMOVE_FROM_FREE_BOND)
-	arch.Client = initEthClient(config.ETH_NODE)
+	arch.Client = ethereum.InitEthClient(config.ETH_NODE)
+	arch.ArweaveTransactor = initArweaveTransactor(config.ARWEAVE_NODE)
+	arch.ArweaveWallet = initArweaveWallet(config.ARWEAVE_KEY_FILE)
 	arch.PrivateKey, err = utility.PrivateKeyHexToECDSA(config.ETH_PRIVATE_KEY)
 	if err != nil {
 		log.Fatalf("could not load eth private key.  Please check the ETH_NODE value in the config file. Error: %v\n", err)
@@ -28,7 +34,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.PublicKey = utility.PrivateToPublicKeyECDSA(arch.PrivateKey)
 	arch.PublicKeyBytes = crypto.FromECDSAPub(arch.PublicKey)[1:]
 	arch.ArchAddress = initArchAddress(config.PAYMENT_ADDRESS, arch.PublicKey, arch.Client)
-	arch.SarcoAddress = initSarcoAddress(config.CONTRACT_ADDRESS, arch.Client)
+	arch.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, arch.Client)
 	arch.SarcoSession = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
 	arch.TokenSession = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
 	arch.FeePerByte = utility.ValidatePositiveNumber(config.FEE_PER_BYTE, "FEE_PER_BYTE")
@@ -54,13 +60,24 @@ func calculateFreeBond(addFreeBond int64, removeFreeBond int64) int64 {
 	return archFreeBond
 }
 
-func initEthClient(ethNode string) *ethclient.Client {
-	cli, err := ethclient.Dial(ethNode)
+func initArweaveTransactor(arweaveNode string) *transactor.Transactor {
+	ar, err := transactor.NewTransactor(arweaveNode)
+
 	if err != nil {
-		log.Fatalf("could not connect to Ethereum node. Please check the ETH_NODE value in the config file. Error: %v\n", err)
+		log.Fatal("Could not connect to arweave node. Error: %v\n", err)
 	}
 
-	return cli
+	return ar
+}
+
+func initArweaveWallet(arweaveKeyFileName string) *wallet.Wallet {
+	wallet := wallet.NewWallet()
+
+	if err := wallet.LoadKeyFromFile(fmt.Sprintf("config/%s", arweaveKeyFileName)); err != nil {
+		log.Fatal("Could not load config value ARWEAVE_KEY_FILE. Please check the config.yml file Error:", err)
+	}
+
+	return wallet
 }
 
 func initArchAddress(paymentAddress string, publicKey *ecdsa.PublicKey, client *ethclient.Client) common.Address {
@@ -78,15 +95,6 @@ func initArchAddress(paymentAddress string, publicKey *ecdsa.PublicKey, client *
 	}
 
 	return archAddress
-}
-
-func initSarcoAddress(contractAddress string, client *ethclient.Client) common.Address {
-	address := common.HexToAddress(contractAddress)
-	if isContract := utility.IsContract(address, client); !isContract {
-		log.Fatal("Config value CONTRACT_ADDRESS is not a valid contract. Please check the value is correct.")
-	}
-
-	return address
 }
 
 func initSarcophagusSession(contractAddress common.Address, client *ethclient.Client, privateKey *ecdsa.PrivateKey) contracts.SarcophagusSession {

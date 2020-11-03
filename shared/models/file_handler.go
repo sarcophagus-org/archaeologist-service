@@ -4,12 +4,16 @@ import (
 	"bytes"
 	"context"
 	"crypto/ecdsa"
-	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/Dev43/arweave-go"
+	"github.com/Dev43/arweave-go/transactor"
+	"github.com/Dev43/arweave-go/tx"
+	"github.com/Dev43/arweave-go/wallet"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"io"
+	"io/ioutil"
 	"log"
 	"math/big"
 	"net/http"
@@ -29,51 +33,95 @@ type FileHandler struct {
 	StorageFee *big.Int
 	FeePerByte *big.Int
 	FilePort string
+	ArweaveTransactor *transactor.Transactor
+	ArweaveWallet *wallet.Wallet
 }
 
-func (fileHandler *FileHandler) embalmerSignatureValid(signedAssetDoubleHash string) bool {
-	signedAssetDoubleHashBytes, err := hex.DecodeString(signedAssetDoubleHash)
+/*
+	Note: The CreateTransaction function exists in arweave/transactor
+	However, it uses tr.Client.TxAnchor to get the last Tx.
+	That does not work locally, but using tr.Client.LastTransaction does, so that's why this function exists below.
+
+	TODO: Test this works on live arweave blockchain (or testnet) when the time comes
+ */
+
+func (fileHandler *FileHandler) CreateTransaction(ctx context.Context, w arweave.WalletSigner, amount string, data []byte, target string) (*tx.Transaction, error) {
+	tr := fileHandler.ArweaveTransactor
+	lastTx, err := tr.Client.LastTransaction(ctx, w.Address())
 	if err != nil {
-		log.Printf("Could not decode signature: %v", err)
-		return false
+		return nil, err
 	}
 
-	hopefullyEmbalmerPubKey, err := crypto.SigToPub(fileHandler.AssetDoubleHash[:], signedAssetDoubleHashBytes)
+	price, err := tr.Client.GetReward(ctx, []byte(data))
 	if err != nil {
-		log.Printf("Could not derive embalmers public key from hash and signature: %v", err)
-		return false
+		return nil, err
 	}
 
-	hopefullyEmbalmerAddress := crypto.PubkeyToAddress(*hopefullyEmbalmerPubKey)
-	if hopefullyEmbalmerAddress != fileHandler.EmbalmerAddress {
-		log.Printf("Address derived from the provided signature does not match the address of embalmer that created the Sarcophagus")
-		return false
-	}
+	// Non encoded transaction fields
+	tx := tx.NewTransaction(
+		lastTx,
+		w.PubKeyModulus(),
+		amount,
+		target,
+		data,
+		price,
+	)
 
-	log.Printf("embalmers signature is valid!")
-
-	return true
+	return tx, nil
 }
 
-func (fileHandler *FileHandler) canDecryptFile(file *os.File) bool {
-	buf := bytes.NewBuffer(nil)
-	if _, err := io.Copy(buf, file); err != nil {
-		log.Printf("Error copying file to buffer: %v", err)
-		return false
+func (fileHandler *FileHandler) uploadFileToArweave(fileBytes []byte) (*tx.Transaction, error){
+	// create a transaction
+
+	ar := fileHandler.ArweaveTransactor
+	w := fileHandler.ArweaveWallet
+	log.Println("FILE BYTES 2:", fileBytes)
+	/*
+		Arweave Transaction:
+		Amount and Target are blank, as we aren't sending arweave tokens to anyone
+	 */
+
+	txBuilder, err := fileHandler.CreateTransaction(context.TODO(), w, "0", fileBytes, "")
+	if err != nil {
+		log.Printf("Error creating transaction: %v", err)
+		return &tx.Transaction{}, err
 	}
 
-	fileBytes := buf.Bytes()
-
-	privateKeyBytes := crypto.FromECDSA(fileHandler.ArchPrivateKey)
-	privKey, _ := btcec.PrivKeyFromBytes(btcec.S256(), privateKeyBytes)
-
-	_, decryptError := btcec.Decrypt(privKey, fileBytes)
-	if decryptError != nil {
-		log.Printf("Error decrypting file with your private key. Error: %v", decryptError)
-		return false
+	// sign the transaction
+	txn, err := txBuilder.Sign(w)
+	if err != nil {
+		log.Printf("Error signing transaction: %v", err)
+		return &tx.Transaction{}, err
 	}
 
-	log.Printf("file decrypted successfully!")
+	// send the transaction
+	resp, err := ar.SendTransaction(context.TODO(), txn)
+
+	if err != nil {
+		log.Printf("Error sending transaction: %v", err)
+		return &tx.Transaction{}, err
+	}
+
+	log.Printf("Arweave Transaction Sent: %v", resp)
+
+	// wait for the transaction to get mined
+	finalTx, err := ar.WaitMined(context.TODO(), txn)
+	if err != nil {
+		log.Printf("Error with transaction getting mined: %v", err)
+		return &tx.Transaction{}, err
+	}
+
+	return finalTx, nil
+}
+
+func (fileHandler *FileHandler) doubleHashesMatch(fileBytes []byte) bool {
+	assetSingleHash := crypto.Keccak256(fileBytes)
+	assetDoubleHash := crypto.Keccak256(assetSingleHash)
+
+	compareVal := bytes.Compare(assetDoubleHash, fileHandler.AssetDoubleHash[:])
+	if compareVal != 0 {
+		return false
+	}
 
 	return true
 }
@@ -85,72 +133,76 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	}
 
 	file, header, err := r.FormFile("file")
-
 	if err != nil {
 		http.Error(w, "There was an error receiving your file:" + err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	log.Println("File received with header:", header)
+	defer file.Close()
+	fileBytes, _ := ioutil.ReadAll(file)
+	fileByteLen := len(fileBytes)
 
 	/* Validate Size. */
-	if header.Size > (3 * MB) {
+	if fileByteLen > (3 * MB) {
 		http.Error(w, "The file sent is larger than the limit of 3MB.", http.StatusBadRequest)
 		return
 	}
 
 	/* Validate Storage Fee is sufficient */
-	storageExpectation := new(big.Int).Mul(big.NewInt(header.Size), fileHandler.FeePerByte)
+	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), fileHandler.FeePerByte)
 	if storageExpectation.Cmp(fileHandler.StorageFee) == 1 {
 		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", storageExpectation, fileHandler.StorageFee)
 		http.Error(w, errMsg, http.StatusBadRequest)
 		return
 	}
 
-	/* Validate embalmers signature */
-	signedAssetDoubleHash := r.Form.Get("signedAssetDoubleHash")
-	if !fileHandler.embalmerSignatureValid(signedAssetDoubleHash) {
-		http.Error(w, "The signature from the embalmer could not be verified.", http.StatusBadRequest)
-		return
-	}
-
-	/* Save temp file needed for decryption validation */
-	defer file.Close()
-	if _, err := os.Stat("tmp"); os.IsNotExist(err) {
-		if err := os.Mkdir("tmp", 0755); err != nil {
-			log.Fatalf("Failed to create tmp directory")
-		}
-	}
-
-	filePath := fmt.Sprintf("tmp/%s", header.Filename)
-	tmpFile, err := os.Create(filePath)
+	/* Decrypt the outer layer of file */
+	decryptedFileBytes, err := utility.DecryptFile(fileBytes, fileHandler.ArchPrivateKey)
 	if err != nil {
-		http.Error(w, "Failed to open the file for writing.", http.StatusBadRequest)
-		return
-	}
-	defer tmpFile.Close()
-	_, err = io.Copy(tmpFile, file)
-	if err != nil {
-		http.Error(w, "Failed to copy the file to disk.", http.StatusBadRequest)
-		return
-	}
-
-	osFile, err := os.Open(filePath)
-
-	/* Validate the 2nd layer of file encryption can be decrypted */
-	if !fileHandler.canDecryptFile(osFile) {
+		log.Printf("Error decryping files: %v", err)
 		http.Error(w, "The file cannot be decrypted by archaeologist. Confirm it was encrypted with the correct public key.", http.StatusBadRequest)
 		return
 	}
 
-	/*
-		Validations have passed.
-		TODO: Handle file upload to arweave
-	*/
-	fmt.Fprintf(w, "File %s was uploaded and validated successfully.", header.Filename)
+	/* Validate the inner layer double hash matches double hash */
+	if !fileHandler.doubleHashesMatch(decryptedFileBytes) {
+		http.Error(w, "The double hash of the file does not match the asset double hash provided.", http.StatusBadRequest)
+		return
+	}
 
-	os.Remove(filePath)
-	os.Remove("tmp")
+	log.Printf("File %s was validated successfully:", header.Filename)
+
+	arweaveTx, err := fileHandler.uploadFileToArweave(fileBytes)
+	if err != nil {
+		log.Printf("Arweave Transaction Failed: %v", err)
+		http.Error(w, "There was an error with the file. Please try again.", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
+
+	/* Sign Arweave TX and respond to the Embalmer */
+	arweaveTxHash := arweaveTx.Hash()
+	hash := crypto.Keccak256Hash([]byte(arweaveTxHash))
+	assetIdSig, err := crypto.Sign(hash.Bytes(), fileHandler.ArchPrivateKey)
+	if err!= nil {
+		log.Printf("Couldnt sign the arweave tx: %v", err)
+		http.Error(w, "There was an error with the file. Please try again.", http.StatusBadRequest)
+		return
+	}
+
+	R, S, V := utility.SigRSV(assetIdSig)
+
+	w.Header().Set("Content-Type", "application/json")
+	response := ResponseToEmbalmer {
+		AssetId: arweaveTxHash,
+		AssetDoubleHash: fileHandler.AssetDoubleHash,
+		V: V,
+		R: R,
+		S: S,
+	}
+
+	json.NewEncoder(w).Encode(response)
 
 	/* TODO: Potentially Close Connection if there is an error? */
 	// We may not want to close it b/c user may re-try file upload
@@ -165,6 +217,8 @@ func (fileHandler *FileHandler) HandleFileUpload() {
 	sm.Handle("/file", http.HandlerFunc(fileHandler.fileUploadHandler))
 
 	server := &http.Server{Addr: ":" + fileHandler.FilePort, Handler: sm}
+
+	log.Printf("Listening for file on port %s:", fileHandler.FilePort)
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {

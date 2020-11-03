@@ -26,6 +26,8 @@ func EventsSubscribe(arch *models.Archaeologist) {
 				log.Println(err)
 			}
 		case event := <-sink:
+			/* TODO: Handle file *only* if we are the Arch selected for this Sarc */
+
 			log.Println("Name:", event.Name)
 			log.Println("Asset Double Hash:", event.AssetDoubleHash)
 			log.Println("Archaeologist:", event.Archaeologist)
@@ -37,6 +39,10 @@ func EventsSubscribe(arch *models.Archaeologist) {
 			log.Println("Digging Fee:", event.DiggingFee)
 			log.Println("CursedBond:", event.CursedBond)
 
+			/* TODO: Update to handle multiple files (when 'create sarcophagus' is called multiple times) */
+			/* Consider pushing file handlers to slice */
+			/* Make server separate from file handler */
+
 			fileHandler := &models.FileHandler{
 				event.AssetDoubleHash,
 				event.Embalmer,
@@ -44,7 +50,12 @@ func EventsSubscribe(arch *models.Archaeologist) {
 				event.StorageFee,
 				big.NewInt(arch.FeePerByte),
 				arch.FilePort,
+				arch.ArweaveTransactor,
+				arch.ArweaveWallet,
 			}
+
+			/* Todo -- detect if we are already listening */
+
 			fileHandler.HandleFileUpload()
 		}
 	}

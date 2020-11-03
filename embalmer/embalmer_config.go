@@ -7,4 +7,8 @@ type EmbalmerConfig struct {
 	ETH_NODE string
 	CONTRACT_ADDRESS string
 	TOKEN_ADDRESS string
+	RESURRECTION_TIME int64
+	STORAGE_FEE int64
+	DIGGING_FEE int64
+	BOUNTY int64
 }
