@@ -14,7 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
-	"io"
+	"io/ioutil"
 	"log"
 	"math/big"
 	"net/http"
@@ -144,30 +144,32 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	/* TODO: Determine if we need to save file locally before uploading */
 	/* Use fileBytes, _ := ioutil.ReadAll(file) */
 
-	if _, err := os.Stat("tmp"); os.IsNotExist(err) {
-		if err := os.Mkdir("tmp", 0755); err != nil {
-			log.Fatalf("Failed to create tmp directory")
-		}
-	}
+	fileBytes, _ := ioutil.ReadAll(file)
 
-	filePath := fmt.Sprintf("tmp/%s", header.Filename)
-	tmpFile, err := os.Create(filePath)
-	if err != nil {
-		http.Error(w, "Failed to open the file for writing.", http.StatusBadRequest)
-		return
-	}
-	defer tmpFile.Close()
-	_, err = io.Copy(tmpFile, file)
-	if err != nil {
-		http.Error(w, "Failed to copy the file to disk.", http.StatusBadRequest)
-		return
-	}
-
-	osFile, err := os.Open(filePath)
-
-	log.Println("File received with header:", header)
-
-	fileBytes, _ := utility.FileToBytes(osFile)
+	//if _, err := os.Stat("tmp"); os.IsNotExist(err) {
+	//	if err := os.Mkdir("tmp", 0755); err != nil {
+	//		log.Fatalf("Failed to create tmp directory")
+	//	}
+	//}
+	//
+	//filePath := fmt.Sprintf("tmp/%s", header.Filename)
+	//tmpFile, err := os.Create(filePath)
+	//if err != nil {
+	//	http.Error(w, "Failed to open the file for writing.", http.StatusBadRequest)
+	//	return
+	//}
+	//defer tmpFile.Close()
+	//_, err = io.Copy(tmpFile, file)
+	//if err != nil {
+	//	http.Error(w, "Failed to copy the file to disk.", http.StatusBadRequest)
+	//	return
+	//}
+	//
+	//osFile, err := os.Open(filePath)
+	//
+	//log.Println("File received with header:", header)
+	//
+	//fileBytes, _ := utility.FileToBytes(osFile)
 	fileByteLen := len(fileBytes)
 
 	/* Validate Size. */
@@ -210,7 +212,9 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
 
 	/* Sign Arweave TX and respond to the Embalmer */
-	assetIdSig, err := crypto.Sign(arweaveTx.ID(), fileHandler.ArchPrivateKey)
+	arweaveTxHash := []byte(arweaveTx.Hash())
+	hash := crypto.Keccak256Hash(arweaveTxHash)
+	assetIdSig, err := crypto.Sign(hash.Bytes(), fileHandler.ArchPrivateKey)
 	if err!= nil {
 		log.Printf("Couldnt sign the arweave tx: %v", err)
 		http.Error(w, "There was an error with the file. Please try again.", http.StatusBadRequest)

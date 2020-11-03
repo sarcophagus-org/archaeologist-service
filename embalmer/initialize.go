@@ -14,7 +14,7 @@ func InitEmbalmer(embalmer *Embalmer, config *EmbalmerConfig) {
 	embalmer.EmbalmerPrivateKey, _ = utility.PrivateKeyHexToECDSA(config.EMBALMER_PRIVATE_KEY)
 	archPrivateKey, _ := utility.PrivateKeyHexToECDSA(config.ARCH_PRIVATE_KEY)
 	publicKey := utility.PrivateToPublicKeyECDSA(archPrivateKey)
-	embalmer.ArchPublicKeyBytes = crypto.FromECDSAPub(publicKey)[1:]
+	embalmer.ArchPublicKeyBytes = crypto.FromECDSAPub(publicKey)
 	embalmerPubKey := embalmer.EmbalmerPrivateKey.Public().(*ecdsa.PublicKey)
 	embalmer.EmbalmerAddress = crypto.PubkeyToAddress(*embalmerPubKey)
 	embalmer.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, embalmer.Client)

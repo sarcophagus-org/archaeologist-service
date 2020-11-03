@@ -2,14 +2,17 @@ package main
 
 import (
 	"flag"
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/embalmer"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/spf13/viper"
+	"io/ioutil"
 	"log"
 	"os"
 )
 
-const fileToDoubleHash = "/tmp/test.txt"
+const fileDefault = "/tmp/test.txt"
+const encryptedOutputFilePath = "/tmp/encrypted.txt"
 
 func loadEmbalmerConfig() *embalmer.EmbalmerConfig {
 	viper.SetConfigName("embalmer_config")
@@ -36,21 +39,42 @@ func loadEmbalmerConfig() *embalmer.EmbalmerConfig {
 func main(){
 	config := loadEmbalmerConfig()
 	emb := new(embalmer.Embalmer)
+
 	embalmer.InitEmbalmer(emb, config)
-	file, err := os.Open(fileToDoubleHash)
-	if err != nil {
-		log.Fatalf("Couldnt open file to double hash")
-	}
 
-	fileBytes, _ := utility.FileToBytes(file)
-
-	// We may not need this flag. Setting up in case we need more control on what to call.
-	sarcoFlag := flag.String("type", "create", "Create or Update a Sarcophagus")
+	assetPathFlag := flag.String("file", fileDefault, "File to use as payload for sarcophagus")
+	typeFlag := flag.String("type", "create", "Create or Update a Sarcophagus")
 
 	flag.Parse()
 
-	if *sarcoFlag == "create" {
-		emb.CreateSarcophagus(config.RECIPIENT_PRIVATE_KEY, fileBytes)
+	file, err := os.Open(*assetPathFlag)
+	if err != nil {
+		log.Fatalf("Couldnt open file to double hash")
+	}
+	defer file.Close()
+
+	fileBytes, _ := utility.FileToBytes(file)
+	assetDoubleHashBytes := embalmer.FileBytesToDoubleHashBytes(fileBytes)
+
+	if *typeFlag == "create" {
+		emb.CreateSarcophagus(config.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytes)
 		log.Println("Embalmer Sarco Balance:", emb.EmbalmerSarcoBalance())
+	}
+
+	if *typeFlag == "update" {
+		pubKey, err := btcec.ParsePubKey(emb.ArchPublicKeyBytes, btcec.S256())
+		if err != nil {
+			log.Fatalf("error casting public key to btcec: %v", err)
+		}
+		encryptedBytes, err := btcec.Encrypt(pubKey, fileBytes)
+		if err != nil {
+			log.Fatalf("Error encrypting file: %v", err)
+		}
+
+		bigErr := ioutil.WriteFile(encryptedOutputFilePath, encryptedBytes, 0755)
+		if bigErr != nil {
+			log.Fatalf("Error writing file: %v", bigErr)
+		}
+		emb.UpdateSarcophagus(assetDoubleHashBytes, encryptedOutputFilePath)
 	}
 }
