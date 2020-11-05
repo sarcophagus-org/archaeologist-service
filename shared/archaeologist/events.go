@@ -8,55 +8,79 @@ import (
 	"math/big"
 )
 
-func EventsSubscribe(arch *models.Archaeologist) {
-	sink := make(chan *contracts.EventsCreateSarcophagus)
-	sarcoEvents, err := contracts.NewEvents(arch.SarcoAddress, arch.Client)
-	sub, err := sarcoEvents.WatchCreateSarcophagus(&bind.WatchOpts{}, sink)
+func handleUpdateSarcophagus(event *contracts.EventsUpdateSarcophagus, arch *models.Archaeologist) {
+	log.Println("Update Sarcophagus Event Sent:", event.AssetId)
+	/* TODO: Clean up sarcophagus in file handlers */
+	/* Add resurrection listener */
+}
 
+func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *models.Archaeologist) {
+	log.Println("Name:", event.Name)
+	log.Println("Asset Double Hash:", event.AssetDoubleHash)
+	log.Println("Archaeologist:", event.Archaeologist)
+	log.Println("Embalmer:", event.Embalmer)
+	log.Println("Resurrection Time:", event.ResurrectionTime)
+	log.Println("Resurrection Window:", event.ResurrectionWindow)
+	log.Println("Bounty:", event.Bounty)
+	log.Println("Storage Fee:", event.StorageFee)
+	log.Println("Digging Fee:", event.DiggingFee)
+	log.Println("CursedBond:", event.CursedBond)
+
+	/* TODO: Update to handle multiple files (when 'create sarcophagus' is called multiple times) */
+	/* Consider pushing file handlers to slice */
+	/* Make server separate from file handler */
+
+	fileHandler := &models.FileHandler{
+		event.AssetDoubleHash,
+		event.Embalmer,
+		arch.PrivateKey,
+		event.StorageFee,
+		big.NewInt(arch.FeePerByte),
+		arch.FilePort,
+		arch.ArweaveTransactor,
+		arch.ArweaveWallet,
+	}
+
+	/* Todo -- detect if we are already listening */
+	fileHandler.HandleFileUpload()
+}
+
+func EventsSubscribe(arch *models.Archaeologist) {
+	sarcoEvents, err := contracts.NewEvents(arch.SarcoAddress, arch.Client)
+	if err != nil {
+		log.Printf("Error creating events contract")
+	}
+
+	/* Create Sarcophagus Subscription */
+	csSink := make(chan *contracts.EventsCreateSarcophagus)
+	csSub, err := sarcoEvents.WatchCreateSarcophagus(&bind.WatchOpts{}, csSink)
 	if err != nil {
 		log.Fatalf("Error subscribing to CreateSarcophagus event: %v", err)
+	}
+
+	/* Update Sarcophagus Subscription */
+	usSink := make(chan *contracts.EventsUpdateSarcophagus)
+	usSub, err := sarcoEvents.WatchUpdateSarcophagus(&bind.WatchOpts{}, usSink)
+	if err != nil {
+		log.Fatalf("Error subscribing to UpdateSarcophagus event: %v", err)
 	}
 
 	log.Println("Listening For Events...")
 
 	for {
 		select {
-		case err := <-sub.Err():
+		case err := <-csSub.Err():
 			if err != nil {
-				log.Println(err)
+				log.Println("Error with Create Sarcophagus Subscription:", err)
 			}
-		case event := <-sink:
-			/* TODO: Handle file *only* if we are the Arch selected for this Sarc */
-
-			log.Println("Name:", event.Name)
-			log.Println("Asset Double Hash:", event.AssetDoubleHash)
-			log.Println("Archaeologist:", event.Archaeologist)
-			log.Println("Embalmer:", event.Embalmer)
-			log.Println("Resurrection Time:", event.ResurrectionTime)
-			log.Println("Resurrection Window:", event.ResurrectionWindow)
-			log.Println("Bounty:", event.Bounty)
-			log.Println("Storage Fee:", event.StorageFee)
-			log.Println("Digging Fee:", event.DiggingFee)
-			log.Println("CursedBond:", event.CursedBond)
-
-			/* TODO: Update to handle multiple files (when 'create sarcophagus' is called multiple times) */
-			/* Consider pushing file handlers to slice */
-			/* Make server separate from file handler */
-
-			fileHandler := &models.FileHandler{
-				event.AssetDoubleHash,
-				event.Embalmer,
-				arch.PrivateKey,
-				event.StorageFee,
-				big.NewInt(arch.FeePerByte),
-				arch.FilePort,
-				arch.ArweaveTransactor,
-				arch.ArweaveWallet,
+		case err := <-usSub.Err():
+			if err != nil {
+				log.Println("Error with Update Sarcophagus Subscription:", err)
 			}
-
-			/* Todo -- detect if we are already listening */
-
-			fileHandler.HandleFileUpload()
+		case event := <-csSink:
+			go handleCreateSarcophagus(event, arch)
+		case event := <-usSink:
+			handleUpdateSarcophagus(event, arch)
 		}
 	}
 }
