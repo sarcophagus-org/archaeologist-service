@@ -1,10 +1,10 @@
 package archaeologist
 
 import (
+	"bytes"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"log"
-	"math/big"
 )
 
 func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *models.Archaeologist) {
@@ -19,6 +19,11 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 	log.Println("Digging Fee:", event.DiggingFee)
 	log.Println("CursedBond:", event.CursedBond)
 
+	if bytes.Compare(event.ArchaeologistPublicKey, arch.CurrentPublicKeyBytes) != 0 {
+		log.Print("Public Key on Sarcophagus does not match current Public Key. Not listening for file.")
+		return
+	}
+
 	/* TODO: Update to handle multiple files (when 'create sarcophagus' is called multiple times) */
 	/* Consider pushing file handlers to slice */
 	/* Make server separate from file handler */
@@ -26,12 +31,8 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 	fileHandler := &models.FileHandler{
 		event.AssetDoubleHash,
 		event.Embalmer,
-		arch.PrivateKey,
 		event.StorageFee,
-		big.NewInt(arch.FeePerByte),
-		arch.FilePort,
-		arch.ArweaveTransactor,
-		arch.ArweaveWallet,
+		arch,
 	}
 
 	/* Todo -- detect if we are already listening */

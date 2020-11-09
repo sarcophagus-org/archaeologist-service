@@ -14,26 +14,28 @@ import (
 )
 
 type Archaeologist struct {
-	Client             *ethclient.Client
-	ArweaveWallet      *wallet.Wallet
-	ArweaveTransactor  *transactor.Transactor
-	PrivateKey         *ecdsa.PrivateKey
-	PublicKeyBytes     []byte
-	ArchAddress        common.Address
-	PaymentAddress     common.Address
-	SarcoAddress       common.Address
-	SarcoSession       contracts.SarcophagusSession
-	SarcoTokenAddress  common.Address
-	TokenSession       contracts.TokenSession
-	FreeBond           int64
-	FeePerByte         int64
-	MinBounty          int64
-	MinDiggingFee      int64
-	MaxResurectionTime int64
-	Endpoint           string
-	FilePort           string
-	Mnemonic           string
-	Wallet             *hdwallet.Wallet
+	Client                *ethclient.Client
+	ArweaveWallet         *wallet.Wallet
+	ArweaveTransactor     *transactor.Transactor
+	PrivateKey            *ecdsa.PrivateKey
+	CurrentPublicKeyBytes []byte
+	CurrentPrivateKey     *ecdsa.PrivateKey
+	ArchAddress           common.Address
+	PaymentAddress        common.Address
+	SarcoAddress          common.Address
+	SarcoSession          contracts.SarcophagusSession
+	SarcoTokenAddress     common.Address
+	TokenSession          contracts.TokenSession
+	FreeBond              int64
+	FeePerByte            int64
+	MinBounty             int64
+	MinDiggingFee         int64
+	MaxResurectionTime    int64
+	Endpoint              string
+	FilePort              string
+	Mnemonic              string
+	Wallet                *hdwallet.Wallet
+	AccountIndex          int
 }
 
 func (arch *Archaeologist) SarcoBalance() *big.Int {
@@ -70,7 +72,7 @@ func (arch *Archaeologist) WithdrawBond(bondToWithdraw *big.Int) {
 func (arch *Archaeologist) RegisterArchaeologist() {
 	log.Println("***REGISTERING ARCHAEOLOGIST***")
 	tx, err := arch.SarcoSession.RegisterArchaeologist(
-		arch.PublicKeyBytes,
+		arch.CurrentPublicKeyBytes,
 		arch.Endpoint,
 		arch.PaymentAddress,
 		big.NewInt(arch.FeePerByte),
@@ -93,7 +95,7 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 	log.Println("***UPDATING ARCHAEOLOGIST***")
 	tx, err := arch.SarcoSession.UpdateArchaeologist(
 		arch.Endpoint,
-		arch.PublicKeyBytes,
+		arch.CurrentPublicKeyBytes,
 		arch.ArchAddress,
 		big.NewInt(arch.FeePerByte),
 		big.NewInt(arch.MinBounty),

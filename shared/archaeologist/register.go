@@ -25,7 +25,7 @@ func RegisterOrUpdateArchaeologist(arch *models.Archaeologist) {
 		}
 
 		if arch.FreeBond > 0 ||
-			bytes.Compare(contractArch.CurrentPublicKey,arch.PublicKeyBytes) != 0 ||
+			bytes.Compare(contractArch.CurrentPublicKey, arch.CurrentPublicKeyBytes) != 0 ||
 			contractArch.Endpoint != arch.Endpoint ||
 			contractArch.PaymentAddress != arch.ArchAddress ||
 			contractArch.FeePerByte.Cmp(big.NewInt(arch.FeePerByte)) != 0 ||

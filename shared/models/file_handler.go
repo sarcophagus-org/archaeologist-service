@@ -3,13 +3,11 @@ package models
 import (
 	"bytes"
 	"context"
-	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
 	"github.com/Dev43/arweave-go"
-	"github.com/Dev43/arweave-go/transactor"
 	"github.com/Dev43/arweave-go/tx"
-	"github.com/Dev43/arweave-go/wallet"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/hdw"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -29,12 +27,8 @@ const (
 type FileHandler struct {
 	AssetDoubleHash [32]byte
 	EmbalmerAddress common.Address
-	ArchPrivateKey *ecdsa.PrivateKey
-	StorageFee *big.Int
-	FeePerByte *big.Int
-	FilePort string
-	ArweaveTransactor *transactor.Transactor
-	ArweaveWallet *wallet.Wallet
+	StorageFee      *big.Int
+	Archaeologist   *Archaeologist
 }
 
 /*
@@ -43,10 +37,10 @@ type FileHandler struct {
 	That does not work locally, but using tr.Client.LastTransaction does, so that's why this function exists below.
 
 	TODO: Test this works on live arweave blockchain (or testnet) when the time comes
- */
+*/
 
 func (fileHandler *FileHandler) CreateTransaction(ctx context.Context, w arweave.WalletSigner, amount string, data []byte, target string) (*tx.Transaction, error) {
-	tr := fileHandler.ArweaveTransactor
+	tr := fileHandler.Archaeologist.ArweaveTransactor
 	lastTx, err := tr.Client.LastTransaction(ctx, w.Address())
 	if err != nil {
 		return nil, err
@@ -70,17 +64,15 @@ func (fileHandler *FileHandler) CreateTransaction(ctx context.Context, w arweave
 	return tx, nil
 }
 
-func (fileHandler *FileHandler) uploadFileToArweave(fileBytes []byte) (*tx.Transaction, error){
+func (fileHandler *FileHandler) uploadFileToArweave(fileBytes []byte) (*tx.Transaction, error) {
 	// create a transaction
+	ar := fileHandler.Archaeologist.ArweaveTransactor
+	w := fileHandler.Archaeologist.ArweaveWallet
 
-	ar := fileHandler.ArweaveTransactor
-	w := fileHandler.ArweaveWallet
-	log.Println("FILE BYTES 2:", fileBytes)
 	/*
 		Arweave Transaction:
 		Amount and Target are blank, as we aren't sending arweave tokens to anyone
-	 */
-
+	*/
 	txBuilder, err := fileHandler.CreateTransaction(context.TODO(), w, "0", fileBytes, "")
 	if err != nil {
 		log.Printf("Error creating transaction: %v", err)
@@ -134,7 +126,7 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, "There was an error receiving your file:" + err.Error(), http.StatusBadRequest)
+		http.Error(w, "There was an error receiving your file:"+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -149,7 +141,7 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	}
 
 	/* Validate Storage Fee is sufficient */
-	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), fileHandler.FeePerByte)
+	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), big.NewInt(fileHandler.Archaeologist.FeePerByte))
 	if storageExpectation.Cmp(fileHandler.StorageFee) == 1 {
 		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", storageExpectation, fileHandler.StorageFee)
 		http.Error(w, errMsg, http.StatusBadRequest)
@@ -157,9 +149,10 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	}
 
 	/* Decrypt the outer layer of file */
-	decryptedFileBytes, err := utility.DecryptFile(fileBytes, fileHandler.ArchPrivateKey)
+	currentPrivateKey := hdw.PrivateKeyFromIndex(fileHandler.Archaeologist.Wallet, fileHandler.Archaeologist.AccountIndex)
+	decryptedFileBytes, err := utility.DecryptFile(fileBytes, currentPrivateKey)
 	if err != nil {
-		log.Printf("Error decryping files: %v", err)
+		log.Printf("Error decrypting file: %v", err)
 		http.Error(w, "The file cannot be decrypted by archaeologist. Confirm it was encrypted with the correct public key.", http.StatusBadRequest)
 		return
 	}
@@ -181,11 +174,15 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 
 	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
 
+	/* Generate new public and private keys */
+
 	/* Sign Arweave TX and respond to the Embalmer */
 	arweaveTxHash := arweaveTx.Hash()
-	hash := crypto.Keccak256Hash([]byte(arweaveTxHash))
-	assetIdSig, err := crypto.Sign(hash.Bytes(), fileHandler.ArchPrivateKey)
-	if err!= nil {
+	newPublicKey := hdw.PublicKeyFromIndex(fileHandler.Archaeologist.Wallet, fileHandler.Archaeologist.AccountIndex+1)
+	pubKeyConcatTxHash := append(crypto.FromECDSAPub(newPublicKey)[1:], []byte(arweaveTxHash)...)
+	hash := crypto.Keccak256Hash(pubKeyConcatTxHash)
+	assetIdSig, err := crypto.Sign(hash.Bytes(), fileHandler.Archaeologist.PrivateKey)
+	if err != nil {
 		log.Printf("Couldnt sign the arweave tx: %v", err)
 		http.Error(w, "There was an error with the file. Please try again.", http.StatusBadRequest)
 		return
@@ -194,12 +191,13 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	R, S, V := utility.SigRSV(assetIdSig)
 
 	w.Header().Set("Content-Type", "application/json")
-	response := ResponseToEmbalmer {
-		AssetId: arweaveTxHash,
+	response := ResponseToEmbalmer{
+		NewPublicKey:    crypto.FromECDSAPub(newPublicKey)[1:],
+		AssetId:         arweaveTxHash,
 		AssetDoubleHash: fileHandler.AssetDoubleHash,
-		V: V,
-		R: R,
-		S: S,
+		V:               V,
+		R:               R,
+		S:               S,
 	}
 
 	json.NewEncoder(w).Encode(response)
@@ -216,9 +214,9 @@ func (fileHandler *FileHandler) HandleFileUpload() {
 	sm := http.NewServeMux()
 	sm.Handle("/file", http.HandlerFunc(fileHandler.fileUploadHandler))
 
-	server := &http.Server{Addr: ":" + fileHandler.FilePort, Handler: sm}
+	server := &http.Server{Addr: ":" + fileHandler.Archaeologist.FilePort, Handler: sm}
 
-	log.Printf("Listening for file on port %s:", fileHandler.FilePort)
+	log.Printf("Listening for file on port %s:", fileHandler.Archaeologist.FilePort)
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil {

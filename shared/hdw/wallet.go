@@ -37,3 +37,13 @@ func PublicKeyFromIndex(wallet *hdwallet.Wallet, index int) *ecdsa.PublicKey {
 
 	return pubKey
 }
+
+func PrivateKeyFromIndex(wallet *hdwallet.Wallet, index int) *ecdsa.PrivateKey {
+	account := AccountFromIndex(wallet, index)
+	privateKey, err := wallet.PrivateKey(account)
+	if err != nil {
+		log.Fatalf("There was an error getting private key from account index: %d, %v", index, err)
+	}
+
+	return privateKey
+}

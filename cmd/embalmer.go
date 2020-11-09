@@ -1,18 +1,32 @@
 package main
 
 import (
+	hex2 "encoding/hex"
 	"flag"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/embalmer"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
+	"context"
 )
 
 const fileDefault = "/tmp/test.txt"
 const encryptedOutputFilePath = "/tmp/encrypted.txt"
+
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func randSeq(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
 
 func loadEmbalmerConfig() *embalmer.EmbalmerConfig {
 	viper.SetConfigName("embalmer_config")
@@ -62,7 +76,20 @@ func main(){
 	}
 
 	if *typeFlag == "update" {
-		pubKey, err := btcec.ParsePubKey(emb.ArchPublicKeyBytes, btcec.S256())
+		sarcoSession := emb.NewSarcophagusSession(context.Background())
+		contractArch, err := sarcoSession.Archaeologists(emb.ArchAddress)
+		if err != nil {
+			log.Fatalf("Call to Archaeologists in Sarcophagus Contract failed. Please check CONTRACT_ADDRESS is correct in the config file: %v", err)
+		}
+
+		currentPublicKey := append([]byte{4}, contractArch.CurrentPublicKey...)
+		pubKeyEcdsa, err := crypto.UnmarshalPubkey(currentPublicKey)
+		if err != nil {
+			log.Fatalf("ERROR:", err)
+		}
+		log.Print(contractArch.CurrentPublicKey)
+		pubkeyBytes := crypto.FromECDSAPub(pubKeyEcdsa)
+		pubKey, err := btcec.ParsePubKey(pubkeyBytes, btcec.S256())
 		if err != nil {
 			log.Fatalf("error casting public key to btcec: %v", err)
 		}
