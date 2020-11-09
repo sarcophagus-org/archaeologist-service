@@ -58,6 +58,11 @@ func PrivateToPublicKeyECDSA(privateKey *ecdsa.PrivateKey) *ecdsa.PublicKey {
 	return publicKey
 }
 
+func PrivateKeyToAddress(privateKey *ecdsa.PrivateKey) common.Address {
+	pubKey := PrivateToPublicKeyECDSA(privateKey)
+	return crypto.PubkeyToAddress(*pubKey)
+}
+
 func PrivateToPublicKeyBytes(privateKey *ecdsa.PrivateKey) []byte {
 	pubKey := PrivateToPublicKeyECDSA(privateKey)
 	return crypto.FromECDSAPub(pubKey)

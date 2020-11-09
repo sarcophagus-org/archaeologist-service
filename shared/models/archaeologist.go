@@ -8,6 +8,7 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"log"
 	"math/big"
 )
@@ -17,9 +18,9 @@ type Archaeologist struct {
 	ArweaveWallet      *wallet.Wallet
 	ArweaveTransactor  *transactor.Transactor
 	PrivateKey         *ecdsa.PrivateKey
-	PublicKey          *ecdsa.PublicKey
 	PublicKeyBytes     []byte
 	ArchAddress        common.Address
+	PaymentAddress     common.Address
 	SarcoAddress       common.Address
 	SarcoSession       contracts.SarcophagusSession
 	SarcoTokenAddress  common.Address
@@ -31,6 +32,8 @@ type Archaeologist struct {
 	MaxResurectionTime int64
 	Endpoint           string
 	FilePort           string
+	Mnemonic           string
+	Wallet             *hdwallet.Wallet
 }
 
 func (arch *Archaeologist) SarcoBalance() *big.Int {
