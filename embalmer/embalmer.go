@@ -24,20 +24,20 @@ import (
 )
 
 type Embalmer struct {
-	Client *ethclient.Client
-	ArchPublicKeyBytes []byte
-	EmbalmerPrivateKey *ecdsa.PrivateKey
-	EmbalmerAddress common.Address
-	SarcoAddress common.Address
-	SarcophagusContract *contracts.Sarcophagus
+	Client                   *ethclient.Client
+	ArchAddress              common.Address
+	EmbalmerPrivateKey       *ecdsa.PrivateKey
+	EmbalmerAddress          common.Address
+	SarcoAddress             common.Address
+	SarcophagusContract      *contracts.Sarcophagus
 	SarcophagusTokenContract *contracts.Token
-	ResurrectionTime int64
-	StorageFee int64
-	DiggingFee int64
-	Bounty int64
+	ResurrectionTime         int64
+	StorageFee               int64
+	DiggingFee               int64
+	Bounty                   int64
 }
 
-func (embalmer *Embalmer)  initAuth() *bind.TransactOpts {
+func (embalmer *Embalmer) initAuth() *bind.TransactOpts {
 	auth := bind.NewKeyedTransactor(embalmer.EmbalmerPrivateKey)
 	auth.Nonce = nil // uses nonce of pending state
 	auth.Value = big.NewInt(0)
@@ -115,7 +115,7 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDou
 	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
 	tx, err := sarcoSession.CreateSarcophagus(
 		"My Sarcophagus",
-		embalmer.ArchPublicKeyBytes[1:],
+		embalmer.ArchAddress,
 		big.NewInt(embalmer.ResurrectionTime),
 		big.NewInt(embalmer.StorageFee),
 		big.NewInt(embalmer.DiggingFee),
@@ -139,7 +139,7 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filepath s
 
 	var responseToEmbalmer = new(models.ResponseToEmbalmer)
 	err := json.Unmarshal(response, &responseToEmbalmer)
-	if(err != nil){
+	if err != nil {
 		fmt.Println("couldnt unmarshal json response:", err)
 	}
 
@@ -150,6 +150,7 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filepath s
 
 	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
 	tx, err := sarcoSession.UpdateSarcophagus(
+		responseToEmbalmer.NewPublicKey,
 		assetDoubleHash,
 		responseToEmbalmer.AssetId,
 		responseToEmbalmer.V,
@@ -165,7 +166,7 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filepath s
 	log.Printf("Gas Used: %v", tx.Gas())
 }
 
-func (embalmer *Embalmer) SendFile (url string, filename string, filetype string) []byte {
+func (embalmer *Embalmer) SendFile(url string, filename string, filetype string) []byte {
 	file, err := os.Open(filename)
 
 	if err != nil {

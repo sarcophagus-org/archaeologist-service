@@ -57,7 +57,7 @@ func (arch *Archaeologist) EthBalance() *big.Int {
 }
 
 func (arch *Archaeologist) WithdrawBond(bondToWithdraw *big.Int) {
-	tx, err := arch.SarcoSession.WithdrawalBond(bondToWithdraw)
+	tx, err := arch.SarcoSession.WithdrawBond(bondToWithdraw)
 
 	if err != nil {
 		log.Fatalf("Transaction reverted. Error Withdrawing Bond: %v \n Config value REMOVE_FROM_FREE_BOND has been reset to 0. You will need to reset this.", err)
@@ -72,7 +72,7 @@ func (arch *Archaeologist) RegisterArchaeologist() {
 	tx, err := arch.SarcoSession.RegisterArchaeologist(
 		arch.PublicKeyBytes,
 		arch.Endpoint,
-		arch.ArchAddress,
+		arch.PaymentAddress,
 		big.NewInt(arch.FeePerByte),
 		big.NewInt(arch.MinBounty),
 		big.NewInt(arch.MinDiggingFee),
@@ -93,6 +93,7 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 	log.Println("***UPDATING ARCHAEOLOGIST***")
 	tx, err := arch.SarcoSession.UpdateArchaeologist(
 		arch.Endpoint,
+		arch.PublicKeyBytes,
 		arch.ArchAddress,
 		big.NewInt(arch.FeePerByte),
 		big.NewInt(arch.MinBounty),

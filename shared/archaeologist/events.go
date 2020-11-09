@@ -4,6 +4,7 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"log"
 )
 
@@ -13,16 +14,20 @@ func EventsSubscribe(arch *models.Archaeologist) {
 		log.Printf("Error creating events contract")
 	}
 
+	/* Add arch address to slice for filtering purposes */
+	var archAddress = []common.Address{arch.ArchAddress}
+
 	/* Create Sarcophagus Subscription */
 	csSink := make(chan *contracts.EventsCreateSarcophagus)
-	csSub, err := sarcoEvents.WatchCreateSarcophagus(&bind.WatchOpts{}, csSink)
+	csSub, err := sarcoEvents.WatchCreateSarcophagus(&bind.WatchOpts{}, csSink, nil, archAddress)
 	if err != nil {
 		log.Fatalf("Error subscribing to CreateSarcophagus event: %v", err)
 	}
 
 	/* Update Sarcophagus Subscription */
+	/* TODO: Pass in slice of created sarcophaguses as query param to only trigger event for ones we care about */
 	usSink := make(chan *contracts.EventsUpdateSarcophagus)
-	usSub, err := sarcoEvents.WatchUpdateSarcophagus(&bind.WatchOpts{}, usSink)
+	usSub, err := sarcoEvents.WatchUpdateSarcophagus(&bind.WatchOpts{}, usSink, nil)
 	if err != nil {
 		log.Fatalf("Error subscribing to UpdateSarcophagus event: %v", err)
 	}

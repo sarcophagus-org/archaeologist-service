@@ -38,10 +38,8 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		log.Fatalf("could not setup HD wallet from mnemonic: %v", err)
 	}
 
-	/* TODO: will need to determine current public key based on sarco states */
+	/* TODO: determine current public key based on sarco states */
 	initialPublicKey := hdw.PublicKeyFromIndex(arch.Wallet, 0)
-	log.Printf("Pub key 0: %v", initialPublicKey)
-	
 	arch.PublicKeyBytes = crypto.FromECDSAPub(initialPublicKey)[1:]
 	arch.PaymentAddress = validatePaymentAddress(config.PAYMENT_ADDRESS, arch.Client)
 	arch.ArchAddress = utility.PrivateKeyToAddress(arch.PrivateKey)
