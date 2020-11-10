@@ -73,6 +73,7 @@ func (fileHandler *FileHandler) uploadFileToArweave(fileBytes []byte) (*tx.Trans
 		Arweave Transaction:
 		Amount and Target are blank, as we aren't sending arweave tokens to anyone
 	*/
+	log.Printf("uploading file bytes: %v", fileBytes)
 	txBuilder, err := fileHandler.CreateTransaction(context.TODO(), w, "0", fileBytes, "")
 	if err != nil {
 		log.Printf("Error creating transaction: %v", err)

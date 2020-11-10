@@ -36,6 +36,7 @@ type Archaeologist struct {
 	Mnemonic              string
 	Wallet                *hdwallet.Wallet
 	AccountIndex          int
+	Sarcophaguses         map[[32]byte]Sarcophagus
 }
 
 func (arch *Archaeologist) SarcoBalance() *big.Int {

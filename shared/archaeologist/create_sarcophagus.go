@@ -18,11 +18,14 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 	log.Println("Storage Fee:", event.StorageFee)
 	log.Println("Digging Fee:", event.DiggingFee)
 	log.Println("CursedBond:", event.CursedBond)
+	log.Println("CurrentPublicKey:", event.ArchaeologistPublicKey)
 
 	if bytes.Compare(event.ArchaeologistPublicKey, arch.CurrentPublicKeyBytes) != 0 {
 		log.Print("Public Key on Sarcophagus does not match current Public Key. Not listening for file.")
 		return
 	}
+
+	arch.Sarcophaguses[event.AssetDoubleHash] = models.Sarcophagus{ResurrectionTime: event.ResurrectionTime, AccountIndex: arch.AccountIndex}
 
 	/* TODO: Update to handle multiple files (when 'create sarcophagus' is called multiple times) */
 	/* Consider pushing file handlers to slice */
