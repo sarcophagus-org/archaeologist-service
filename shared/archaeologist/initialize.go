@@ -42,7 +42,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.AccountIndex = 0
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	initialPublicKey := utility.PrivateToPublicKeyECDSA(arch.CurrentPrivateKey)
-	arch.CurrentPublicKeyBytes = crypto.FromECDSAPub(initialPublicKey)[:1]
+	arch.CurrentPublicKeyBytes = crypto.FromECDSAPub(initialPublicKey)[1:]
 
 	arch.PaymentAddress = validatePaymentAddress(config.PAYMENT_ADDRESS, arch.Client)
 	arch.ArchAddress = utility.PrivateKeyToAddress(arch.PrivateKey)

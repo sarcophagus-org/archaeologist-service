@@ -1,7 +1,9 @@
 package main
 
 import (
+	"github.com/Dev43/arweave-go/api"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/archaeologist"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/spf13/viper"
 	"log"
@@ -39,11 +41,11 @@ func main(){
 	config := loadConfig()
 	arch := new(models.Archaeologist)
 	archaeologist.InitializeArchaeologist(arch, config)
-	//archaeologist.RegisterOrUpdateArchaeologist(arch)
-	//
-	//log.Printf("Eth Balance: %v", arch.EthBalance())
-	//log.Printf("Sarco Token Balance: %v", arch.SarcoBalance())
-	//log.Println("Arweave Balance:", arweave.ArweaveBalance(arch.ArweaveTransactor.Client.(*api.Client), arch.ArweaveWallet))
-	//
-	//archaeologist.EventsSubscribe(arch)
+	archaeologist.RegisterOrUpdateArchaeologist(arch)
+
+	log.Printf("Eth Balance: %v", arch.EthBalance())
+	log.Printf("Sarco Token Balance: %v", arch.SarcoBalance())
+	log.Println("Arweave Balance:", arweave.ArweaveBalance(arch.ArweaveTransactor.Client.(*api.Client), arch.ArweaveWallet))
+
+	archaeologist.EventsSubscribe(arch)
 }

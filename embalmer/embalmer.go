@@ -143,6 +143,7 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filepath s
 		fmt.Println("couldnt unmarshal json response:", err)
 	}
 
+	log.Printf("NewPublicKey:", responseToEmbalmer.NewPublicKey)
 	log.Printf("AssetID:", responseToEmbalmer.AssetId)
 	log.Printf("V", responseToEmbalmer.V)
 	log.Printf("R", responseToEmbalmer.R)

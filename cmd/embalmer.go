@@ -1,7 +1,6 @@
 package main
 
 import (
-	hex2 "encoding/hex"
 	"flag"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/embalmer"
@@ -82,12 +81,12 @@ func main(){
 			log.Fatalf("Call to Archaeologists in Sarcophagus Contract failed. Please check CONTRACT_ADDRESS is correct in the config file: %v", err)
 		}
 
-		currentPublicKey := append([]byte{4}, contractArch.CurrentPublicKey...)
-		pubKeyEcdsa, err := crypto.UnmarshalPubkey(currentPublicKey)
+		currentPublicKeyBytes := append([]byte{4}, contractArch.CurrentPublicKey...)
+		pubKeyEcdsa, err := crypto.UnmarshalPubkey(currentPublicKeyBytes)
 		if err != nil {
-			log.Fatalf("ERROR:", err)
+			log.Fatalf("Error unmarshaling public key during embalmer update:", err)
 		}
-		log.Print(contractArch.CurrentPublicKey)
+
 		pubkeyBytes := crypto.FromECDSAPub(pubKeyEcdsa)
 		pubKey, err := btcec.ParsePubKey(pubkeyBytes, btcec.S256())
 		if err != nil {

@@ -176,7 +176,11 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 
 	/* Generate new public and private keys */
 
-	/* Sign Arweave TX and respond to the Embalmer */
+	/* Respond to embalmer with:
+		New Public Key
+	   	Arweave Tx Hash
+		Signature of New Public Key + Tx Hash
+	*/
 	arweaveTxHash := arweaveTx.Hash()
 	newPublicKey := hdw.PublicKeyFromIndex(fileHandler.Archaeologist.Wallet, fileHandler.Archaeologist.AccountIndex+1)
 	pubKeyConcatTxHash := append(crypto.FromECDSAPub(newPublicKey)[1:], []byte(arweaveTxHash)...)
