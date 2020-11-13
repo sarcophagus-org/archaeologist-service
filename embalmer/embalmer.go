@@ -9,6 +9,7 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
+	"github.com/dop251/goja/file"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -132,11 +133,11 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDou
 	log.Printf("Gas Used: %v", tx.Gas())
 }
 
-func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, encryptedFile *os.File) {
+func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filepath string) {
 	log.Println("***UPDATING SARCOPHAGUS***")
 	url := "http://127.0.0.1:8080/file"
-	log.Printf("ENCRYPTED FILE: %v", encryptedFile)
-	response := embalmer.SendFile(url, encryptedFile, "file")
+	log.Printf("ENCRYPTED FILE PATH: %v", filepath)
+	response := embalmer.SendFile(url, filepath, "file")
 
 	var responseToEmbalmer = new(models.ResponseToEmbalmer)
 	err := json.Unmarshal(response, &responseToEmbalmer)
@@ -168,7 +169,13 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, encryptedF
 	log.Printf("Gas Used: %v", tx.Gas())
 }
 
-func (embalmer *Embalmer) SendFile(url string, file *os.File, filetype string) []byte {
+func (embalmer *Embalmer) SendFile(url string, filepath string, filetype string) []byte {
+	file, err := os.Open(filepath)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Printf("file in sendfile: %v", file.Name())
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)

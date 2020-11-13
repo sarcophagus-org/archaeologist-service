@@ -127,7 +127,7 @@ func main(){
 		tmpFile := createTmpFile(encryptedBytes)
 		defer os.Remove(tmpFile.Name())
 
-		emb.UpdateSarcophagus(assetDoubleHashBytes, tmpFile)
+		emb.UpdateSarcophagus(assetDoubleHashBytes, tmpFile.Name())
 
 		// Close the file
 		if err := tmpFile.Close(); err != nil {
