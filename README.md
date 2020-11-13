@@ -64,21 +64,23 @@ make devtools
 ```
 
 Use abigen to compile abi -- below examples output to "abi" / "abiToken" directories. Alternatively use abi in build folder.
+Note: You will need to use the same compiler version as the source files. source files currently use compiler version 0.6.0.  
 ```
-solc --abi @openzeppelin/=/<local absolute path to repo>/node_modules/@openzeppelin/ contracts/Sarcophagus.sol -o abi
-solc --abi @openzeppelin/=/<local absolute path to repo>/node_modules/@openzeppelin/ contracts/SarcophagusToken.sol -o abiToken
-solc --abi @openzeppelin/=/<local absolute path to repo>/node_modules/@openzeppelin/ contracts/Events.sol -o abiEvents
+solc --abi @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ contracts/Sarcophagus.sol -o abi
+solc --abi @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ contracts/SarcophagusToken.sol -o abiToken
+solc --abi @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ contracts/libraries/Events.sol -o abiEvents
 ```
 
 Compile Contracts to Go
 
 ```
-abigen --abi=./abi/Sarcophagus.abi --pkg=contracts --out=Sarcophagus.go
-abigen --abi=./abiToken/SarcophagusToken.abi --pkg=contracts --out=SarcophagusToken.go
-abigen --abi=./abiEvents/Events.abi --pkg=contracts --out=Events.go
+abigen --abi=./abi/Sarcophagus.abi --pkg=sarcophagus --out=Sarcophagus.go
+abigen --abi=./abiToken/SarcophagusToken.abi --pkg=token --out=SarcophagusToken.go
+abigen --abi=./abiEvents/Events.abi --pkg=events --out=Events.go
 ```
 
-Copy/Replace generated files into /contracts directory
+1. Copy/Replace generated files into /contracts directory
+2. Rename the package name on these files to "contracts"
 
 If you have any issues with the compiled go code, you may need to download an older version of abigen.
 
@@ -90,5 +92,5 @@ The latest tested version working with the service is Geth & Tools 1.9.22
 If you want to test sending a file locally (the Sarcophagus payload) after creating a sarcophagus: 
 
 ```
-curl -v -X POST -F file=@<your file> -F "signedAssetDoubleHash=<your double hash>" http://127.0.0.1:<your port>/file
+curl -v -X POST -F file=@<your file> -F http://127.0.0.1:<your port>/file
 ```

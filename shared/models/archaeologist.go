@@ -8,29 +8,35 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"log"
 	"math/big"
 )
 
 type Archaeologist struct {
-	Client             *ethclient.Client
-	ArweaveWallet      *wallet.Wallet
-	ArweaveTransactor  *transactor.Transactor
-	PrivateKey         *ecdsa.PrivateKey
-	PublicKey          *ecdsa.PublicKey
-	PublicKeyBytes     []byte
-	ArchAddress        common.Address
-	SarcoAddress       common.Address
-	SarcoSession       contracts.SarcophagusSession
-	SarcoTokenAddress  common.Address
-	TokenSession       contracts.TokenSession
-	FreeBond           int64
-	FeePerByte         int64
-	MinBounty          int64
-	MinDiggingFee      int64
-	MaxResurectionTime int64
-	Endpoint           string
-	FilePort           string
+	Client                *ethclient.Client
+	ArweaveWallet         *wallet.Wallet
+	ArweaveTransactor     *transactor.Transactor
+	PrivateKey            *ecdsa.PrivateKey
+	CurrentPublicKeyBytes []byte
+	CurrentPrivateKey     *ecdsa.PrivateKey
+	ArchAddress           common.Address
+	PaymentAddress        common.Address
+	SarcoAddress          common.Address
+	SarcoSession          contracts.SarcophagusSession
+	SarcoTokenAddress     common.Address
+	TokenSession          contracts.TokenSession
+	FreeBond              int64
+	FeePerByte            int64
+	MinBounty             int64
+	MinDiggingFee         int64
+	MaxResurectionTime    int64
+	Endpoint              string
+	FilePort              string
+	Mnemonic              string
+	Wallet                *hdwallet.Wallet
+	AccountIndex          int
+	Sarcophaguses         map[[32]byte]Sarcophagus
 }
 
 func (arch *Archaeologist) SarcoBalance() *big.Int {
@@ -54,7 +60,7 @@ func (arch *Archaeologist) EthBalance() *big.Int {
 }
 
 func (arch *Archaeologist) WithdrawBond(bondToWithdraw *big.Int) {
-	tx, err := arch.SarcoSession.WithdrawalBond(bondToWithdraw)
+	tx, err := arch.SarcoSession.WithdrawBond(bondToWithdraw)
 
 	if err != nil {
 		log.Fatalf("Transaction reverted. Error Withdrawing Bond: %v \n Config value REMOVE_FROM_FREE_BOND has been reset to 0. You will need to reset this.", err)
@@ -67,9 +73,9 @@ func (arch *Archaeologist) WithdrawBond(bondToWithdraw *big.Int) {
 func (arch *Archaeologist) RegisterArchaeologist() {
 	log.Println("***REGISTERING ARCHAEOLOGIST***")
 	tx, err := arch.SarcoSession.RegisterArchaeologist(
-		arch.PublicKeyBytes,
+		arch.CurrentPublicKeyBytes,
 		arch.Endpoint,
-		arch.ArchAddress,
+		arch.PaymentAddress,
 		big.NewInt(arch.FeePerByte),
 		big.NewInt(arch.MinBounty),
 		big.NewInt(arch.MinDiggingFee),
@@ -90,6 +96,7 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 	log.Println("***UPDATING ARCHAEOLOGIST***")
 	tx, err := arch.SarcoSession.UpdateArchaeologist(
 		arch.Endpoint,
+		arch.CurrentPublicKeyBytes,
 		arch.ArchAddress,
 		big.NewInt(arch.FeePerByte),
 		big.NewInt(arch.MinBounty),

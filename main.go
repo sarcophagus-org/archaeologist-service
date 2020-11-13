@@ -46,6 +46,5 @@ func main(){
 	log.Printf("Eth Balance: %v", arch.EthBalance())
 	log.Printf("Sarco Token Balance: %v", arch.SarcoBalance())
 	log.Println("Arweave Balance:", arweave.ArweaveBalance(arch.ArweaveTransactor.Client.(*api.Client), arch.ArweaveWallet))
-
 	archaeologist.EventsSubscribe(arch)
 }

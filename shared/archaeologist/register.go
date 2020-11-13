@@ -1,6 +1,7 @@
 package archaeologist
 
 import (
+	"bytes"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"log"
 	"math/big"
@@ -9,7 +10,7 @@ import (
 func RegisterOrUpdateArchaeologist(arch *models.Archaeologist) {
 	contractArch, err := arch.SarcoSession.Archaeologists(arch.ArchAddress)
 	if err != nil {
-		log.Fatalf("Call to Archaeologists in Sarcophagus Contract failed: %v", err)
+		log.Fatalf("Call to Archaeologists in Sarcophagus Contract failed. Please check CONTRACT_ADDRESS is correct in the config file: %v", err)
 	}
 
 	if arch.FreeBond > 0 {
@@ -24,6 +25,7 @@ func RegisterOrUpdateArchaeologist(arch *models.Archaeologist) {
 		}
 
 		if arch.FreeBond > 0 ||
+			bytes.Compare(contractArch.CurrentPublicKey, arch.CurrentPublicKeyBytes) != 0 ||
 			contractArch.Endpoint != arch.Endpoint ||
 			contractArch.PaymentAddress != arch.ArchAddress ||
 			contractArch.FeePerByte.Cmp(big.NewInt(arch.FeePerByte)) != 0 ||

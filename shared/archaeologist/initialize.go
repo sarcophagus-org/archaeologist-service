@@ -8,11 +8,13 @@ import (
 	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/hdw"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"log"
 )
 
@@ -31,9 +33,22 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		log.Fatalf("could not load eth private key.  Please check the ETH_NODE value in the config file. Error: %v\n", err)
 	}
 
-	arch.PublicKey = utility.PrivateToPublicKeyECDSA(arch.PrivateKey)
-	arch.PublicKeyBytes = crypto.FromECDSAPub(arch.PublicKey)[1:]
-	arch.ArchAddress = initArchAddress(config.PAYMENT_ADDRESS, arch.PublicKey, arch.Client)
+	arch.Wallet, err = hdwallet.NewFromMnemonic(config.MNEMONIC)
+	if err != nil {
+		log.Fatalf("could not setup HD wallet from mnemonic: %v", err)
+	}
+
+	arch.Sarcophaguses = map[[32]byte]models.Sarcophagus{}
+
+	/* TODO: build sarco states and determine current public key based on sarco states */
+
+	arch.AccountIndex = 0
+	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
+	initialPublicKey := utility.PrivateToPublicKeyECDSA(arch.CurrentPrivateKey)
+	arch.CurrentPublicKeyBytes = crypto.FromECDSAPub(initialPublicKey)[1:]
+
+	arch.PaymentAddress = validatePaymentAddress(config.PAYMENT_ADDRESS, arch.Client)
+	arch.ArchAddress = utility.PrivateKeyToAddress(arch.PrivateKey)
 	arch.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, arch.Client)
 	arch.SarcoSession = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
 	arch.TokenSession = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
@@ -80,8 +95,7 @@ func initArweaveWallet(arweaveKeyFileName string) *wallet.Wallet {
 	return wallet
 }
 
-func initArchAddress(paymentAddress string, publicKey *ecdsa.PublicKey, client *ethclient.Client) common.Address {
-	// If the optional payment address is supplied, verify it is a valid address
+func validatePaymentAddress(paymentAddress string, client *ethclient.Client) common.Address {
 	var archAddress common.Address
 
 	if paymentAddress != "" {
@@ -90,8 +104,6 @@ func initArchAddress(paymentAddress string, publicKey *ecdsa.PublicKey, client *
 		} else {
 			log.Fatal("Payment address supplied in config is invalid. Please check that address.")
 		}
-	} else {
-		archAddress = crypto.PubkeyToAddress(*publicKey)
 	}
 
 	return archAddress

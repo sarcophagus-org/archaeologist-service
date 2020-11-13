@@ -4,59 +4,59 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/event"
 	"log"
-	"math/big"
 )
 
-func EventsSubscribe(arch *models.Archaeologist) {
-	sink := make(chan *contracts.EventsCreateSarcophagus)
-	sarcoEvents, err := contracts.NewEvents(arch.SarcoAddress, arch.Client)
-	sub, err := sarcoEvents.WatchCreateSarcophagus(&bind.WatchOpts{}, sink)
-
+func watchCreateSarcophagus(sarcoEvents *contracts.Events, archAddress []common.Address) (chan *contracts.EventsCreateSarcophagus, event.Subscription) {
+	csSink := make(chan *contracts.EventsCreateSarcophagus)
+	csSub, err := sarcoEvents.WatchCreateSarcophagus(&bind.WatchOpts{}, csSink, nil, archAddress)
 	if err != nil {
 		log.Fatalf("Error subscribing to CreateSarcophagus event: %v", err)
 	}
+
+	return csSink, csSub
+}
+
+func watchUpdateSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.EventsUpdateSarcophagus, event.Subscription) {
+	/* TODO: Pass in slice of created sarcophaguses as query param to only trigger event for ones we care about */
+	usSink := make(chan *contracts.EventsUpdateSarcophagus)
+	usSub, err := sarcoEvents.WatchUpdateSarcophagus(&bind.WatchOpts{}, usSink, nil)
+	if err != nil {
+		log.Fatalf("Error subscribing to UpdateSarcophagus event: %v", err)
+	}
+
+	return usSink, usSub
+}
+
+func EventsSubscribe(arch *models.Archaeologist) {
+	sarcoEvents, err := contracts.NewEvents(arch.SarcoAddress, arch.Client)
+	if err != nil {
+		log.Printf("Error creating events contract")
+	}
+
+	/* Add arch address to slice for filtering purposes */
+	var archAddress = []common.Address{arch.ArchAddress}
+	csSink, csSub := watchCreateSarcophagus(sarcoEvents, archAddress)
+	usSink, usSub := watchUpdateSarcophagus(sarcoEvents)
 
 	log.Println("Listening For Events...")
 
 	for {
 		select {
-		case err := <-sub.Err():
+		case err := <-csSub.Err():
 			if err != nil {
-				log.Println(err)
+				log.Println("Error with Create Sarcophagus Subscription:", err)
 			}
-		case event := <-sink:
-			/* TODO: Handle file *only* if we are the Arch selected for this Sarc */
-
-			log.Println("Name:", event.Name)
-			log.Println("Asset Double Hash:", event.AssetDoubleHash)
-			log.Println("Archaeologist:", event.Archaeologist)
-			log.Println("Embalmer:", event.Embalmer)
-			log.Println("Resurrection Time:", event.ResurrectionTime)
-			log.Println("Resurrection Window:", event.ResurrectionWindow)
-			log.Println("Bounty:", event.Bounty)
-			log.Println("Storage Fee:", event.StorageFee)
-			log.Println("Digging Fee:", event.DiggingFee)
-			log.Println("CursedBond:", event.CursedBond)
-
-			/* TODO: Update to handle multiple files (when 'create sarcophagus' is called multiple times) */
-			/* Consider pushing file handlers to slice */
-			/* Make server separate from file handler */
-
-			fileHandler := &models.FileHandler{
-				event.AssetDoubleHash,
-				event.Embalmer,
-				arch.PrivateKey,
-				event.StorageFee,
-				big.NewInt(arch.FeePerByte),
-				arch.FilePort,
-				arch.ArweaveTransactor,
-				arch.ArweaveWallet,
+		case err := <-usSub.Err():
+			if err != nil {
+				log.Println("Error with Update Sarcophagus Subscription:", err)
 			}
-
-			/* Todo -- detect if we are already listening */
-
-			fileHandler.HandleFileUpload()
+		case event := <-csSink:
+			go handleCreateSarcophagus(event, arch)
+		case event := <-usSink:
+			handleUpdateSarcophagus(event, arch)
 		}
 	}
 }
