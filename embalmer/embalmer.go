@@ -132,10 +132,11 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDou
 	log.Printf("Gas Used: %v", tx.Gas())
 }
 
-func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filepath string) {
+func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, encryptedFile *os.File) {
 	log.Println("***UPDATING SARCOPHAGUS***")
 	url := "http://127.0.0.1:8080/file"
-	response := embalmer.SendFile(url, filepath, "file")
+	log.Printf("ENCRYPTED FILE: %v", encryptedFile)
+	response := embalmer.SendFile(url, encryptedFile, "file")
 
 	var responseToEmbalmer = new(models.ResponseToEmbalmer)
 	err := json.Unmarshal(response, &responseToEmbalmer)
@@ -167,15 +168,8 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filepath s
 	log.Printf("Gas Used: %v", tx.Gas())
 }
 
-func (embalmer *Embalmer) SendFile(url string, filename string, filetype string) []byte {
-	file, err := os.Open(filename)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer file.Close()
-
+func (embalmer *Embalmer) SendFile(url string, file *os.File, filetype string) []byte {
+	log.Printf("file in sendfile: %v", file.Name())
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile(filetype, filepath.Base(file.Name()))

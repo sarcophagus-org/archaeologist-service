@@ -135,6 +135,8 @@ func (fileHandler *FileHandler) fileUploadHandler(w http.ResponseWriter, r *http
 	fileBytes, _ := ioutil.ReadAll(file)
 	fileByteLen := len(fileBytes)
 
+	log.Printf("FILEBYTES: %v", fileBytes)
+
 	/* Validate Size. */
 	if fileByteLen > (3 * MB) {
 		http.Error(w, "The file sent is larger than the limit of 3MB.", http.StatusBadRequest)

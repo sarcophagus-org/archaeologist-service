@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/embalmer"
-	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/spf13/viper"
 	"io/ioutil"
@@ -50,14 +50,32 @@ func loadEmbalmerConfig() *embalmer.EmbalmerConfig {
 	return &embalmerConfig
 }
 
+func createTmpFile(encryptedFileBytes []byte) *os.File {
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "prefix-")
+	if err != nil {
+		log.Fatal("Cannot create temporary file", err)
+	}
+
+	// Remember to clean up the file afterwards
+	fmt.Println("Created File: " + tmpFile.Name())
+
+	// Example writing to the file
+	if _, err = tmpFile.Write(encryptedFileBytes); err != nil {
+		log.Fatal("Failed to write to temporary file", err)
+	}
+
+	return tmpFile
+}
+
 func main(){
 	config := loadEmbalmerConfig()
 	emb := new(embalmer.Embalmer)
-
-	embalmer.InitEmbalmer(emb, config)
-
 	assetPathFlag := flag.String("file", fileDefault, "File to use as payload for sarcophagus")
 	typeFlag := flag.String("type", "create", "Create or Update a Sarcophagus")
+	resurrectionFlag := flag.Int64("res",  1200, "Resurrection Time")
+	seedFlag := flag.Int64("seed", 1, "Seed to generate random bytes")
+
+	embalmer.InitEmbalmer(emb, config, *resurrectionFlag)
 
 	flag.Parse()
 
@@ -67,7 +85,15 @@ func main(){
 	}
 	defer file.Close()
 
-	fileBytes, _ := utility.FileToBytes(file)
+	// fileBytes, _ := utility.FileToBytes(file)
+
+	/* Generate random bytes to use as payload for each sarco */
+	fileBytes := make([]byte, 20)
+
+	/* TODO: Seed needs to be the same for create and update */
+	rand.Seed(*seedFlag)
+	rand.Read(fileBytes)
+
 	assetDoubleHashBytes := embalmer.FileBytesToDoubleHashBytes(fileBytes)
 
 	if *typeFlag == "create" {
@@ -97,11 +123,15 @@ func main(){
 		if err != nil {
 			log.Fatalf("Error encrypting file: %v", err)
 		}
+		log.Printf("ENCRYPTED BYTES: %v", encryptedBytes)
+		tmpFile := createTmpFile(encryptedBytes)
+		defer os.Remove(tmpFile.Name())
 
-		bigErr := ioutil.WriteFile(encryptedOutputFilePath, encryptedBytes, 0755)
-		if bigErr != nil {
-			log.Fatalf("Error writing file: %v", bigErr)
+		emb.UpdateSarcophagus(assetDoubleHashBytes, tmpFile)
+
+		// Close the file
+		if err := tmpFile.Close(); err != nil {
+			log.Fatal(err)
 		}
-		emb.UpdateSarcophagus(assetDoubleHashBytes, encryptedOutputFilePath)
 	}
 }
