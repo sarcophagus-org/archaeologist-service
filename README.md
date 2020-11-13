@@ -79,7 +79,8 @@ abigen --abi=./abiToken/SarcophagusToken.abi --pkg=token --out=SarcophagusToken.
 abigen --abi=./abiEvents/Events.abi --pkg=events --out=Events.go
 ```
 
-Copy/Replace generated files into /contracts directory
+1. Copy/Replace generated files into /contracts directory
+2. Rename the package name on these files to "contracts"
 
 If you have any issues with the compiled go code, you may need to download an older version of abigen.
 
@@ -91,5 +92,5 @@ The latest tested version working with the service is Geth & Tools 1.9.22
 If you want to test sending a file locally (the Sarcophagus payload) after creating a sarcophagus: 
 
 ```
-curl -v -X POST -F file=@<your file> -F "signedAssetDoubleHash=<your double hash>" http://127.0.0.1:<your port>/file
+curl -v -X POST -F file=@<your file> -F http://127.0.0.1:<your port>/file
 ```

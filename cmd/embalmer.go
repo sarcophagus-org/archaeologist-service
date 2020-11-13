@@ -17,6 +17,7 @@ import (
 const fileDefault = "/tmp/test.txt"
 const encryptedOutputFilePath = "/tmp/encrypted.txt"
 
+/* TODO: Generate new file from random string */
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func randSeq(n int) string {
