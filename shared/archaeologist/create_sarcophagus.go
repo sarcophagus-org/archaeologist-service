@@ -25,19 +25,8 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 		return
 	}
 
-	arch.Sarcophaguses[event.AssetDoubleHash] = models.Sarcophagus{ResurrectionTime: event.ResurrectionTime, AccountIndex: arch.AccountIndex}
+	arch.Sarcophaguses[event.AssetDoubleHash] = models.Sarcophagus{ResurrectionTime: event.ResurrectionTime}
+	arch.FileHandlers[event.AssetDoubleHash] = event.StorageFee
 
-	/* TODO: Update to handle multiple files (when 'create sarcophagus' is called multiple times) */
-	/* Consider pushing file handlers to slice */
-	/* Make server separate from file handler */
-
-	fileHandler := &models.FileHandler{
-		event.AssetDoubleHash,
-		event.Embalmer,
-		event.StorageFee,
-		arch,
-	}
-
-	/* Todo -- detect if we are already listening */
-	fileHandler.HandleFileUpload()
+	arch.StartServer()
 }

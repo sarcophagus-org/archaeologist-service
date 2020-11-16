@@ -12,10 +12,10 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"log"
+	"math/big"
 )
 
 func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) {
@@ -39,13 +39,17 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	}
 
 	arch.Sarcophaguses = map[[32]byte]models.Sarcophagus{}
+	arch.FileHandlers = map[[32]byte]*big.Int{}
 
-	/* TODO: build sarco states and determine current public key based on sarco states */
+	/* TODO:
+		1. Build sarco states
+		2. Build open file handlers for any open 'created' sarcos that arent updated
+		3. Schedule resurrections
+	*/
 
 	arch.AccountIndex = 0
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
-	initialPublicKey := utility.PrivateToPublicKeyECDSA(arch.CurrentPrivateKey)
-	arch.CurrentPublicKeyBytes = crypto.FromECDSAPub(initialPublicKey)[1:]
+	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
 
 	arch.PaymentAddress = validatePaymentAddress(config.PAYMENT_ADDRESS, arch.Client)
 	arch.ArchAddress = utility.PrivateKeyToAddress(arch.PrivateKey)
@@ -57,7 +61,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.MinDiggingFee = utility.ValidatePositiveNumber(config.MIN_DIGGING_FEE, "MIN_DIGGING_FEE")
 	arch.MaxResurectionTime = utility.ValidateTimeInFuture(config.MAX_RESURRECTION_TIME, "MAX_RESURRECTION_TIME")
 	arch.Endpoint = utility.ValidateIpAddress(config.ENDPOINT, "ENDPOINT")
-	arch.FilePort = config.FILE_PORT
+	arch.InitServer(config.FILE_PORT)
 }
 
 func calculateFreeBond(addFreeBond int64, removeFreeBond int64) int64 {

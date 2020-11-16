@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/crypto"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"log"
 )
@@ -36,6 +37,11 @@ func PublicKeyFromIndex(wallet *hdwallet.Wallet, index int) *ecdsa.PublicKey {
 	}
 
 	return pubKey
+}
+
+func PublicKeyBytesFromIndex(wallet *hdwallet.Wallet, index int) []byte {
+	pubKey := PublicKeyFromIndex(wallet, index)
+	return crypto.FromECDSAPub(pubKey)[1:]
 }
 
 func PrivateKeyFromIndex(wallet *hdwallet.Wallet, index int) *ecdsa.PrivateKey {
