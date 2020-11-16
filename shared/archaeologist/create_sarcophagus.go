@@ -25,8 +25,15 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 		return
 	}
 
+	_, ok := arch.Sarcophaguses[event.AssetDoubleHash]
+	if ok {
+		/* The sarco already exists! Oh no! */
+
+	}
+
 	arch.Sarcophaguses[event.AssetDoubleHash] = models.Sarcophagus{ResurrectionTime: event.ResurrectionTime}
 	arch.FileHandlers[event.AssetDoubleHash] = event.StorageFee
 
+	arch.InitServer(arch.FilePort)
 	arch.StartServer()
 }

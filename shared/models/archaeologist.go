@@ -38,11 +38,11 @@ type Archaeologist struct {
 	SarcoSession          contracts.SarcophagusSession
 	SarcoTokenAddress     common.Address
 	TokenSession          contracts.TokenSession
-	FreeBond              int64
-	FeePerByte            int64
-	MinBounty             int64
-	MinDiggingFee         int64
-	MaxResurectionTime    int64
+	FreeBond              *big.Int
+	FeePerByte            *big.Int
+	MinBounty             *big.Int
+	MinDiggingFee         *big.Int
+	MaxResurectionTime    *big.Int
 	Endpoint              string
 	FilePort              string
 	Mnemonic              string
@@ -94,18 +94,18 @@ func (arch *Archaeologist) RegisterArchaeologist() {
 		arch.CurrentPublicKeyBytes,
 		arch.Endpoint,
 		arch.PaymentAddress,
-		big.NewInt(arch.FeePerByte),
-		big.NewInt(arch.MinBounty),
-		big.NewInt(arch.MinDiggingFee),
-		big.NewInt(arch.MaxResurectionTime),
-		big.NewInt(arch.FreeBond),
+		arch.FeePerByte,
+		arch.MinBounty,
+		arch.MinDiggingFee,
+		arch.MaxResurectionTime,
+		arch.FreeBond,
 	)
 
 	if err != nil {
 		log.Fatalf("Transaction reverted. Error registering Archaeologist: %v Config values ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND have been reset to 0. You will need to reset this.", err)
 	}
 
-	arch.FreeBond = 0
+	arch.FreeBond = big.NewInt(0)
 	log.Printf("Register Archaeologist Successful. Transaction ID: %s", tx.Hash().Hex())
 	log.Printf("Gas Used: %v", tx.Gas())
 }
@@ -116,18 +116,18 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 		arch.Endpoint,
 		arch.CurrentPublicKeyBytes,
 		arch.ArchAddress,
-		big.NewInt(arch.FeePerByte),
-		big.NewInt(arch.MinBounty),
-		big.NewInt(arch.MinDiggingFee),
-		big.NewInt(arch.MaxResurectionTime),
-		big.NewInt(arch.FreeBond),
+		arch.FeePerByte,
+		arch.MinBounty,
+		arch.MinDiggingFee,
+		arch.MaxResurectionTime,
+		arch.FreeBond,
 	)
 
 	if err != nil {
 		log.Fatalf("Transaction reverted. Error updating Archaeologist: %v Config values ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND have been reset to 0. You will need to reset these.", err)
 	}
 
-	arch.FreeBond = 0
+	arch.FreeBond = big.NewInt(0)
 	log.Printf("Update Archaeologist Successful. Transaction ID: %s", tx.Hash().Hex())
 	log.Printf("Gas Used: %v", tx.Gas())
 }
@@ -136,13 +136,13 @@ func (arch *Archaeologist) ApproveFreeBondTransfer() {
 	archSarcoBalance := arch.SarcoBalance()
 
 	// Check if archSarcoBalance < freeBond
-	if archSarcoBalance.Cmp(big.NewInt(arch.FreeBond)) == -1 {
+	if archSarcoBalance.Cmp(arch.FreeBond) == -1 {
 		log.Fatalf("Your balance is too low to cover the free bond transfer. \n Balance Needed: %v \n Current Balance: %v", arch.FreeBond, archSarcoBalance)
 	}
 
 	tx, err := arch.TokenSession.Approve(
 		arch.SarcoAddress,
-		big.NewInt(arch.FreeBond),
+		arch.FreeBond,
 	)
 
 	if err != nil {
@@ -262,7 +262,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	/* Validate Storage Fee is sufficient */
-	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), big.NewInt(arch.FeePerByte))
+	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), arch.FeePerByte)
 	if storageExpectation.Cmp(storageFee) == 1 {
 		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", storageExpectation, storageFee)
 		http.Error(w, errMsg, http.StatusBadRequest)

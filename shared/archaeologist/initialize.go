@@ -24,7 +24,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 
 	var err error
 
-	arch.FreeBond = calculateFreeBond(config.ADD_TO_FREE_BOND, config.REMOVE_FROM_FREE_BOND)
+	arch.FreeBond = calculateFreeBond(big.NewInt(config.ADD_TO_FREE_BOND), big.NewInt(config.REMOVE_FROM_FREE_BOND))
 	arch.Client = ethereum.InitEthClient(config.ETH_NODE)
 	arch.ArweaveTransactor = initArweaveTransactor(config.ARWEAVE_NODE)
 	arch.ArweaveWallet = initArweaveWallet(config.ARWEAVE_KEY_FILE)
@@ -56,24 +56,25 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, arch.Client)
 	arch.SarcoSession = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
 	arch.TokenSession = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
-	arch.FeePerByte = utility.ValidatePositiveNumber(config.FEE_PER_BYTE, "FEE_PER_BYTE")
-	arch.MinBounty = utility.ValidatePositiveNumber(config.MIN_BOUNTY, "MIN_BOUNTY")
-	arch.MinDiggingFee = utility.ValidatePositiveNumber(config.MIN_DIGGING_FEE, "MIN_DIGGING_FEE")
-	arch.MaxResurectionTime = utility.ValidateTimeInFuture(config.MAX_RESURRECTION_TIME, "MAX_RESURRECTION_TIME")
+	arch.FeePerByte = utility.ValidatePositiveNumber(big.NewInt(config.FEE_PER_BYTE), "FEE_PER_BYTE")
+	arch.MinBounty = utility.ValidatePositiveNumber(big.NewInt(config.MIN_BOUNTY), "MIN_BOUNTY")
+	arch.MinDiggingFee = utility.ValidatePositiveNumber(big.NewInt(config.MIN_DIGGING_FEE), "MIN_DIGGING_FEE")
+	arch.MaxResurectionTime = utility.ValidateTimeInFuture(big.NewInt(config.MAX_RESURRECTION_TIME), "MAX_RESURRECTION_TIME")
 	arch.Endpoint = utility.ValidateIpAddress(config.ENDPOINT, "ENDPOINT")
-	arch.InitServer(config.FILE_PORT)
+	arch.FilePort = config.FILE_PORT
 }
 
-func calculateFreeBond(addFreeBond int64, removeFreeBond int64) int64 {
-	var archFreeBond int64 = 0
+func calculateFreeBond(addFreeBond *big.Int, removeFreeBond *big.Int) *big.Int {
+	var zero = big.NewInt(0)
+	var archFreeBond = zero
 
-	if addFreeBond > 0 {
-		if removeFreeBond > 0 {
+	if addFreeBond.Cmp(zero) == 1 {
+		if removeFreeBond.Cmp(zero) == 1 {
 			log.Fatal("ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND cannot both be > 0")
 		}
 		archFreeBond = addFreeBond
-	} else if removeFreeBond > 0 {
-		archFreeBond = int64(-1) * removeFreeBond
+	} else if removeFreeBond.Cmp(zero) == 1 {
+		archFreeBond = archFreeBond.Neg(removeFreeBond)
 	}
 
 	return archFreeBond

@@ -41,6 +41,7 @@ func main(){
 	config := loadConfig()
 	arch := new(models.Archaeologist)
 	archaeologist.InitializeArchaeologist(arch, config)
+	// log.Printf("min digging fee %v", utility.ToDecimal(arch.MinDiggingFee))
 	archaeologist.RegisterOrUpdateArchaeologist(arch)
 
 	log.Printf("Eth Balance: %v", arch.EthBalance())
