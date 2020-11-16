@@ -70,7 +70,6 @@ func createTmpFile(encryptedFileBytes []byte) *os.File {
 func main(){
 	config := loadEmbalmerConfig()
 	emb := new(embalmer.Embalmer)
-	assetPathFlag := flag.String("file", fileDefault, "File to use as payload for sarcophagus")
 	typeFlag := flag.String("type", "create", "Create or Update a Sarcophagus")
 	resurrectionFlag := flag.Int64("res",  1200, "Resurrection Time")
 	seedFlag := flag.Int64("seed", 1, "Seed to generate random bytes")
@@ -78,12 +77,6 @@ func main(){
 	embalmer.InitEmbalmer(emb, config, *resurrectionFlag)
 
 	flag.Parse()
-
-	file, err := os.Open(*assetPathFlag)
-	if err != nil {
-		log.Fatalf("Couldnt open file to double hash")
-	}
-	defer file.Close()
 
 	// fileBytes, _ := utility.FileToBytes(file)
 
