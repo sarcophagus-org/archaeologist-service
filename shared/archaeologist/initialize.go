@@ -38,6 +38,9 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		log.Fatalf("could not setup HD wallet from mnemonic: %v", err)
 	}
 
+	/* TODO: Put some upper level bound when searching for public keys */
+	/* Can we assume the # of 'updated' sarcos */
+
 	arch.Sarcophaguses = map[[32]byte]models.Sarcophagus{}
 	arch.FileHandlers = map[[32]byte]*big.Int{}
 

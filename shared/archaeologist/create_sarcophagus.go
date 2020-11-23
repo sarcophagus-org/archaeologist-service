@@ -5,6 +5,7 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"log"
+	"net"
 )
 
 func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *models.Archaeologist) {
@@ -21,19 +22,26 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 	log.Println("CurrentPublicKey:", event.ArchaeologistPublicKey)
 
 	if bytes.Compare(event.ArchaeologistPublicKey, arch.CurrentPublicKeyBytes) != 0 {
-		log.Print("Public Key on Sarcophagus does not match current Public Key. Not listening for file.")
+		log.Printf("Public Key on Sarcophagus does not match current Public Key : %v. Not listening for file.", arch.CurrentPublicKeyBytes)
 		return
 	}
 
 	_, ok := arch.Sarcophaguses[event.AssetDoubleHash]
 	if ok {
-		/* The sarco already exists! Oh no! */
-
+		/* The sarco already exists but should not */
+		log.Printf("The sarcophagus for this double hash already exists: %v", event.AssetDoubleHash)
+		return
 	}
 
 	arch.Sarcophaguses[event.AssetDoubleHash] = models.Sarcophagus{ResurrectionTime: event.ResurrectionTime}
 	arch.FileHandlers[event.AssetDoubleHash] = event.StorageFee
 
-	arch.InitServer(arch.FilePort)
-	arch.StartServer()
+	/* Check if we are already listening on the port */
+	/* If we get an error, attempt to start the server regardless */
+	conn, err := net.Dial("tcp", net.JoinHostPort("localhost", arch.FilePort))
+	if conn == nil || err != nil {
+		arch.InitServer(arch.FilePort)
+		arch.StartServer()
+	}
+
 }

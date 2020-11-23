@@ -27,6 +27,10 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, client *api.Client, r
 			log.Printf("Error generating single hash during unwrapping process: %v", err)
 		}
 
+		/* Estimate Gas on this transaction --- this will give back an error if this would revert */
+		/* If it reverts 3 times in a row, then... */
+		/* Add a minute to the time */
+
 		tx, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
 		if err != nil {
 			log.Fatalf("Transaction reverted. There was an error unwrapping the sarcophagus: %v", err)

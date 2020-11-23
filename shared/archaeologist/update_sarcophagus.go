@@ -14,12 +14,6 @@ func handleUpdateSarcophagus(event *contracts.EventsUpdateSarcophagus, arch *mod
 	/* Delete open file handler for the double hash */
 	delete(arch.FileHandlers, event.AssetDoubleHash)
 
-	/* Shutdown server if we dont have any open file handlers */
-	/* Should we shut this down regardless? */
-	if len(arch.FileHandlers) == 0 {
-		arch.ShutdownServer()
-	}
-
 	if updatedSarc, ok := arch.Sarcophaguses[event.AssetDoubleHash]; ok {
 		resurrectionTime := updatedSarc.ResurrectionTime
 		privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)

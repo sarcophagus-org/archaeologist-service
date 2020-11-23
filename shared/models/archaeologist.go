@@ -222,6 +222,10 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transactio
 }
 
 func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
+	/* TODO: If only 1 file handler, shut down after any error or at return json response
+	Otherwise, only on return response
+	 */
+
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -263,7 +267,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 
 	/* Validate Storage Fee is sufficient */
 	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), arch.FeePerByte)
-	if storageExpectation.Cmp(storageFee) == 1 {
+	if storageExpectation.Cmp(storageFee) != -1  {
 		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", storageExpectation, storageFee)
 		http.Error(w, errMsg, http.StatusBadRequest)
 		return
