@@ -78,19 +78,19 @@ func (arch *Archaeologist) EthBalance() *big.Int {
 }
 
 func (arch *Archaeologist) WithdrawBond(bondToWithdraw *big.Int) {
-	tx, err := arch.SarcoSession.WithdrawBond(bondToWithdraw)
+	txn, err := arch.SarcoSession.WithdrawBond(bondToWithdraw)
 
 	if err != nil {
 		log.Fatalf("Transaction reverted. Error Withdrawing Bond: %v \n Config value REMOVE_FROM_FREE_BOND has been reset to 0. You will need to reset this.", err)
 	}
 
-	log.Printf("Withdrawal of %v Sarco Tokens successful. Transaction ID: %v", bondToWithdraw, tx.Hash().Hex())
-	log.Printf("Gas Used for Withdrawal: %v", tx.Gas())
+	log.Printf("Withdrawal of %v Sarco Tokens successful. Transaction ID: %v", bondToWithdraw, txn.Hash().Hex())
+	log.Printf("Gas Used for Withdrawal: %v", txn.Gas())
 }
 
 func (arch *Archaeologist) RegisterArchaeologist() {
 	log.Println("***REGISTERING ARCHAEOLOGIST***")
-	tx, err := arch.SarcoSession.RegisterArchaeologist(
+	txn, err := arch.SarcoSession.RegisterArchaeologist(
 		arch.CurrentPublicKeyBytes,
 		arch.Endpoint,
 		arch.PaymentAddress,
@@ -106,13 +106,13 @@ func (arch *Archaeologist) RegisterArchaeologist() {
 	}
 
 	arch.FreeBond = big.NewInt(0)
-	log.Printf("Register Archaeologist Successful. Transaction ID: %s", tx.Hash().Hex())
-	log.Printf("Gas Used: %v", tx.Gas())
+	log.Printf("Register Archaeologist Successful. Transaction ID: %s", txn.Hash().Hex())
+	log.Printf("Gas Used: %v", txn.Gas())
 }
 
 func (arch *Archaeologist) UpdateArchaeologist() {
 	log.Println("***UPDATING ARCHAEOLOGIST***")
-	tx, err := arch.SarcoSession.UpdateArchaeologist(
+	txn, err := arch.SarcoSession.UpdateArchaeologist(
 		arch.Endpoint,
 		arch.CurrentPublicKeyBytes,
 		arch.ArchAddress,
@@ -128,8 +128,8 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 	}
 
 	arch.FreeBond = big.NewInt(0)
-	log.Printf("Update Archaeologist Successful. Transaction ID: %s", tx.Hash().Hex())
-	log.Printf("Gas Used: %v", tx.Gas())
+	log.Printf("Update Archaeologist Successful. Transaction ID: %s", txn.Hash().Hex())
+	log.Printf("Gas Used: %v", txn.Gas())
 }
 
 func (arch *Archaeologist) ApproveFreeBondTransfer() {
@@ -140,7 +140,7 @@ func (arch *Archaeologist) ApproveFreeBondTransfer() {
 		log.Fatalf("Your balance is too low to cover the free bond transfer. \n Balance Needed: %v \n Current Balance: %v", arch.FreeBond, archSarcoBalance)
 	}
 
-	tx, err := arch.TokenSession.Approve(
+	txn, err := arch.TokenSession.Approve(
 		arch.SarcoAddress,
 		arch.FreeBond,
 	)
@@ -149,8 +149,8 @@ func (arch *Archaeologist) ApproveFreeBondTransfer() {
 		log.Fatalf("Transaction reverted. Error Approving Transaction: %v \n Config value ADD_TO_FREE_BOND has been reset to 0. You will need to reset this.", err)
 	}
 
-	log.Printf("Approval Transaction for %v Sarco Tokens successful. Transaction ID: %v", arch.FreeBond, tx.Hash().Hex())
-	log.Printf("Gas Used for Approval: %v", tx.Gas())
+	log.Printf("Approval Transaction for %v Sarco Tokens successful. Transaction ID: %v", arch.FreeBond, txn.Hash().Hex())
+	log.Printf("Gas Used for Approval: %v", txn.Gas())
 }
 
 func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arweave.WalletSigner, amount string, data []byte, target string) (*tx.Transaction, error) {
@@ -166,7 +166,7 @@ func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arwea
 	}
 
 	// Non encoded transaction fields
-	tx := tx.NewTransaction(
+	txn := tx.NewTransaction(
 		lastTx,
 		w.PubKeyModulus(),
 		amount,
@@ -175,7 +175,7 @@ func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arwea
 		price,
 	)
 
-	return tx, nil
+	return txn, nil
 }
 
 func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transaction, error) {
