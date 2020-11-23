@@ -32,39 +32,48 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	if err != nil {
 		log.Fatalf("could not load eth private key.  Please check the ETH_NODE value in the config file. Error: %v\n", err)
 	}
-
+	arch.ArchAddress = utility.PrivateKeyToAddress(arch.PrivateKey)
+	arch.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, arch.Client)
+	arch.SarcoSession = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
+	arch.TokenSession = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
 	arch.Wallet, err = hdwallet.NewFromMnemonic(config.MNEMONIC)
 	if err != nil {
 		log.Fatalf("could not setup HD wallet from mnemonic: %v", err)
 	}
 
-	/* TODO: Put some upper level bound when searching for public keys */
-	/* Can we assume the # of 'updated' sarcos */
-
-	arch.Sarcophaguses = map[[32]byte]models.Sarcophagus{}
-	arch.FileHandlers = map[[32]byte]*big.Int{}
-
-	/* TODO:
-		1. Build sarco states
-		2. Build open file handlers for any open 'created' sarcos that arent updated
-		3. Schedule resurrections
-	*/
+	arch.Sarcophaguses, arch.FileHandlers = buildSarcophagusesState(&arch.SarcoSession)
 
 	arch.AccountIndex = 0
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
-
 	arch.PaymentAddress = validatePaymentAddress(config.PAYMENT_ADDRESS, arch.Client)
-	arch.ArchAddress = utility.PrivateKeyToAddress(arch.PrivateKey)
-	arch.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, arch.Client)
-	arch.SarcoSession = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
-	arch.TokenSession = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
 	arch.FeePerByte = utility.ValidatePositiveNumber(big.NewInt(config.FEE_PER_BYTE), "FEE_PER_BYTE")
 	arch.MinBounty = utility.ValidatePositiveNumber(big.NewInt(config.MIN_BOUNTY), "MIN_BOUNTY")
 	arch.MinDiggingFee = utility.ValidatePositiveNumber(big.NewInt(config.MIN_DIGGING_FEE), "MIN_DIGGING_FEE")
 	arch.MaxResurectionTime = utility.ValidateTimeInFuture(big.NewInt(config.MAX_RESURRECTION_TIME), "MAX_RESURRECTION_TIME")
 	arch.Endpoint = utility.ValidateIpAddress(config.ENDPOINT, "ENDPOINT")
 	arch.FilePort = config.FILE_PORT
+}
+
+func buildSarcophagusesState (session *contracts.SarcophagusSession) (map[[32]byte]models.Sarcophagus, map[[32]byte]*big.Int) {
+	sarcophaguses := map[[32]byte]models.Sarcophagus{}
+	fileHandlers := map[[32]byte]*big.Int{}
+
+	/* TODO:
+		1. Build sarco states
+			- Retrieve all sarcos on the contract
+			- Grab the ones that use us as the arch
+			- Determine the current public key based on # of sarcs
+				- Set the account index (used by HD wallet)
+				- If we can't do this, then we need to use current pub key on the contract to determine which index we are on for the HD wallet
+					- Do this by iterating through pub keys on HD wallet to see which one matches
+					- Put some upper bound on the # of public keys we search for
+		2. Build open file handlers for any open 'created' sarcos that arent updated
+			- Check block timestamp. If they are lapsed past a certain time --- what do we do?
+		3. Schedule resurrections
+	*/
+
+	return sarcophaguses, fileHandlers
 }
 
 func calculateFreeBond(addFreeBond *big.Int, removeFreeBond *big.Int) *big.Int {
