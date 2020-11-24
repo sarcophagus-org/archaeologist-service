@@ -84,16 +84,24 @@ func ValidateIpAddress(ip string, ipField string) string {
 	return ip
 }
 
-func ValidateTimeInFuture(unixTimestamp *big.Int, timeField string) *big.Int {
+func TimeInFuture(unixTimestamp *big.Int) bool {
 	timestamp := unixTimestamp.Int64()
 	now := time.Now()
 	unixNow := now.Unix()
+	return timestamp >= unixNow
+}
 
-	if timestamp <= unixNow {
+func TimeWithWindowInFuture(unixTimestamp *big.Int, window *big.Int) bool {
+	timePlusWindow := big.NewInt(0).Add(unixTimestamp, window)
+	return TimeInFuture(timePlusWindow)
+}
+
+func ValidateTimeInFuture(unixTimestamp *big.Int, timeField string) *big.Int {
+	if !TimeInFuture(unixTimestamp) {
 		log.Fatalf("%s must be in the future. Please check the value in the config file", timeField)
 	}
 
-	return big.NewInt(timestamp)
+	return unixTimestamp
 }
 
 func FileToBytes(file *os.File) ([]byte, error) {

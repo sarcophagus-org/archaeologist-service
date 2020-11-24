@@ -14,7 +14,7 @@ import (
 )
 
 // TODO: handle rewrapped sarc
-func scheduleUnwrap(session *contracts.SarcophagusSession, client *api.Client, resurrectionTime *big.Int, assetDoubleHash [32]byte, privateKey *ecdsa.PrivateKey, assetId string) {
+func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Client, resurrectionTime *big.Int, assetDoubleHash [32]byte, privateKey *ecdsa.PrivateKey, assetId string) {
 	timeToUnwrap := time.Until(time.Unix(resurrectionTime.Int64(), 0))
 
 	var privateKeyBytes [32]byte
@@ -22,7 +22,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, client *api.Client, r
 	log.Printf("Current Private Key BYTES: %v", privateKeyBytes)
 
 	time.AfterFunc(timeToUnwrap, func() {
-		singleHash, err := generateSingleHash(client, assetId, privateKey)
+		singleHash, err := generateSingleHash(arweaveClient, assetId, privateKey)
 		if err != nil {
 			log.Printf("Error generating single hash during unwrapping process: %v", err)
 		}
@@ -44,8 +44,8 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, client *api.Client, r
 	log.Println("Unwrap scheduled in:", timeToUnwrap)
 }
 
-func generateSingleHash(client *api.Client, assetId string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
-	dataString, err := client.GetData(context.Background(), assetId)
+func generateSingleHash(arweaveClient *api.Client, assetId string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+	dataString, err := arweaveClient.GetData(context.Background(), assetId)
 	if err != nil {
 		return nil, err
 	}

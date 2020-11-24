@@ -27,7 +27,7 @@ var (
 )
 
 // SarcophagusABI is the input ABI used to generate the binding from.
-const SarcophagusABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sarcoToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"singleHash\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"}],\"name\":\"accuseArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"archaeologistCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addy\",\"type\":\"address\"}],\"name\":\"archaeologists\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"exists\",\"type\":\"bool\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"cursedBond\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"}],\"name\":\"burySarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"}],\"name\":\"cancelSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"}],\"name\":\"cleanUpSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"recipientPublicKey\",\"type\":\"bytes\"}],\"name\":\"createSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"}],\"name\":\"registerArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"}],\"name\":\"rewrapSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sarcoToken\",\"outputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"singleHash\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"privateKey\",\"type\":\"bytes32\"}],\"name\":\"unwrapSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"}],\"name\":\"updateArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"newPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"updateSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdrawBond\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const SarcophagusABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sarcoToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"singleHash\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"}],\"name\":\"accuseArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"archaeologistCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addy\",\"type\":\"address\"}],\"name\":\"archaeologists\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"exists\",\"type\":\"bool\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"cursedBond\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"}],\"name\":\"burySarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"}],\"name\":\"cancelSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"}],\"name\":\"cleanUpSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"recipientPublicKey\",\"type\":\"bytes\"}],\"name\":\"createSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"}],\"name\":\"registerArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"}],\"name\":\"rewrapSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sarcoToken\",\"outputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"doubleHash\",\"type\":\"bytes32\"}],\"name\":\"sarcophagus\",\"outputs\":[{\"internalType\":\"enumTypes.SarcophagusStates\",\"name\":\"state\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionWindow\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"sarcophagusDoubleHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"singleHash\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"privateKey\",\"type\":\"bytes32\"}],\"name\":\"unwrapSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"}],\"name\":\"updateArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"newPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"updateSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdrawBond\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // Sarcophagus is an auto generated Go binding around an Ethereum contract.
 type Sarcophagus struct {
@@ -321,6 +321,58 @@ func (_Sarcophagus *SarcophagusCallerSession) SarcoToken() (common.Address, erro
 	return _Sarcophagus.Contract.SarcoToken(&_Sarcophagus.CallOpts)
 }
 
+// Sarcophagus is a free data retrieval call binding the contract method 0x972770ac.
+//
+// Solidity: function sarcophagus(bytes32 doubleHash) view returns(uint8 state, address archaeologist, uint256 resurrectionTime, uint256 resurrectionWindow, string assetId, uint256 storageFee)
+func (_Sarcophagus *SarcophagusCaller) Sarcophagus(opts *bind.CallOpts, doubleHash [32]byte) (struct {
+	State              uint8
+	Archaeologist      common.Address
+	ResurrectionTime   *big.Int
+	ResurrectionWindow *big.Int
+	AssetId            string
+	StorageFee         *big.Int
+}, error) {
+	ret := new(struct {
+		State              uint8
+		Archaeologist      common.Address
+		ResurrectionTime   *big.Int
+		ResurrectionWindow *big.Int
+		AssetId            string
+		StorageFee         *big.Int
+	})
+	out := ret
+	err := _Sarcophagus.contract.Call(opts, out, "sarcophagus", doubleHash)
+	return *ret, err
+}
+
+// Sarcophagus is a free data retrieval call binding the contract method 0x972770ac.
+//
+// Solidity: function sarcophagus(bytes32 doubleHash) view returns(uint8 state, address archaeologist, uint256 resurrectionTime, uint256 resurrectionWindow, string assetId, uint256 storageFee)
+func (_Sarcophagus *SarcophagusSession) Sarcophagus(doubleHash [32]byte) (struct {
+	State              uint8
+	Archaeologist      common.Address
+	ResurrectionTime   *big.Int
+	ResurrectionWindow *big.Int
+	AssetId            string
+	StorageFee         *big.Int
+}, error) {
+	return _Sarcophagus.Contract.Sarcophagus(&_Sarcophagus.CallOpts, doubleHash)
+}
+
+// Sarcophagus is a free data retrieval call binding the contract method 0x972770ac.
+//
+// Solidity: function sarcophagus(bytes32 doubleHash) view returns(uint8 state, address archaeologist, uint256 resurrectionTime, uint256 resurrectionWindow, string assetId, uint256 storageFee)
+func (_Sarcophagus *SarcophagusCallerSession) Sarcophagus(doubleHash [32]byte) (struct {
+	State              uint8
+	Archaeologist      common.Address
+	ResurrectionTime   *big.Int
+	ResurrectionWindow *big.Int
+	AssetId            string
+	StorageFee         *big.Int
+}, error) {
+	return _Sarcophagus.Contract.Sarcophagus(&_Sarcophagus.CallOpts, doubleHash)
+}
+
 // SarcophagusCount is a free data retrieval call binding the contract method 0x555912b7.
 //
 // Solidity: function sarcophagusCount() view returns(uint256)
@@ -345,6 +397,32 @@ func (_Sarcophagus *SarcophagusSession) SarcophagusCount() (*big.Int, error) {
 // Solidity: function sarcophagusCount() view returns(uint256)
 func (_Sarcophagus *SarcophagusCallerSession) SarcophagusCount() (*big.Int, error) {
 	return _Sarcophagus.Contract.SarcophagusCount(&_Sarcophagus.CallOpts)
+}
+
+// SarcophagusDoubleHash is a free data retrieval call binding the contract method 0x8917aa28.
+//
+// Solidity: function sarcophagusDoubleHash(uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCaller) SarcophagusDoubleHash(opts *bind.CallOpts, index *big.Int) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _Sarcophagus.contract.Call(opts, out, "sarcophagusDoubleHash", index)
+	return *ret0, err
+}
+
+// SarcophagusDoubleHash is a free data retrieval call binding the contract method 0x8917aa28.
+//
+// Solidity: function sarcophagusDoubleHash(uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusSession) SarcophagusDoubleHash(index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.SarcophagusDoubleHash(&_Sarcophagus.CallOpts, index)
+}
+
+// SarcophagusDoubleHash is a free data retrieval call binding the contract method 0x8917aa28.
+//
+// Solidity: function sarcophagusDoubleHash(uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCallerSession) SarcophagusDoubleHash(index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.SarcophagusDoubleHash(&_Sarcophagus.CallOpts, index)
 }
 
 // AccuseArchaeologist is a paid mutator transaction binding the contract method 0xf456f367.

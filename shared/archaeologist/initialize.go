@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/Dev43/arweave-go/api"
 	"github.com/Dev43/arweave-go/transactor"
 	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
@@ -41,9 +42,8 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		log.Fatalf("could not setup HD wallet from mnemonic: %v", err)
 	}
 
-	arch.Sarcophaguses, arch.FileHandlers = buildSarcophagusesState(&arch.SarcoSession)
+	arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), arch.Wallet, arch.ArchAddress)
 
-	arch.AccountIndex = 0
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.PaymentAddress = validatePaymentAddress(config.PAYMENT_ADDRESS, arch.Client)
@@ -55,25 +55,59 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.FilePort = config.FILE_PORT
 }
 
-func buildSarcophagusesState (session *contracts.SarcophagusSession) (map[[32]byte]models.Sarcophagus, map[[32]byte]*big.Int) {
-	sarcophaguses := map[[32]byte]models.Sarcophagus{}
-	fileHandlers := map[[32]byte]*big.Int{}
+func buildSarcophagusesState (session *contracts.SarcophagusSession, arweaveClient *api.Client, wallet *hdwallet.Wallet, archAddress common.Address) (map[[32]byte]models.Sarcophagus, map[[32]byte]*big.Int, int) {
+	var sarcophaguses = map[[32]byte]models.Sarcophagus{}
+	var fileHandlers = map[[32]byte]*big.Int{}
+	var accountIndex = 0
 
-	/* TODO:
-		1. Build sarco states
-			- Retrieve all sarcos on the contract
-			- Grab the ones that use us as the arch
-			- Determine the current public key based on # of sarcs
-				- Set the account index (used by HD wallet)
-				- If we can't do this, then we need to use current pub key on the contract to determine which index we are on for the HD wallet
-					- Do this by iterating through pub keys on HD wallet to see which one matches
-					- Put some upper bound on the # of public keys we search for
-		2. Build open file handlers for any open 'created' sarcos that arent updated
-			- Check block timestamp. If they are lapsed past a certain time --- what do we do?
-		3. Schedule resurrections
+	sarcoCount, err := session.SarcophagusCount()
+	if err != nil {
+		log.Fatalf("Call to get Sarcophagus count in Contract failed. Please check CONTRACT_ADDRESS is correct in the config file: %v", err)
+	}
+
+	/*
+		Iterate through all sarcos
+		For any sarcos where we are the arch, determine state of sarco and build service state
+		Schedule rewraps if Sarco is updated and resurrection time + window is in future
 	*/
 
-	return sarcophaguses, fileHandlers
+	for i := big.NewInt(0); i.Cmp(sarcoCount) == -1; i = big.NewInt(0).Add(i, big.NewInt(1)) {
+		doubleHash, _ := session.SarcophagusDoubleHash(i)
+		sarco, _ := session.Sarcophagus(doubleHash)
+
+		if sarco.Archaeologist == archAddress {
+			/*
+				Sarco States:
+				0 - Does not Exist
+				1 - Exists
+				2 - Done
+			*/
+
+			switch state := sarco.State; state {
+			case 1:
+				if utility.TimeWithWindowInFuture(sarco.ResurrectionTime, sarco.ResurrectionWindow) {
+					if sarco.AssetId == "" {
+						// This is a created sarc that is not updated. We need to add to the file handlers
+						fileHandlers[doubleHash] = sarco.StorageFee
+					} else {
+						privateKey := hdw.PrivateKeyFromIndex(wallet, accountIndex)
+						scheduleUnwrap(session, arweaveClient, sarco.ResurrectionTime, doubleHash, privateKey, sarco.AssetId)
+						accountIndex += 1
+					}
+					sarcophaguses[doubleHash] = models.Sarcophagus{ResurrectionTime: sarco.ResurrectionTime}
+				} else {
+					// TODO: cleanup expired sarco if it is updated
+					if sarco.AssetId != "" {
+						accountIndex += 1
+					}
+				}
+			case 2:
+				accountIndex += 1
+			}
+		}
+	}
+
+	return sarcophaguses, fileHandlers, accountIndex
 }
 
 func calculateFreeBond(addFreeBond *big.Int, removeFreeBond *big.Int) *big.Int {
