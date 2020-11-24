@@ -30,6 +30,17 @@ func watchUpdateSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.Even
 	return usSink, usSub
 }
 
+func watchRewrapSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.EventsRewrapSarcophagus, event.Subscription) {
+	/* TODO: Pass in slice of created sarcophaguses as query param to only trigger event for ones we care about */
+	rsSink := make(chan *contracts.EventsRewrapSarcophagus)
+	rsSub, err := sarcoEvents.WatchRewrapSarcophagus(&bind.WatchOpts{}, rsSink, nil)
+	if err != nil {
+		log.Fatalf("Error subscribing to RewrapSarcophagus event: %v", err)
+	}
+
+	return rsSink, rsSub
+}
+
 func EventsSubscribe(arch *models.Archaeologist) {
 	sarcoEvents, err := contracts.NewEvents(arch.SarcoAddress, arch.Client)
 	if err != nil {
@@ -40,6 +51,7 @@ func EventsSubscribe(arch *models.Archaeologist) {
 	var archAddress = []common.Address{arch.ArchAddress}
 	csSink, csSub := watchCreateSarcophagus(sarcoEvents, archAddress)
 	usSink, usSub := watchUpdateSarcophagus(sarcoEvents)
+	rsSink, rsSub := watchRewrapSarcophagus(sarcoEvents)
 
 	log.Println("Listening For Events...")
 
@@ -53,10 +65,16 @@ func EventsSubscribe(arch *models.Archaeologist) {
 			if err != nil {
 				log.Println("Error with Update Sarcophagus Subscription:", err)
 			}
+		case err := <-rsSub.Err():
+			if err != nil {
+				log.Println("Error with Rewrap Sarcophagus Subscription:", err)
+			}
 		case event := <-csSink:
 			go handleCreateSarcophagus(event, arch)
 		case event := <-usSink:
 			handleUpdateSarcophagus(event, arch)
+		case event := <-rsSink:
+			handleRewrapSarcophagus(event, arch)
 		}
 	}
 }

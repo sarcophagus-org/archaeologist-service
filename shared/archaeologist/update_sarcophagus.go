@@ -14,11 +14,10 @@ func handleUpdateSarcophagus(event *contracts.EventsUpdateSarcophagus, arch *mod
 	/* Delete open file handler for the double hash */
 	delete(arch.FileHandlers, event.AssetDoubleHash)
 
-	if updatedSarc, ok := arch.Sarcophaguses[event.AssetDoubleHash]; ok {
-		resurrectionTime := updatedSarc.ResurrectionTime
+	if resurrectionTime, ok := arch.Sarcophaguses[event.AssetDoubleHash]; ok {
 		privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 		arweaveClient := arch.ArweaveTransactor.Client.(*api.Client)
-		scheduleUnwrap(&arch.SarcoSession, arweaveClient, resurrectionTime, event.AssetDoubleHash, privateKey, event.AssetId)
+		scheduleUnwrap(&arch.SarcoSession, arweaveClient, resurrectionTime, arch, event.AssetDoubleHash, privateKey, event.AssetId)
 
 		arch.AccountIndex += 1
 		arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)

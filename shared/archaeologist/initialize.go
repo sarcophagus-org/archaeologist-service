@@ -42,7 +42,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		log.Fatalf("could not setup HD wallet from mnemonic: %v", err)
 	}
 
-	arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), arch.Wallet, arch.ArchAddress)
+	arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
 
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
@@ -55,12 +55,12 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.FilePort = config.FILE_PORT
 }
 
-func buildSarcophagusesState (session *contracts.SarcophagusSession, arweaveClient *api.Client, wallet *hdwallet.Wallet, archAddress common.Address) (map[[32]byte]models.Sarcophagus, map[[32]byte]*big.Int, int) {
-	var sarcophaguses = map[[32]byte]models.Sarcophagus{}
+func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int, map[[32]byte]*big.Int, int) {
+	var sarcophaguses = map[[32]byte]*big.Int{}
 	var fileHandlers = map[[32]byte]*big.Int{}
 	var accountIndex = 0
 
-	sarcoCount, err := session.SarcophagusCount()
+	sarcoCount, err := arch.SarcoSession.SarcophagusCount()
 	if err != nil {
 		log.Fatalf("Call to get Sarcophagus count in Contract failed. Please check CONTRACT_ADDRESS is correct in the config file: %v", err)
 	}
@@ -72,10 +72,10 @@ func buildSarcophagusesState (session *contracts.SarcophagusSession, arweaveClie
 	*/
 
 	for i := big.NewInt(0); i.Cmp(sarcoCount) == -1; i = big.NewInt(0).Add(i, big.NewInt(1)) {
-		doubleHash, _ := session.SarcophagusDoubleHash(i)
-		sarco, _ := session.Sarcophagus(doubleHash)
+		doubleHash, _ := arch.SarcoSession.SarcophagusDoubleHash(i)
+		sarco, _ := arch.SarcoSession.Sarcophagus(doubleHash)
 
-		if sarco.Archaeologist == archAddress {
+		if sarco.Archaeologist == arch.ArchAddress {
 			/*
 				Sarco States:
 				0 - Does not Exist
@@ -90,11 +90,11 @@ func buildSarcophagusesState (session *contracts.SarcophagusSession, arweaveClie
 						// This is a created sarc that is not updated. We need to add to the file handlers
 						fileHandlers[doubleHash] = sarco.StorageFee
 					} else {
-						privateKey := hdw.PrivateKeyFromIndex(wallet, accountIndex)
-						scheduleUnwrap(session, arweaveClient, sarco.ResurrectionTime, doubleHash, privateKey, sarco.AssetId)
+						privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
+						scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
 						accountIndex += 1
 					}
-					sarcophaguses[doubleHash] = models.Sarcophagus{ResurrectionTime: sarco.ResurrectionTime}
+					sarcophaguses[doubleHash] = sarco.ResurrectionTime
 				} else {
 					// TODO: cleanup expired sarco if it is updated
 					if sarco.AssetId != "" {

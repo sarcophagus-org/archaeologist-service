@@ -169,6 +169,25 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filename s
 	log.Printf("Gas Used: %v", tx.Gas())
 }
 
+func (embalmer *Embalmer) RewrapSarcophagus(assetDoubleHash [32]byte, resurrectionTime *big.Int) {
+	log.Println("***REWRAPPING SARCOPHAGUS***")
+
+	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
+	tx, err := sarcoSession.RewrapSarcophagus(
+		assetDoubleHash,
+		resurrectionTime,
+		big.NewInt(embalmer.DiggingFee),
+		big.NewInt(embalmer.Bounty),
+	)
+
+	if err != nil {
+		log.Fatalf("Transaction reverted. Error rewrapping Sarcophagus: %v", err)
+	}
+
+	log.Printf("Rewrap Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+	log.Printf("Gas Used: %v", tx.Gas())
+}
+
 func (embalmer *Embalmer) SendFile(url string, filename string, filetype string) ([]byte, error) {
 	file, err := os.Open(filename)
 

@@ -9,13 +9,11 @@ import (
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
+	"math/big"
 	"math/rand"
 	"os"
 	"context"
 )
-
-const fileDefault = "/tmp/test.txt"
-const encryptedOutputFilePath = "/tmp/encrypted.txt"
 
 /* TODO: Generate new file from random string */
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -70,8 +68,9 @@ func createTmpFile(encryptedFileBytes []byte) *os.File {
 func main(){
 	config := loadEmbalmerConfig()
 	emb := new(embalmer.Embalmer)
+	defaultResTime := int64(120)
 	typeFlag := flag.String("type", "create", "Create or Update a Sarcophagus")
-	resurrectionFlag := flag.Int64("res",  1200, "Resurrection Time")
+	resurrectionFlag := flag.Int64("res",  defaultResTime, "Resurrection Time")
 	seedFlag := flag.Int64("seed", 1, "Seed to generate random bytes")
 
 	embalmer.InitEmbalmer(emb, config, *resurrectionFlag)
@@ -92,6 +91,10 @@ func main(){
 	if *typeFlag == "create" {
 		emb.CreateSarcophagus(config.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytes)
 		log.Println("Embalmer Sarco Balance:", emb.EmbalmerSarcoBalance())
+	}
+
+	if *typeFlag == "rewrap" {
+		emb.RewrapSarcophagus(assetDoubleHashBytes, big.NewInt(defaultResTime * 2))
 	}
 
 	if *typeFlag == "update" {

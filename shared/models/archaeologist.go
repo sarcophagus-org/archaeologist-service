@@ -49,7 +49,7 @@ type Archaeologist struct {
 	Wallet                *hdwallet.Wallet
 	AccountIndex          int
 	Server				  *http.Server
-	Sarcophaguses         map[[32]byte]Sarcophagus
+	Sarcophaguses         map[[32]byte]*big.Int
 	FileHandlers		  map[[32]byte]*big.Int
 }
 

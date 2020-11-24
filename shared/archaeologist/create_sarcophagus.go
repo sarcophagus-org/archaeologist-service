@@ -33,7 +33,7 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 		return
 	}
 
-	arch.Sarcophaguses[event.AssetDoubleHash] = models.Sarcophagus{ResurrectionTime: event.ResurrectionTime}
+	arch.Sarcophaguses[event.AssetDoubleHash] = event.ResurrectionTime
 	arch.FileHandlers[event.AssetDoubleHash] = event.StorageFee
 
 	/* Check if we are already listening on the port */
