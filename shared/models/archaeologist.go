@@ -330,7 +330,7 @@ func (arch *Archaeologist) ListenForFile() {
 func (arch *Archaeologist) InitServer(filePort string) {
 	sm := http.NewServeMux()
 	sm.Handle("/file", http.HandlerFunc(arch.fileUploadHandler))
-	arch.Server = &http.Server{Addr: ":" + filePort, Handler: sm}
+	arch.Server = &http.Server{Addr: ":" + filePort, Handler: utility.LimitMiddleware(sm)}
 }
 
 func (arch *Archaeologist) StartServer() {
