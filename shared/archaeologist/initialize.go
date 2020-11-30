@@ -25,7 +25,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 
 	var err error
 
-	arch.FreeBond = calculateFreeBond(big.NewInt(config.ADD_TO_FREE_BOND), big.NewInt(config.REMOVE_FROM_FREE_BOND))
+	arch.FreeBond = calculateFreeBond(stringToBigInt(config.ADD_TO_FREE_BOND), stringToBigInt(config.REMOVE_FROM_FREE_BOND))
 	arch.Client = ethereum.InitEthClient(config.ETH_NODE)
 	arch.ArweaveTransactor = initArweaveTransactor(config.ARWEAVE_NODE)
 	arch.ArweaveWallet = initArweaveWallet(config.ARWEAVE_KEY_FILE)
@@ -43,10 +43,10 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	}
 
 	arch.PaymentAddress = validatePaymentAddress(config.PAYMENT_ADDRESS, arch.Client)
-	arch.FeePerByte = utility.ValidatePositiveNumber(big.NewInt(config.FEE_PER_BYTE), "FEE_PER_BYTE")
-	arch.MinBounty = utility.ValidatePositiveNumber(big.NewInt(config.MIN_BOUNTY), "MIN_BOUNTY")
-	arch.MinDiggingFee = utility.ValidatePositiveNumber(big.NewInt(config.MIN_DIGGING_FEE), "MIN_DIGGING_FEE")
-	arch.MaxResurectionTime = utility.ValidateTimeInFuture(big.NewInt(config.MAX_RESURRECTION_TIME), "MAX_RESURRECTION_TIME")
+	arch.FeePerByte = utility.ValidatePositiveNumber(stringToBigInt(config.FEE_PER_BYTE), "FEE_PER_BYTE")
+	arch.MinBounty = utility.ValidatePositiveNumber(stringToBigInt(config.MIN_BOUNTY), "MIN_BOUNTY")
+	arch.MinDiggingFee = utility.ValidatePositiveNumber(stringToBigInt(config.MIN_DIGGING_FEE), "MIN_DIGGING_FEE")
+	arch.MaxResurectionTime = utility.ValidateTimeInFuture(stringToBigInt(config.MAX_RESURRECTION_TIME), "MAX_RESURRECTION_TIME")
 	arch.Endpoint = utility.ValidateIpAddress(config.ENDPOINT, "ENDPOINT")
 	arch.FilePort = config.FILE_PORT
 
@@ -188,4 +188,14 @@ func initTokenSession(tokenAddress string, client *ethclient.Client, privateKey 
 	session := NewTokenSession(context.Background(), tokenContract, privateKey)
 
 	return session
+}
+
+func stringToBigInt(val string) *big.Int {
+	intVal, ok := new(big.Int).SetString(val, 10)
+
+	if !ok {
+		log.Fatalf("Error casting string to big int: %v", val)
+	}
+
+	return intVal
 }

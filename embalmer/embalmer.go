@@ -30,10 +30,10 @@ type Embalmer struct {
 	SarcoAddress             common.Address
 	SarcophagusContract      *contracts.Sarcophagus
 	SarcophagusTokenContract *contracts.Token
-	ResurrectionTime         int64
-	StorageFee               int64
-	DiggingFee               int64
-	Bounty                   int64
+	ResurrectionTime         *big.Int
+	StorageFee               *big.Int
+	DiggingFee               *big.Int
+	Bounty                   *big.Int
 }
 
 func (embalmer *Embalmer) initAuth() *bind.TransactOpts {
@@ -108,17 +108,21 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDou
 	log.Println("***CREATING SARCOPHAGUS***")
 
 	sarcoTokenSession := embalmer.NewSarcophagusTokenSession(context.Background())
-	approvalAmount := new(big.Int).Add(new(big.Int).Add(big.NewInt(embalmer.Bounty), big.NewInt(embalmer.DiggingFee)), big.NewInt(embalmer.StorageFee))
+	bountyPlusDiggingFee := big.NewInt(0).Add(embalmer.Bounty, embalmer.DiggingFee)
+	log.Printf("bountyPlusDiggingFee: %v", bountyPlusDiggingFee)
+
+	approvalAmount := big.NewInt(0).Add(big.NewInt(0).Add(embalmer.Bounty, embalmer.DiggingFee), embalmer.StorageFee)
+	log.Printf("approval Amount::: %v", approvalAmount)
 	embalmer.approveCreateSarcophagusTransfer(&sarcoTokenSession, approvalAmount)
 
 	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
 	tx, err := sarcoSession.CreateSarcophagus(
 		"My Sarcophagus",
 		embalmer.ArchAddress,
-		big.NewInt(embalmer.ResurrectionTime),
-		big.NewInt(embalmer.StorageFee),
-		big.NewInt(embalmer.DiggingFee),
-		big.NewInt(embalmer.Bounty),
+		embalmer.ResurrectionTime,
+		embalmer.StorageFee,
+		embalmer.DiggingFee,
+		embalmer.Bounty,
 		assetDoubleHashBytes,
 		recipientPublicKeyBytes,
 	)
@@ -176,8 +180,8 @@ func (embalmer *Embalmer) RewrapSarcophagus(assetDoubleHash [32]byte, resurrecti
 	tx, err := sarcoSession.RewrapSarcophagus(
 		assetDoubleHash,
 		resurrectionTime,
-		big.NewInt(embalmer.DiggingFee),
-		big.NewInt(embalmer.Bounty),
+		embalmer.DiggingFee,
+		embalmer.Bounty,
 	)
 
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"math/big"
 	"time"
 )
 
@@ -20,8 +21,8 @@ func InitEmbalmer(embalmer *Embalmer, config *EmbalmerConfig, resurrectionTime i
 	embalmer.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, embalmer.Client)
 	embalmer.SarcophagusContract, _ = contracts.NewSarcophagus(embalmer.SarcoAddress, embalmer.Client)
 	embalmer.SarcophagusTokenContract, _ = contracts.NewToken(common.HexToAddress(config.TOKEN_ADDRESS), embalmer.Client )
-	embalmer.ResurrectionTime = time.Now().Unix() + resurrectionTime
-	embalmer.StorageFee = config.STORAGE_FEE
-	embalmer.DiggingFee = config.DIGGING_FEE
-	embalmer.Bounty = config.BOUNTY
+	embalmer.ResurrectionTime = big.NewInt(time.Now().Unix() + resurrectionTime)
+	embalmer.StorageFee, _ = new(big.Int).SetString(config.STORAGE_FEE, 10)
+	embalmer.DiggingFee, _ = new(big.Int).SetString(config.DIGGING_FEE, 10)
+	embalmer.Bounty, _ = new(big.Int).SetString(config.BOUNTY, 10)
 }

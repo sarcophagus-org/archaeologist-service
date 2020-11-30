@@ -70,7 +70,6 @@ func main(){
 	/* Generate random bytes to use as payload for each sarco */
 	fileBytes := make([]byte, 20)
 
-	/* TODO: Seed needs to be the same for create and update */
 	rand.Seed(*seedFlag)
 	rand.Read(fileBytes)
 
