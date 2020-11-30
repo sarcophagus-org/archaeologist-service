@@ -3,14 +3,27 @@ package models
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/json"
+	"fmt"
+	"github.com/Dev43/arweave-go"
 	"github.com/Dev43/arweave-go/transactor"
+	"github.com/Dev43/arweave-go/tx"
 	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/hdw"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
+	"io/ioutil"
 	"log"
 	"math/big"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
 )
 
 type Archaeologist struct {
@@ -26,18 +39,24 @@ type Archaeologist struct {
 	SarcoSession          contracts.SarcophagusSession
 	SarcoTokenAddress     common.Address
 	TokenSession          contracts.TokenSession
-	FreeBond              int64
-	FeePerByte            int64
-	MinBounty             int64
-	MinDiggingFee         int64
-	MaxResurectionTime    int64
+	FreeBond              *big.Int
+	FeePerByte            *big.Int
+	MinBounty             *big.Int
+	MinDiggingFee         *big.Int
+	MaxResurectionTime    *big.Int
 	Endpoint              string
 	FilePort              string
 	Mnemonic              string
 	Wallet                *hdwallet.Wallet
 	AccountIndex          int
-	Sarcophaguses         map[[32]byte]Sarcophagus
+	Server				  *http.Server
+	Sarcophaguses         map[[32]byte]*big.Int
+	FileHandlers		  map[[32]byte]*big.Int
 }
+
+const (
+	MB = 1 << 20
+)
 
 func (arch *Archaeologist) SarcoBalance() *big.Int {
 	balance, err := arch.TokenSession.BalanceOf(arch.ArchAddress)
@@ -60,77 +79,281 @@ func (arch *Archaeologist) EthBalance() *big.Int {
 }
 
 func (arch *Archaeologist) WithdrawBond(bondToWithdraw *big.Int) {
-	tx, err := arch.SarcoSession.WithdrawBond(bondToWithdraw)
+	txn, err := arch.SarcoSession.WithdrawBond(bondToWithdraw)
 
 	if err != nil {
 		log.Fatalf("Transaction reverted. Error Withdrawing Bond: %v \n Config value REMOVE_FROM_FREE_BOND has been reset to 0. You will need to reset this.", err)
 	}
 
-	log.Printf("Withdrawal of %v Sarco Tokens successful. Transaction ID: %v", bondToWithdraw, tx.Hash().Hex())
-	log.Printf("Gas Used for Withdrawal: %v", tx.Gas())
+	log.Printf("Withdrawal of %v Sarco Tokens successful. Transaction ID: %v", bondToWithdraw, txn.Hash().Hex())
+	log.Printf("Gas Used for Withdrawal: %v", txn.Gas())
 }
 
 func (arch *Archaeologist) RegisterArchaeologist() {
 	log.Println("***REGISTERING ARCHAEOLOGIST***")
-	tx, err := arch.SarcoSession.RegisterArchaeologist(
+	txn, err := arch.SarcoSession.RegisterArchaeologist(
 		arch.CurrentPublicKeyBytes,
 		arch.Endpoint,
 		arch.PaymentAddress,
-		big.NewInt(arch.FeePerByte),
-		big.NewInt(arch.MinBounty),
-		big.NewInt(arch.MinDiggingFee),
-		big.NewInt(arch.MaxResurectionTime),
-		big.NewInt(arch.FreeBond),
+		arch.FeePerByte,
+		arch.MinBounty,
+		arch.MinDiggingFee,
+		arch.MaxResurectionTime,
+		arch.FreeBond,
 	)
 
 	if err != nil {
 		log.Fatalf("Transaction reverted. Error registering Archaeologist: %v Config values ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND have been reset to 0. You will need to reset this.", err)
 	}
 
-	arch.FreeBond = 0
-	log.Printf("Register Archaeologist Successful. Transaction ID: %s", tx.Hash().Hex())
-	log.Printf("Gas Used: %v", tx.Gas())
+	arch.FreeBond = big.NewInt(0)
+	log.Printf("Register Archaeologist Successful. Transaction ID: %s", txn.Hash().Hex())
+	log.Printf("Gas Used: %v", txn.Gas())
 }
 
 func (arch *Archaeologist) UpdateArchaeologist() {
 	log.Println("***UPDATING ARCHAEOLOGIST***")
-	tx, err := arch.SarcoSession.UpdateArchaeologist(
+	txn, err := arch.SarcoSession.UpdateArchaeologist(
 		arch.Endpoint,
 		arch.CurrentPublicKeyBytes,
 		arch.ArchAddress,
-		big.NewInt(arch.FeePerByte),
-		big.NewInt(arch.MinBounty),
-		big.NewInt(arch.MinDiggingFee),
-		big.NewInt(arch.MaxResurectionTime),
-		big.NewInt(arch.FreeBond),
+		arch.FeePerByte,
+		arch.MinBounty,
+		arch.MinDiggingFee,
+		arch.MaxResurectionTime,
+		arch.FreeBond,
 	)
 
 	if err != nil {
 		log.Fatalf("Transaction reverted. Error updating Archaeologist: %v Config values ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND have been reset to 0. You will need to reset these.", err)
 	}
 
-	arch.FreeBond = 0
-	log.Printf("Update Archaeologist Successful. Transaction ID: %s", tx.Hash().Hex())
-	log.Printf("Gas Used: %v", tx.Gas())
+	arch.FreeBond = big.NewInt(0)
+	log.Printf("Update Archaeologist Successful. Transaction ID: %s", txn.Hash().Hex())
+	log.Printf("Gas Used: %v", txn.Gas())
 }
 
 func (arch *Archaeologist) ApproveFreeBondTransfer() {
 	archSarcoBalance := arch.SarcoBalance()
 
 	// Check if archSarcoBalance < freeBond
-	if archSarcoBalance.Cmp(big.NewInt(arch.FreeBond)) == -1 {
+	if archSarcoBalance.Cmp(arch.FreeBond) == -1 {
 		log.Fatalf("Your balance is too low to cover the free bond transfer. \n Balance Needed: %v \n Current Balance: %v", arch.FreeBond, archSarcoBalance)
 	}
 
-	tx, err := arch.TokenSession.Approve(
+	txn, err := arch.TokenSession.Approve(
 		arch.SarcoAddress,
-		big.NewInt(arch.FreeBond),
+		arch.FreeBond,
 	)
 
 	if err != nil {
 		log.Fatalf("Transaction reverted. Error Approving Transaction: %v \n Config value ADD_TO_FREE_BOND has been reset to 0. You will need to reset this.", err)
 	}
 
-	log.Printf("Approval Transaction for %v Sarco Tokens successful. Transaction ID: %v", arch.FreeBond, tx.Hash().Hex())
-	log.Printf("Gas Used for Approval: %v", tx.Gas())
+	log.Printf("Approval Transaction for %v Sarco Tokens successful. Transaction ID: %v", arch.FreeBond, txn.Hash().Hex())
+	log.Printf("Gas Used for Approval: %v", txn.Gas())
+}
+
+func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arweave.WalletSigner, amount string, data []byte, target string) (*tx.Transaction, error) {
+	tr := arch.ArweaveTransactor
+	lastTx, err := tr.Client.LastTransaction(ctx, w.Address())
+	if err != nil {
+		return nil, err
+	}
+
+	price, err := tr.Client.GetReward(ctx, []byte(data))
+	if err != nil {
+		return nil, err
+	}
+
+	// Non encoded transaction fields
+	txn := tx.NewTransaction(
+		lastTx,
+		w.PubKeyModulus(),
+		amount,
+		target,
+		data,
+		price,
+	)
+
+	return txn, nil
+}
+
+func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transaction, error) {
+	// create a transaction
+	ar := arch.ArweaveTransactor
+	w := arch.ArweaveWallet
+
+	/*
+		Arweave Transaction:
+		Amount and Target are blank, as we aren't sending arweave tokens to anyone
+	*/
+	log.Printf("uploading file bytes: %v", fileBytes)
+	txBuilder, err := arch.CreateArweaveTransaction(context.TODO(), w, "0", fileBytes, "")
+	if err != nil {
+		log.Printf("Error creating transaction: %v", err)
+		return &tx.Transaction{}, err
+	}
+
+	// sign the transaction
+	txn, err := txBuilder.Sign(w)
+	if err != nil {
+		log.Printf("Error signing transaction: %v", err)
+		return &tx.Transaction{}, err
+	}
+
+	// send the transaction
+	resp, err := ar.SendTransaction(context.TODO(), txn)
+
+	if err != nil {
+		log.Printf("Error sending transaction: %v", err)
+		return &tx.Transaction{}, err
+	}
+
+	log.Printf("Arweave Transaction Sent: %v", resp)
+
+	// wait for the transaction to get mined
+	finalTx, err := ar.WaitMined(context.TODO(), txn)
+	if err != nil {
+		log.Printf("Error with transaction getting mined: %v", err)
+		return &tx.Transaction{}, err
+	}
+
+	return finalTx, nil
+}
+
+func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
+	/* TODO: If only 1 file handler, shut down after any error or at return json response
+	Otherwise, only on return response
+	 */
+
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, "There was an error receiving your file:"+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	defer file.Close()
+	fileBytes, _ := ioutil.ReadAll(file)
+	fileByteLen := len(fileBytes)
+
+	/* Validate Size. */
+	if fileByteLen > (3 * MB) {
+		http.Error(w, "The file sent is larger than the limit of 3MB.", http.StatusBadRequest)
+		return
+	}
+
+	log.Print("Decrypting file...")
+	/* Decrypt the outer layer of file */
+	currentPrivateKey := hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
+	decryptedFileBytes, err := utility.DecryptFile(fileBytes, currentPrivateKey)
+	assetDoubleHash := utility.FileBytesToDoubleHashBytes(decryptedFileBytes)
+	if err != nil {
+		log.Printf("Error decrypting file: %v", err)
+		http.Error(w, "The file cannot be decrypted by archaeologist. Confirm it was encrypted with the correct public key.", http.StatusBadRequest)
+		return
+	}
+
+	/* Validate the inner layer double hash matches a double hash */
+	storageFee, ok := arch.FileHandlers[assetDoubleHash]
+	if !ok{
+		http.Error(w, "The double hash of the file does not match any open double hashes.", http.StatusBadRequest)
+		return
+	}
+
+	/* Validate Storage Fee is sufficient */
+	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), arch.FeePerByte)
+	if storageExpectation.Cmp(storageFee) != -1  {
+		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", storageExpectation, storageFee)
+		http.Error(w, errMsg, http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("File %s was validated successfully:", header.Filename)
+
+	arweaveTx, err := arch.UploadFileToArweave(fileBytes)
+	if err != nil {
+		log.Printf("Arweave Transaction Failed: %v", err)
+		http.Error(w, "There was an error with the file. Please try again.", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
+
+	/* Generate new public and private keys */
+
+	/* Respond to embalmer with:
+		New Public Key
+	   	Arweave Tx Hash
+		Signature of New Public Key + Tx Hash
+	*/
+	arweaveTxHash := arweaveTx.Hash()
+	newPublicKey := hdw.PublicKeyFromIndex(arch.Wallet, arch.AccountIndex+1)
+	pubKeyConcatTxHash := append(crypto.FromECDSAPub(newPublicKey)[1:], []byte(arweaveTxHash)...)
+	hash := crypto.Keccak256Hash(pubKeyConcatTxHash)
+	assetIdSig, err := crypto.Sign(hash.Bytes(), arch.PrivateKey)
+	if err != nil {
+		log.Printf("Couldnt sign the arweave tx: %v", err)
+		http.Error(w, "There was an error with the file. Please try again.", http.StatusBadRequest)
+		return
+	}
+
+	R, S, V := utility.SigRSV(assetIdSig)
+
+	w.Header().Set("Content-Type", "application/json")
+	response := ResponseToEmbalmer{
+		NewPublicKey:    crypto.FromECDSAPub(newPublicKey)[1:],
+		AssetId:         arweaveTxHash,
+		AssetDoubleHash: assetDoubleHash,
+		V:               V,
+		R:               R,
+		S:               S,
+	}
+
+	json.NewEncoder(w).Encode(response)
+}
+
+func (arch *Archaeologist) ListenForFile() {
+	/* If we get an error, attempt to start the server regardless */
+	conn, err := net.Dial("tcp", net.JoinHostPort("localhost", arch.FilePort))
+	if conn == nil || err != nil {
+		arch.InitServer(arch.FilePort)
+		arch.StartServer()
+	}
+}
+
+func (arch *Archaeologist) InitServer(filePort string) {
+	sm := http.NewServeMux()
+	sm.Handle("/file", http.HandlerFunc(arch.fileUploadHandler))
+	arch.Server = &http.Server{Addr: ":" + filePort, Handler: sm}
+}
+
+func (arch *Archaeologist) StartServer() {
+	go func() {
+		log.Printf("Listening for file on %s:", arch.Server.Addr)
+		if err := arch.Server.ListenAndServe(); err != nil {
+			log.Println("Error starting http server:", err)
+		}
+	}()
+
+	// Stop the server if the program exits
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt)
+
+	// Waiting for SIGINT (pkill -2)
+	<-stop
+	arch.ShutdownServer()
+}
+
+func (arch *Archaeologist) ShutdownServer() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := arch.Server.Shutdown(ctx); err != nil {
+		log.Println("Error shutting down http server:", err)
+	}
 }

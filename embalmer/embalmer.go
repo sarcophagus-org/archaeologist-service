@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"encoding/json"
-	"fmt"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
@@ -132,15 +131,18 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDou
 	log.Printf("Gas Used: %v", tx.Gas())
 }
 
-func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filepath string) {
+func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filename string) {
 	log.Println("***UPDATING SARCOPHAGUS***")
 	url := "http://127.0.0.1:8080/file"
-	response := embalmer.SendFile(url, filepath, "file")
+	response, err := embalmer.SendFile(url, filename, "file")
+	if err != nil {
+		log.Fatalf("Error sending file:", err)
+	}
 
 	var responseToEmbalmer = new(models.ResponseToEmbalmer)
-	err := json.Unmarshal(response, &responseToEmbalmer)
+	err = json.Unmarshal(response, &responseToEmbalmer)
 	if err != nil {
-		fmt.Println("couldnt unmarshal json response:", err)
+		log.Fatalf("Error: %v", string(response))
 	}
 
 	log.Printf("NewPublicKey:", responseToEmbalmer.NewPublicKey)
@@ -167,14 +169,31 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filepath s
 	log.Printf("Gas Used: %v", tx.Gas())
 }
 
-func (embalmer *Embalmer) SendFile(url string, filename string, filetype string) []byte {
+func (embalmer *Embalmer) RewrapSarcophagus(assetDoubleHash [32]byte, resurrectionTime *big.Int) {
+	log.Println("***REWRAPPING SARCOPHAGUS***")
+
+	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
+	tx, err := sarcoSession.RewrapSarcophagus(
+		assetDoubleHash,
+		resurrectionTime,
+		big.NewInt(embalmer.DiggingFee),
+		big.NewInt(embalmer.Bounty),
+	)
+
+	if err != nil {
+		log.Fatalf("Transaction reverted. Error rewrapping Sarcophagus: %v", err)
+	}
+
+	log.Printf("Rewrap Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+	log.Printf("Gas Used: %v", tx.Gas())
+}
+
+func (embalmer *Embalmer) SendFile(url string, filename string, filetype string) ([]byte, error) {
 	file, err := os.Open(filename)
 
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	defer file.Close()
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
@@ -208,5 +227,5 @@ func (embalmer *Embalmer) SendFile(url string, filename string, filetype string)
 		log.Fatal(err)
 	}
 
-	return content
+	return content, err
 }

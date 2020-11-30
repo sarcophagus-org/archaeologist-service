@@ -21,23 +21,18 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 	log.Println("CurrentPublicKey:", event.ArchaeologistPublicKey)
 
 	if bytes.Compare(event.ArchaeologistPublicKey, arch.CurrentPublicKeyBytes) != 0 {
-		log.Print("Public Key on Sarcophagus does not match current Public Key. Not listening for file.")
+		log.Printf("Public Key on Sarcophagus does not match current Public Key : %v. Not listening for file.", arch.CurrentPublicKeyBytes)
 		return
 	}
 
-	arch.Sarcophaguses[event.AssetDoubleHash] = models.Sarcophagus{ResurrectionTime: event.ResurrectionTime, AccountIndex: arch.AccountIndex}
-
-	/* TODO: Update to handle multiple files (when 'create sarcophagus' is called multiple times) */
-	/* Consider pushing file handlers to slice */
-	/* Make server separate from file handler */
-
-	fileHandler := &models.FileHandler{
-		event.AssetDoubleHash,
-		event.Embalmer,
-		event.StorageFee,
-		arch,
+	_, ok := arch.Sarcophaguses[event.AssetDoubleHash]
+	if ok {
+		/* The sarco already exists but should not */
+		log.Printf("The sarcophagus for this double hash already exists: %v", event.AssetDoubleHash)
+		return
 	}
 
-	/* Todo -- detect if we are already listening */
-	fileHandler.HandleFileUpload()
+	arch.Sarcophaguses[event.AssetDoubleHash] = event.ResurrectionTime
+	arch.FileHandlers[event.AssetDoubleHash] = event.StorageFee
+	go arch.ListenForFile()
 }

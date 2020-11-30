@@ -68,8 +68,8 @@ func PrivateToPublicKeyBytes(privateKey *ecdsa.PrivateKey) []byte {
 	return crypto.FromECDSAPub(pubKey)
 }
 
-func ValidatePositiveNumber(num int64, numField string) int64 {
-	if num <= 0 {
+func ValidatePositiveNumber(num *big.Int, numField string) *big.Int {
+	if num.Cmp(big.NewInt(0)) != 1 {
 		log.Fatalf("%s must be greater than 0. Please check the value in the config file", numField)
 	}
 
@@ -84,11 +84,20 @@ func ValidateIpAddress(ip string, ipField string) string {
 	return ip
 }
 
-func ValidateTimeInFuture(unixTimestamp int64, timeField string) int64 {
+func TimeInFuture(unixTimestamp *big.Int) bool {
+	timestamp := unixTimestamp.Int64()
 	now := time.Now()
 	unixNow := now.Unix()
+	return timestamp >= unixNow
+}
 
-	if unixTimestamp <= unixNow {
+func TimeWithWindowInFuture(unixTimestamp *big.Int, window *big.Int) bool {
+	timePlusWindow := big.NewInt(0).Add(unixTimestamp, window)
+	return TimeInFuture(timePlusWindow)
+}
+
+func ValidateTimeInFuture(unixTimestamp *big.Int, timeField string) *big.Int {
+	if !TimeInFuture(unixTimestamp) {
 		log.Fatalf("%s must be in the future. Please check the value in the config file", timeField)
 	}
 

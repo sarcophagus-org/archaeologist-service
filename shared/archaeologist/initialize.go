@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/Dev43/arweave-go/api"
 	"github.com/Dev43/arweave-go/transactor"
 	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
@@ -12,10 +13,10 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"log"
+	"math/big"
 )
 
 func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) {
@@ -24,7 +25,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 
 	var err error
 
-	arch.FreeBond = calculateFreeBond(config.ADD_TO_FREE_BOND, config.REMOVE_FROM_FREE_BOND)
+	arch.FreeBond = calculateFreeBond(big.NewInt(config.ADD_TO_FREE_BOND), big.NewInt(config.REMOVE_FROM_FREE_BOND))
 	arch.Client = ethereum.InitEthClient(config.ETH_NODE)
 	arch.ArweaveTransactor = initArweaveTransactor(config.ARWEAVE_NODE)
 	arch.ArweaveWallet = initArweaveWallet(config.ARWEAVE_KEY_FILE)
@@ -32,44 +33,101 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	if err != nil {
 		log.Fatalf("could not load eth private key.  Please check the ETH_NODE value in the config file. Error: %v\n", err)
 	}
-
+	arch.ArchAddress = utility.PrivateKeyToAddress(arch.PrivateKey)
+	arch.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, arch.Client)
+	arch.SarcoSession = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
+	arch.TokenSession = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
 	arch.Wallet, err = hdwallet.NewFromMnemonic(config.MNEMONIC)
 	if err != nil {
 		log.Fatalf("could not setup HD wallet from mnemonic: %v", err)
 	}
 
-	arch.Sarcophaguses = map[[32]byte]models.Sarcophagus{}
-
-	/* TODO: build sarco states and determine current public key based on sarco states */
-
-	arch.AccountIndex = 0
-	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
-	initialPublicKey := utility.PrivateToPublicKeyECDSA(arch.CurrentPrivateKey)
-	arch.CurrentPublicKeyBytes = crypto.FromECDSAPub(initialPublicKey)[1:]
-
 	arch.PaymentAddress = validatePaymentAddress(config.PAYMENT_ADDRESS, arch.Client)
-	arch.ArchAddress = utility.PrivateKeyToAddress(arch.PrivateKey)
-	arch.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, arch.Client)
-	arch.SarcoSession = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
-	arch.TokenSession = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
-	arch.FeePerByte = utility.ValidatePositiveNumber(config.FEE_PER_BYTE, "FEE_PER_BYTE")
-	arch.MinBounty = utility.ValidatePositiveNumber(config.MIN_BOUNTY, "MIN_BOUNTY")
-	arch.MinDiggingFee = utility.ValidatePositiveNumber(config.MIN_DIGGING_FEE, "MIN_DIGGING_FEE")
-	arch.MaxResurectionTime = utility.ValidateTimeInFuture(config.MAX_RESURRECTION_TIME, "MAX_RESURRECTION_TIME")
+	arch.FeePerByte = utility.ValidatePositiveNumber(big.NewInt(config.FEE_PER_BYTE), "FEE_PER_BYTE")
+	arch.MinBounty = utility.ValidatePositiveNumber(big.NewInt(config.MIN_BOUNTY), "MIN_BOUNTY")
+	arch.MinDiggingFee = utility.ValidatePositiveNumber(big.NewInt(config.MIN_DIGGING_FEE), "MIN_DIGGING_FEE")
+	arch.MaxResurectionTime = utility.ValidateTimeInFuture(big.NewInt(config.MAX_RESURRECTION_TIME), "MAX_RESURRECTION_TIME")
 	arch.Endpoint = utility.ValidateIpAddress(config.ENDPOINT, "ENDPOINT")
 	arch.FilePort = config.FILE_PORT
+
+	arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
+	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
+	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
+	if len(arch.FileHandlers) > 0 {
+		go arch.ListenForFile()
+	}
 }
 
-func calculateFreeBond(addFreeBond int64, removeFreeBond int64) int64 {
-	var archFreeBond int64 = 0
+func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int, map[[32]byte]*big.Int, int) {
+	var sarcophaguses = map[[32]byte]*big.Int{}
+	var fileHandlers = map[[32]byte]*big.Int{}
+	var accountIndex = 0
 
-	if addFreeBond > 0 {
-		if removeFreeBond > 0 {
+	sarcoCount, err := arch.SarcoSession.SarcophagusCount()
+	if err != nil {
+		log.Fatalf("Call to get Sarcophagus count in Contract failed. Please check CONTRACT_ADDRESS is correct in the config file: %v", err)
+	}
+
+	/*
+		Iterate through all sarcos
+		For any sarcos where we are the arch, determine state of sarco and build service state
+		Schedule rewraps if Sarco is updated and resurrection time + window is in future
+	*/
+
+	for i := big.NewInt(0); i.Cmp(sarcoCount) == -1; i = big.NewInt(0).Add(i, big.NewInt(1)) {
+		doubleHash, _ := arch.SarcoSession.SarcophagusDoubleHash(i)
+		sarco, _ := arch.SarcoSession.Sarcophagus(doubleHash)
+
+		if sarco.Archaeologist == arch.ArchAddress {
+			/*
+				Sarco States:
+				0 - Does not Exist
+				1 - Exists
+				2 - Done
+			*/
+
+			switch state := sarco.State; state {
+			case 1:
+				if utility.TimeWithWindowInFuture(sarco.ResurrectionTime, sarco.ResurrectionWindow) {
+					if sarco.AssetId == "" {
+						// This is a created sarc that is not updated. We need to add to the file handlers
+						fileHandlers[doubleHash] = sarco.StorageFee
+					} else {
+						privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
+						scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
+						accountIndex += 1
+					}
+					sarcophaguses[doubleHash] = sarco.ResurrectionTime
+				} else {
+					// TODO: cleanup expired sarco if it is updated
+					if sarco.AssetId != "" {
+						accountIndex += 1
+					}
+				}
+			case 2:
+				accountIndex += 1
+			}
+		}
+	}
+
+	log.Printf("Sarcophaguses not yet complete: %v", sarcophaguses)
+	log.Printf("Sarcophaguses waiting for a file: %v", fileHandlers)
+	log.Printf("Current Account Index: %v", accountIndex)
+
+	return sarcophaguses, fileHandlers, accountIndex
+}
+
+func calculateFreeBond(addFreeBond *big.Int, removeFreeBond *big.Int) *big.Int {
+	var zero = big.NewInt(0)
+	var archFreeBond = zero
+
+	if addFreeBond.Cmp(zero) == 1 {
+		if removeFreeBond.Cmp(zero) == 1 {
 			log.Fatal("ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND cannot both be > 0")
 		}
 		archFreeBond = addFreeBond
-	} else if removeFreeBond > 0 {
-		archFreeBond = int64(-1) * removeFreeBond
+	} else if removeFreeBond.Cmp(zero) == 1 {
+		archFreeBond = archFreeBond.Neg(removeFreeBond)
 	}
 
 	return archFreeBond

@@ -10,15 +10,17 @@ import (
 
 func handleUpdateSarcophagus(event *contracts.EventsUpdateSarcophagus, arch *models.Archaeologist) {
 	log.Println("Update Sarcophagus Event Sent:", event.AssetId)
-	/* TODO: Clean up sarcophagus in file handlers */
 
-	if updatedSarc, ok := arch.Sarcophaguses[event.AssetDoubleHash]; ok {
-		resurrectionTime := updatedSarc.ResurrectionTime
-		privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, updatedSarc.AccountIndex)
-		log.Printf("account Index:", updatedSarc.AccountIndex)
+	/* Delete open file handler for the double hash */
+	delete(arch.FileHandlers, event.AssetDoubleHash)
+
+	if resurrectionTime, ok := arch.Sarcophaguses[event.AssetDoubleHash]; ok {
+		privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 		arweaveClient := arch.ArweaveTransactor.Client.(*api.Client)
+		scheduleUnwrap(&arch.SarcoSession, arweaveClient, resurrectionTime, arch, event.AssetDoubleHash, privateKey, event.AssetId)
 
-		scheduleUnwrap(&arch.SarcoSession, arweaveClient, resurrectionTime, event.AssetDoubleHash, privateKey, event.AssetId)
+		arch.AccountIndex += 1
+		arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
 	} else {
 		log.Printf("We dont have a sarcophagus to update for the double hash: %v",  event.AssetDoubleHash)
 	}
