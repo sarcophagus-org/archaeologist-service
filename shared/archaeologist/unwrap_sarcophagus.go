@@ -43,7 +43,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 				log.Printf("Gas Used: %v", tx.Gas())
 				log.Printf("AssetDoubleHash: %v", assetDoubleHash)
 			} else {
-				// Resurrection time is different in state, meaning sarc has been rewrapped
+				// Resurrection time is different in state for this sarc, meaning sarc has been rewrapped
 				log.Printf("Sarco has been rewrapped, rescheduling!")
 				scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 			}

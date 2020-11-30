@@ -5,7 +5,6 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"log"
-	"net"
 )
 
 func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *models.Archaeologist) {
@@ -35,13 +34,5 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 
 	arch.Sarcophaguses[event.AssetDoubleHash] = event.ResurrectionTime
 	arch.FileHandlers[event.AssetDoubleHash] = event.StorageFee
-
-	/* Check if we are already listening on the port */
-	/* If we get an error, attempt to start the server regardless */
-	conn, err := net.Dial("tcp", net.JoinHostPort("localhost", arch.FilePort))
-	if conn == nil || err != nil {
-		arch.InitServer(arch.FilePort)
-		arch.StartServer()
-	}
-
+	go arch.ListenForFile()
 }

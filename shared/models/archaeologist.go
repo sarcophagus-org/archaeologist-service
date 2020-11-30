@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/big"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -315,6 +316,15 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	json.NewEncoder(w).Encode(response)
+}
+
+func (arch *Archaeologist) ListenForFile() {
+	/* If we get an error, attempt to start the server regardless */
+	conn, err := net.Dial("tcp", net.JoinHostPort("localhost", arch.FilePort))
+	if conn == nil || err != nil {
+		arch.InitServer(arch.FilePort)
+		arch.StartServer()
+	}
 }
 
 func (arch *Archaeologist) InitServer(filePort string) {

@@ -13,18 +13,8 @@ import (
 	"math/rand"
 	"os"
 	"context"
+	"time"
 )
-
-/* TODO: Generate new file from random string */
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func randSeq(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
-}
 
 func loadEmbalmerConfig() *embalmer.EmbalmerConfig {
 	viper.SetConfigName("embalmer_config")
@@ -77,8 +67,6 @@ func main(){
 
 	flag.Parse()
 
-	// fileBytes, _ := utility.FileToBytes(file)
-
 	/* Generate random bytes to use as payload for each sarco */
 	fileBytes := make([]byte, 20)
 
@@ -94,7 +82,7 @@ func main(){
 	}
 
 	if *typeFlag == "rewrap" {
-		emb.RewrapSarcophagus(assetDoubleHashBytes, big.NewInt(defaultResTime * 2))
+		emb.RewrapSarcophagus(assetDoubleHashBytes, big.NewInt(time.Now().Unix() + defaultResTime * 2))
 	}
 
 	if *typeFlag == "update" {
