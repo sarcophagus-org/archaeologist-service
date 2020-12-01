@@ -1,6 +1,7 @@
 package archaeologist
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"github.com/Dev43/arweave-go/api"
 	"github.com/Dev43/arweave-go/utils"
@@ -11,7 +12,6 @@ import (
 	"log"
 	"math/big"
 	"time"
-	"context"
 )
 
 // TODO: handle rewrapped sarc
@@ -27,21 +27,25 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 			if resTime.Cmp(resurrectionTime) == 0 {
 				singleHash, err := generateSingleHash(arweaveClient, assetId, privateKey)
 				if err != nil {
-					log.Printf("Error generating single hash during unwrapping process: %v", err)
+					log.Printf("Error generating single hash during unwrapping process. Unwrapping cancelled: %v", err)
+				} else {
+					/* Estimate Gas on this transaction --- this will give back an error if this would revert */
+					/* If it reverts 3 times in a row, then... */
+					/* Add a minute to the time */
+					//encodedInput, err := contracts.SarcophagusABI.Pack("unwrap_sarcophagus", tst, st,st)
+					//_, err := arch.Client.EstimateGas(context.Background(),)
+					tx, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
+					if err != nil {
+						log.Printf("Transaction reverted. There was an error unwrapping the sarcophagus: %v", err)
+					} else {
+						log.Printf("Unwrap Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+						log.Printf("Gas Used: %v", tx.Gas())
+						log.Printf("AssetDoubleHash: %v", assetDoubleHash)
+
+						/* Sarcophagus is unwrapped, remove from state */
+						delete(arch.Sarcophaguses, assetDoubleHash)
+					}
 				}
-
-				/* Estimate Gas on this transaction --- this will give back an error if this would revert */
-				/* If it reverts 3 times in a row, then... */
-				/* Add a minute to the time */
-
-				tx, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
-				if err != nil {
-					log.Fatalf("Transaction reverted. There was an error unwrapping the sarcophagus: %v", err)
-				}
-
-				log.Printf("Unwrap Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
-				log.Printf("Gas Used: %v", tx.Gas())
-				log.Printf("AssetDoubleHash: %v", assetDoubleHash)
 			} else {
 				// Resurrection time is different in state for this sarc, meaning sarc has been rewrapped
 				log.Printf("Sarco has been rewrapped, rescheduling!")

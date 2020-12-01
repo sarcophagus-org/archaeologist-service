@@ -51,6 +51,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.FilePort = config.FILE_PORT
 
 	arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
+
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
 	if len(arch.FileHandlers) > 0 {
@@ -93,18 +94,21 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 						// This is a created sarc that is not updated. We need to add to the file handlers
 						fileHandlers[doubleHash] = sarco.StorageFee
 					} else {
+						// This an updated sarc that is not unwrapped yet
+						// Schedule an unwrap using the current account index private key
 						privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
 						scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
 						accountIndex += 1
 					}
 					sarcophaguses[doubleHash] = sarco.ResurrectionTime
 				} else {
-					// TODO: cleanup expired sarco if it is updated
 					if sarco.AssetId != "" {
+						// TODO: cleanup expired sarco if it is updated
 						accountIndex += 1
 					}
 				}
 			case 2:
+				// Sarco is 'done', increment account index as this sarco uses one of our key pairs.
 				accountIndex += 1
 			}
 		}
