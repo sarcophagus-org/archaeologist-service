@@ -222,19 +222,30 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transactio
 	return finalTx, nil
 }
 
-func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
-	/* TODO: If only 1 file handler, shut down after any error or at return json response
-	Otherwise, only on return response
-	 */
+func (arch *Archaeologist) fileHandlerCheck() {
+	fileHandlerLen := len(arch.FileHandlers)
+	if fileHandlerLen == 1 {
+		arch.FileHandlers = map[[32]byte]*big.Int{}
+		arch.ShutdownServer()
+	}
+}
 
+func (arch *Archaeologist) fileUploadError(logMsg string, httpErrMsg string, httpErrType int, w http.ResponseWriter) {
+	log.Printf(logMsg)
+	http.Error(w, httpErrMsg, httpErrType)
+
+	arch.fileHandlerCheck()
+}
+
+func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		arch.fileUploadError("File handler received non-post method, exiting.", "Method not allowed", http.StatusMethodNotAllowed, w)
 		return
 	}
 
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, "There was an error receiving your file:"+err.Error(), http.StatusBadRequest)
+		arch.fileUploadError("Couldnt receive file:" + err.Error(), "There was an error receiving your file:"+err.Error(), http.StatusBadRequest, w)
 		return
 	}
 
@@ -244,7 +255,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 
 	/* Validate Size. */
 	if fileByteLen > (3 * MB) {
-		http.Error(w, "The file sent is larger than the limit of 3MB.", http.StatusBadRequest)
+		arch.fileUploadError("File was too large to receive. Size:" + string(fileByteLen), "The file sent is larger than the limit of 3MB.", http.StatusBadRequest, w)
 		return
 	}
 
@@ -254,15 +265,15 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	decryptedFileBytes, err := utility.DecryptFile(fileBytes, currentPrivateKey)
 	assetDoubleHash := utility.FileBytesToDoubleHashBytes(decryptedFileBytes)
 	if err != nil {
-		log.Printf("Error decrypting file: %v", err)
-		http.Error(w, "The file cannot be decrypted by archaeologist. Confirm it was encrypted with the correct public key.", http.StatusBadRequest)
+		arch.fileUploadError("Error decrypting file:" + err.Error(), "The file cannot be decrypted by archaeologist. Confirm it was encrypted with the correct public key.", http.StatusBadRequest, w)
 		return
 	}
 
 	/* Validate the inner layer double hash matches a double hash */
 	storageFee, ok := arch.FileHandlers[assetDoubleHash]
 	if !ok{
-		http.Error(w, "The double hash of the file does not match any open double hashes.", http.StatusBadRequest)
+		errMsg := "The double hash of the file does not match any open double hashes."
+		arch.fileUploadError(errMsg, errMsg, http.StatusBadRequest, w)
 		return
 	}
 
@@ -270,7 +281,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), arch.FeePerByte)
 	if storageExpectation.Cmp(storageFee) != -1  {
 		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", storageExpectation, storageFee)
-		http.Error(w, errMsg, http.StatusBadRequest)
+		arch.fileUploadError(errMsg, errMsg, http.StatusBadRequest, w)
 		return
 	}
 
@@ -278,14 +289,12 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 
 	arweaveTx, err := arch.UploadFileToArweave(fileBytes)
 	if err != nil {
-		log.Printf("Arweave Transaction Failed: %v", err)
-		http.Error(w, "There was an error with the file. Please try again.", http.StatusBadRequest)
+		errMsg := fmt.Sprintf("There was an error with the file. Error: %v", err)
+		arch.fileUploadError(errMsg, errMsg, http.StatusBadRequest, w)
 		return
 	}
 
 	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
-
-	/* Generate new public and private keys */
 
 	/* Respond to embalmer with:
 		New Public Key
@@ -298,8 +307,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	hash := crypto.Keccak256Hash(pubKeyConcatTxHash)
 	assetIdSig, err := crypto.Sign(hash.Bytes(), arch.PrivateKey)
 	if err != nil {
-		log.Printf("Couldnt sign the arweave tx: %v", err)
-		http.Error(w, "There was an error with the file. Please try again.", http.StatusBadRequest)
+		arch.fileUploadError("Couldnt sign the arweave tx: " + err.Error(), "There was an error with the file.", http.StatusBadRequest, w)
 		return
 	}
 
@@ -316,6 +324,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	json.NewEncoder(w).Encode(response)
+	arch.fileHandlerCheck()
 }
 
 func (arch *Archaeologist) ListenForFile() {
