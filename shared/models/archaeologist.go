@@ -279,7 +279,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 
 	/* Validate Storage Fee is sufficient */
 	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), arch.FeePerByte)
-	if storageExpectation.Cmp(storageFee) != -1  {
+	if storageExpectation.Cmp(storageFee) == 1  {
 		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", storageExpectation, storageFee)
 		arch.fileUploadError(errMsg, errMsg, http.StatusBadRequest, w)
 		return
@@ -324,7 +324,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	json.NewEncoder(w).Encode(response)
-	arch.fileHandlerCheck()
+	arch.ShutdownServer()
 }
 
 func (arch *Archaeologist) ListenForFile() {
@@ -360,7 +360,7 @@ func (arch *Archaeologist) StartServer() {
 }
 
 func (arch *Archaeologist) ShutdownServer() {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 	if err := arch.Server.Shutdown(ctx); err != nil {
 		log.Println("Error shutting down http server:", err)

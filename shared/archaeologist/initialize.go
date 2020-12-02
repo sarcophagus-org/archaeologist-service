@@ -42,7 +42,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		log.Fatalf("could not setup HD wallet from mnemonic: %v", err)
 	}
 
-	arch.PaymentAddress = validatePaymentAddress(config.PAYMENT_ADDRESS, arch.Client)
+	arch.PaymentAddress = setPaymentAddress(arch.ArchAddress, config.PAYMENT_ADDRESS, arch.Client)
 	arch.FeePerByte = utility.ValidatePositiveNumber(stringToBigInt(config.FEE_PER_BYTE), "FEE_PER_BYTE")
 	arch.MinBounty = utility.ValidatePositiveNumber(stringToBigInt(config.MIN_BOUNTY), "MIN_BOUNTY")
 	arch.MinDiggingFee = utility.ValidatePositiveNumber(stringToBigInt(config.MIN_DIGGING_FEE), "MIN_DIGGING_FEE")
@@ -91,24 +91,37 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 			case 1:
 				if utility.TimeWithWindowInFuture(sarco.ResurrectionTime, sarco.ResurrectionWindow) {
 					if sarco.AssetId == "" {
-						// This is a created sarc that is not updated. We need to add to the file handlers
+						// This is a created sarc that is not updated
 						fileHandlers[doubleHash] = sarco.StorageFee
 					} else {
 						// This an updated sarc that is not unwrapped yet
 						// Schedule an unwrap using the current account index private key
 						privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
 						scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
+						fileHandlers = map[[32]byte]*big.Int{}
 						accountIndex += 1
 					}
 					sarcophaguses[doubleHash] = sarco.ResurrectionTime
 				} else {
+					log.Printf("Sarcophagus did not get unwrapped in time: %v", doubleHash)
 					if sarco.AssetId != "" {
-						// TODO: cleanup expired sarco if it is updated
+						// Updated Sarc's unwrap time is in the past
+						// Lets get some money back by cleaning it up
+						fileHandlers = map[[32]byte]*big.Int{}
 						accountIndex += 1
+
+						tx, err := arch.SarcoSession.CleanUpSarcophagus(doubleHash, arch.PaymentAddress)
+						if err != nil {
+							log.Printf("Cleanup Sarcophagus error: %v", err)
+						}
+						log.Printf("Cleanup Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+						log.Printf("Gas Used: %v", tx.Gas())
 					}
 				}
 			case 2:
 				// Sarco is 'done', increment account index as this sarco uses one of our key pairs.
+				// Clear file handlers b/c we only want file handlers for our current account index
+				fileHandlers = map[[32]byte]*big.Int{}
 				accountIndex += 1
 			}
 		}
@@ -157,18 +170,20 @@ func initArweaveWallet(arweaveKeyFileName string) *wallet.Wallet {
 	return wallet
 }
 
-func validatePaymentAddress(paymentAddress string, client *ethclient.Client) common.Address {
-	var archAddress common.Address
+func setPaymentAddress(archAddress common.Address, paymentAddress string, client *ethclient.Client) common.Address {
+	var addy common.Address
 
 	if paymentAddress != "" {
 		if utility.IsValidAddress(paymentAddress) && !utility.IsContract(common.HexToAddress(paymentAddress), client) {
-			archAddress = common.HexToAddress(paymentAddress)
+			addy = common.HexToAddress(paymentAddress)
 		} else {
 			log.Fatal("Payment address supplied in config is invalid. Please check that address.")
 		}
+	} else {
+		addy = archAddress
 	}
 
-	return archAddress
+	return addy
 }
 
 func initSarcophagusSession(contractAddress common.Address, client *ethclient.Client, privateKey *ecdsa.PrivateKey) contracts.SarcophagusSession {
