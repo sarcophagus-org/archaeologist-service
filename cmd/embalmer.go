@@ -75,6 +75,8 @@ func main(){
 
 	assetDoubleHashBytes := embalmer.FileBytesToDoubleHashBytes(fileBytes)
 
+	log.Printf("Asset double hash bytes: %v", assetDoubleHashBytes)
+
 	if *typeFlag == "create" {
 		emb.CreateSarcophagus(config.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytes)
 		log.Println("Embalmer Sarco Balance:", emb.EmbalmerSarcoBalance())
@@ -82,6 +84,18 @@ func main(){
 
 	if *typeFlag == "rewrap" {
 		emb.RewrapSarcophagus(assetDoubleHashBytes, big.NewInt(time.Now().Unix() + defaultResTime * 2))
+	}
+
+	if *typeFlag == "clean" {
+		emb.CleanupSarcophagus(assetDoubleHashBytes)
+	}
+
+	if *typeFlag == "bury" {
+		emb.BurySarcophagus(assetDoubleHashBytes)
+	}
+
+	if *typeFlag == "cancel" {
+		emb.CancelSarcophagus(assetDoubleHashBytes)
 	}
 
 	if *typeFlag == "update" {

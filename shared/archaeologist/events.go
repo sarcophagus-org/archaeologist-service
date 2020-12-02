@@ -123,17 +123,11 @@ func EventsSubscribe(arch *models.Archaeologist) {
 				handleRewrapSarcophagus(event, arch)
 			}
 		case event := <-cleanSink:
-			removeArchSarcophagus(arch, event.AssetDoubleHash)
+			arch.RemoveArchSarcophagus(event.AssetDoubleHash)
 		case event := <-burySink:
-			removeArchSarcophagus(arch, event.AssetDoubleHash)
+			arch.RemoveArchSarcophagus(event.AssetDoubleHash)
 		case event := <-cancelSink:
-			removeArchSarcophagus(arch, event.AssetDoubleHash)
+			arch.RemoveArchSarcophagus(event.AssetDoubleHash)
 		}
-	}
-}
-
-func removeArchSarcophagus(arch *models.Archaeologist, doubleHash [32]byte) {
-	if arch.IsArchSarcophagus(doubleHash) {
-		arch.RemoveArchSarcophagus(doubleHash)
 	}
 }

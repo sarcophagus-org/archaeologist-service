@@ -43,5 +43,10 @@ func RegisterOrUpdateArchaeologist(arch *models.Archaeologist) {
 
 	archaeologistUpdated, _ := arch.SarcoSession.Archaeologists(arch.ArchAddress)
 	log.Printf("Current Free Bond: %v", archaeologistUpdated.FreeBond)
+
+	if archaeologistUpdated.FreeBond.Cmp(big.NewInt(0)) == 0 {
+		log.Printf("CURRENT FREE BOND IS 0. YOU WILL BE UNABLE TO ACCEPT NEW JOBS.")
+	}
+
 	log.Printf("Current Cursed Bond: %v", archaeologistUpdated.CursedBond)
 }

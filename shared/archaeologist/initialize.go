@@ -104,18 +104,20 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 				} else {
 					log.Printf("Sarcophagus did not get unwrapped in time: %v", doubleHash)
 					if sarco.AssetId != "" {
-						// Updated Sarc's unwrap time is in the past
-						// Lets get some money back by cleaning it up
 						fileHandlers = map[[32]byte]*big.Int{}
 						accountIndex += 1
-
-						tx, err := arch.SarcoSession.CleanUpSarcophagus(doubleHash, arch.PaymentAddress)
-						if err != nil {
-							log.Printf("Cleanup Sarcophagus error: %v", err)
-						}
-						log.Printf("Cleanup Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
-						log.Printf("Gas Used: %v", tx.Gas())
 					}
+
+					// Sarc's unwrap time is in the past
+					// Lets get some money by cleaning it up
+
+					tx, err := arch.SarcoSession.CleanUpSarcophagus(doubleHash, arch.PaymentAddress)
+					if err != nil {
+						log.Printf("Cleanup Sarcophagus error: %v", err)
+					}
+					log.Printf("Cleanup Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+					log.Printf("Gas Used: %v", tx.Gas())
+
 				}
 			case 2:
 				// Sarco is 'done', increment account index as this sarco uses one of our key pairs.

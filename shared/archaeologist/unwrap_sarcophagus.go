@@ -42,7 +42,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 					err := estimateGasForUnwrap(arch, assetDoubleHash, singleHash, privateKeyBytes)
 
 					if err != nil {
-						log.Printf("unwrapping aborted, transaction will fail: %v", err)
+						log.Printf("Unwrapping aborted, transaction will fail: %v", err)
 					} else {
 						tx, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
 						if err != nil {
@@ -53,7 +53,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 							log.Printf("AssetDoubleHash: %v", assetDoubleHash)
 
 							/* Sarcophagus is unwrapped, remove from state */
-							delete(arch.Sarcophaguses, assetDoubleHash)
+							arch.RemoveArchSarcophagus(assetDoubleHash)
 						}
 					}
 				}
@@ -62,6 +62,11 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 				log.Printf("Sarco has been rewrapped, rescheduling!")
 				scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 			}
+		} else {
+			// Sarcophagus does not exist in state
+			// It has either been cleaned / buried / cancelled
+			// Do nothing
+			log.Printf("Unwrapping cancelled. Sarcophagus was cancelled, buried, or cleaned.")
 		}
 	})
 

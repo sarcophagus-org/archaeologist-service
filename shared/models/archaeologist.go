@@ -224,7 +224,7 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transactio
 
 func (arch *Archaeologist) fileHandlerCheck() {
 	fileHandlerLen := len(arch.FileHandlers)
-	if fileHandlerLen == 1 {
+	if fileHandlerLen <= 1 {
 		arch.FileHandlers = map[[32]byte]*big.Int{}
 		arch.ShutdownServer()
 	}
@@ -328,18 +328,25 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (arch *Archaeologist) ListenForFile() {
-	/* If we get an error, attempt to start the server regardless */
-	conn, err := net.Dial("tcp", net.JoinHostPort("localhost", arch.FilePort))
-	if conn == nil || err != nil {
-		arch.InitServer(arch.FilePort)
+	if !arch.IsServerRunning() {
+		arch.InitServer()
 		arch.StartServer()
 	}
 }
 
-func (arch *Archaeologist) InitServer(filePort string) {
+func (arch *Archaeologist) IsServerRunning() bool {
+	timeout := 1 * time.Second
+	_, err := net.DialTimeout("tcp", net.JoinHostPort("localhost", arch.FilePort), timeout)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func (arch *Archaeologist) InitServer() {
 	sm := http.NewServeMux()
 	sm.Handle("/file", http.HandlerFunc(arch.fileUploadHandler))
-	arch.Server = &http.Server{Addr: ":" + filePort, Handler: utility.LimitMiddleware(sm)}
+	arch.Server = &http.Server{Addr: ":" + arch.FilePort, Handler: utility.LimitMiddleware(sm)}
 }
 
 func (arch *Archaeologist) StartServer() {
@@ -360,10 +367,14 @@ func (arch *Archaeologist) StartServer() {
 }
 
 func (arch *Archaeologist) ShutdownServer() {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-	if err := arch.Server.Shutdown(ctx); err != nil {
-		log.Println("Error shutting down http server:", err)
+	if arch.IsServerRunning() {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		if err := arch.Server.Shutdown(ctx); err != nil {
+			log.Println("Error shutting down http server (server may already be shutdown):", err)
+		} else {
+			log.Println("Server has been shutdown")
+		}
 	}
 }
 
@@ -373,5 +384,12 @@ func (arch *Archaeologist) IsArchSarcophagus(doubleHash [32]byte) bool {
 }
 
 func (arch *Archaeologist) RemoveArchSarcophagus(doubleHash [32]byte) {
-	delete(arch.Sarcophaguses, doubleHash)
+	if arch.IsArchSarcophagus(doubleHash) {
+		delete(arch.Sarcophaguses, doubleHash)
+		_, ok := arch.FileHandlers[doubleHash]
+		if ok {
+			arch.fileHandlerCheck()
+			delete(arch.FileHandlers, doubleHash)
+		}
+	}
 }
