@@ -192,6 +192,55 @@ func (embalmer *Embalmer) RewrapSarcophagus(assetDoubleHash [32]byte, resurrecti
 	log.Printf("Gas Used: %v", tx.Gas())
 }
 
+func (embalmer *Embalmer) CleanupSarcophagus(assetDoubleHash [32]byte) {
+	log.Println("***CLEANING UP SARCOPHAGUS***")
+
+	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
+	tx, err := sarcoSession.CleanUpSarcophagus(
+		assetDoubleHash,
+		embalmer.EmbalmerAddress,
+	)
+
+	if err != nil {
+		log.Fatalf("Transaction reverted. Error cleaning Sarcophagus: %v", err)
+	}
+
+	log.Printf("Clean Up Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+	log.Printf("Gas Used: %v", tx.Gas())
+}
+
+func (embalmer *Embalmer) BurySarcophagus(assetDoubleHash [32]byte) {
+	log.Println("***BURYING SARCOPHAGUS***")
+
+	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
+	tx, err := sarcoSession.BurySarcophagus(
+		assetDoubleHash,
+	)
+
+	if err != nil {
+		log.Fatalf("Transaction reverted. Error burying Sarcophagus: %v", err)
+	}
+
+	log.Printf("Bury Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+	log.Printf("Gas Used: %v", tx.Gas())
+}
+
+func (embalmer *Embalmer) CancelSarcophagus(assetDoubleHash [32]byte) {
+	log.Println("***CANCELLING SARCOPHAGUS***")
+
+	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
+	tx, err := sarcoSession.CancelSarcophagus(
+		assetDoubleHash,
+	)
+
+	if err != nil {
+		log.Fatalf("Transaction reverted. Error cancelling Sarcophagus: %v", err)
+	}
+
+	log.Printf("Cancel Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+	log.Printf("Gas Used: %v", tx.Gas())
+}
+
 func (embalmer *Embalmer) SendFile(url string, filename string, filetype string) ([]byte, error) {
 	file, err := os.Open(filename)
 

@@ -20,7 +20,6 @@ import (
 )
 
 func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) {
-	// TODO: Program exits on first error. Update to track # of errors in config and output messages for all.
 	// TODO: Validations for Port and IP Address -- consider testing opening/closing port
 
 	var err error

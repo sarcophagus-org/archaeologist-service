@@ -36,7 +36,9 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 					/* TODO: Add retry on the estimate gas */
 					/* If it reverts 3 times in a row, then... */
 					/* Add a minute to the time */
-
+					/*
+						Estimate Gas is used to check if the unwrap will succeed
+					*/
 					err := estimateGasForUnwrap(arch, assetDoubleHash, singleHash, privateKeyBytes)
 
 					if err != nil {
@@ -86,10 +88,6 @@ func generateSingleHash(arweaveClient *api.Client, assetId string, privateKey *e
 }
 
 func estimateGasForUnwrap(arch *models.Archaeologist, assetDoubleHash [32]byte, singleHash []byte, privateKeyBytes [32]byte) error {
-	/*
-		This method is used to check if the unwrap will succeed
-	 */
-
 	parsed, err := abi.JSON(strings.NewReader(contracts.SarcophagusABI))
 	if err != nil {
 		return err

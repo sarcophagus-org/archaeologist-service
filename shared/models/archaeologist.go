@@ -366,3 +366,12 @@ func (arch *Archaeologist) ShutdownServer() {
 		log.Println("Error shutting down http server:", err)
 	}
 }
+
+func (arch *Archaeologist) IsArchSarcophagus(doubleHash [32]byte) bool {
+	_, ok := arch.Sarcophaguses[doubleHash]
+	return ok
+}
+
+func (arch *Archaeologist) RemoveArchSarcophagus(doubleHash [32]byte) {
+	delete(arch.Sarcophaguses, doubleHash)
+}
