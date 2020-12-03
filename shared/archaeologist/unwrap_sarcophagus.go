@@ -36,6 +36,9 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 					/* TODO: Add retry on the estimate gas */
 					/* If it reverts 3 times in a row, then... */
 					/* Add a minute to the time */
+
+					// TODO: Do we need to remove the sarch from state if the unwrap fails?
+
 					/*
 						Estimate Gas is used to check if the unwrap will succeed
 					*/
