@@ -27,7 +27,8 @@ func RegisterOrUpdateArchaeologist(arch *models.Archaeologist) {
 		if arch.FreeBond.Cmp(big.NewInt(0)) == 1 ||
 			bytes.Compare(contractArch.CurrentPublicKey, arch.CurrentPublicKeyBytes) != 0 ||
 			contractArch.Endpoint != arch.Endpoint ||
-			contractArch.PaymentAddress != arch.ArchAddress ||
+			contractArch.Archaeologist != arch.ArchAddress ||
+			contractArch.PaymentAddress != arch.PaymentAddress ||
 			contractArch.FeePerByte.Cmp(arch.FeePerByte) != 0 ||
 			contractArch.MinimumBounty.Cmp(arch.MinBounty) != 0 ||
 			contractArch.MinimumDiggingFee.Cmp(arch.MinDiggingFee) != 0 ||
@@ -42,5 +43,10 @@ func RegisterOrUpdateArchaeologist(arch *models.Archaeologist) {
 
 	archaeologistUpdated, _ := arch.SarcoSession.Archaeologists(arch.ArchAddress)
 	log.Printf("Current Free Bond: %v", archaeologistUpdated.FreeBond)
+
+	if archaeologistUpdated.FreeBond.Cmp(big.NewInt(0)) == 0 {
+		log.Printf("CURRENT FREE BOND IS 0. YOU WILL BE UNABLE TO ACCEPT NEW JOBS.")
+	}
+
 	log.Printf("Current Cursed Bond: %v", archaeologistUpdated.CursedBond)
 }

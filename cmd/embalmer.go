@@ -70,11 +70,12 @@ func main(){
 	/* Generate random bytes to use as payload for each sarco */
 	fileBytes := make([]byte, 20)
 
-	/* TODO: Seed needs to be the same for create and update */
 	rand.Seed(*seedFlag)
 	rand.Read(fileBytes)
 
 	assetDoubleHashBytes := embalmer.FileBytesToDoubleHashBytes(fileBytes)
+
+	log.Printf("Asset double hash bytes: %v", assetDoubleHashBytes)
 
 	if *typeFlag == "create" {
 		emb.CreateSarcophagus(config.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytes)
@@ -83,6 +84,18 @@ func main(){
 
 	if *typeFlag == "rewrap" {
 		emb.RewrapSarcophagus(assetDoubleHashBytes, big.NewInt(time.Now().Unix() + defaultResTime * 2))
+	}
+
+	if *typeFlag == "clean" {
+		emb.CleanupSarcophagus(assetDoubleHashBytes)
+	}
+
+	if *typeFlag == "bury" {
+		emb.BurySarcophagus(assetDoubleHashBytes)
+	}
+
+	if *typeFlag == "cancel" {
+		emb.CancelSarcophagus(assetDoubleHashBytes)
 	}
 
 	if *typeFlag == "update" {

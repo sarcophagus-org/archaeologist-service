@@ -8,7 +8,7 @@ type EmbalmerConfig struct {
 	CONTRACT_ADDRESS string
 	TOKEN_ADDRESS string
 	RESURRECTION_TIME int64
-	STORAGE_FEE int64
-	DIGGING_FEE int64
-	BOUNTY int64
+	STORAGE_FEE string
+	DIGGING_FEE string
+	BOUNTY string
 }

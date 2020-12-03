@@ -20,12 +20,11 @@ import (
 )
 
 func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) {
-	// TODO: Program exits on first error. Update to track # of errors in config and output messages for all.
 	// TODO: Validations for Port and IP Address -- consider testing opening/closing port
 
 	var err error
 
-	arch.FreeBond = calculateFreeBond(big.NewInt(config.ADD_TO_FREE_BOND), big.NewInt(config.REMOVE_FROM_FREE_BOND))
+	arch.FreeBond = calculateFreeBond(stringToBigInt(config.ADD_TO_FREE_BOND), stringToBigInt(config.REMOVE_FROM_FREE_BOND))
 	arch.Client = ethereum.InitEthClient(config.ETH_NODE)
 	arch.ArweaveTransactor = initArweaveTransactor(config.ARWEAVE_NODE)
 	arch.ArweaveWallet = initArweaveWallet(config.ARWEAVE_KEY_FILE)
@@ -42,15 +41,16 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		log.Fatalf("could not setup HD wallet from mnemonic: %v", err)
 	}
 
-	arch.PaymentAddress = validatePaymentAddress(config.PAYMENT_ADDRESS, arch.Client)
-	arch.FeePerByte = utility.ValidatePositiveNumber(big.NewInt(config.FEE_PER_BYTE), "FEE_PER_BYTE")
-	arch.MinBounty = utility.ValidatePositiveNumber(big.NewInt(config.MIN_BOUNTY), "MIN_BOUNTY")
-	arch.MinDiggingFee = utility.ValidatePositiveNumber(big.NewInt(config.MIN_DIGGING_FEE), "MIN_DIGGING_FEE")
-	arch.MaxResurectionTime = utility.ValidateTimeInFuture(big.NewInt(config.MAX_RESURRECTION_TIME), "MAX_RESURRECTION_TIME")
+	arch.PaymentAddress = setPaymentAddress(arch.ArchAddress, config.PAYMENT_ADDRESS, arch.Client)
+	arch.FeePerByte = utility.ValidatePositiveNumber(stringToBigInt(config.FEE_PER_BYTE), "FEE_PER_BYTE")
+	arch.MinBounty = utility.ValidatePositiveNumber(stringToBigInt(config.MIN_BOUNTY), "MIN_BOUNTY")
+	arch.MinDiggingFee = utility.ValidatePositiveNumber(stringToBigInt(config.MIN_DIGGING_FEE), "MIN_DIGGING_FEE")
+	arch.MaxResurectionTime = utility.ValidateTimeInFuture(stringToBigInt(config.MAX_RESURRECTION_TIME), "MAX_RESURRECTION_TIME")
 	arch.Endpoint = utility.ValidateIpAddress(config.ENDPOINT, "ENDPOINT")
 	arch.FilePort = config.FILE_PORT
 
 	arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
+
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
 	if len(arch.FileHandlers) > 0 {
@@ -90,21 +90,39 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 			case 1:
 				if utility.TimeWithWindowInFuture(sarco.ResurrectionTime, sarco.ResurrectionWindow) {
 					if sarco.AssetId == "" {
-						// This is a created sarc that is not updated. We need to add to the file handlers
+						// This is a created sarc that is not updated
 						fileHandlers[doubleHash] = sarco.StorageFee
 					} else {
+						// This an updated sarc that is not unwrapped yet
+						// Schedule an unwrap using the current account index private key
 						privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
 						scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
+						fileHandlers = map[[32]byte]*big.Int{}
 						accountIndex += 1
 					}
 					sarcophaguses[doubleHash] = sarco.ResurrectionTime
 				} else {
-					// TODO: cleanup expired sarco if it is updated
+					log.Printf("Sarcophagus did not get unwrapped in time: %v", doubleHash)
 					if sarco.AssetId != "" {
+						fileHandlers = map[[32]byte]*big.Int{}
 						accountIndex += 1
 					}
+
+					// Sarc's unwrap time is in the past
+					// Lets get some money by cleaning it up
+
+					tx, err := arch.SarcoSession.CleanUpSarcophagus(doubleHash, arch.PaymentAddress)
+					if err != nil {
+						log.Printf("Cleanup Sarcophagus error: %v", err)
+					}
+					log.Printf("Cleanup Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+					log.Printf("Gas Used: %v", tx.Gas())
+
 				}
 			case 2:
+				// Sarco is 'done', increment account index as this sarco uses one of our key pairs.
+				// Clear file handlers b/c we only want file handlers for our current account index
+				fileHandlers = map[[32]byte]*big.Int{}
 				accountIndex += 1
 			}
 		}
@@ -153,18 +171,20 @@ func initArweaveWallet(arweaveKeyFileName string) *wallet.Wallet {
 	return wallet
 }
 
-func validatePaymentAddress(paymentAddress string, client *ethclient.Client) common.Address {
-	var archAddress common.Address
+func setPaymentAddress(archAddress common.Address, paymentAddress string, client *ethclient.Client) common.Address {
+	var addy common.Address
 
 	if paymentAddress != "" {
 		if utility.IsValidAddress(paymentAddress) && !utility.IsContract(common.HexToAddress(paymentAddress), client) {
-			archAddress = common.HexToAddress(paymentAddress)
+			addy = common.HexToAddress(paymentAddress)
 		} else {
 			log.Fatal("Payment address supplied in config is invalid. Please check that address.")
 		}
+	} else {
+		addy = archAddress
 	}
 
-	return archAddress
+	return addy
 }
 
 func initSarcophagusSession(contractAddress common.Address, client *ethclient.Client, privateKey *ecdsa.PrivateKey) contracts.SarcophagusSession {
@@ -188,4 +208,14 @@ func initTokenSession(tokenAddress string, client *ethclient.Client, privateKey 
 	session := NewTokenSession(context.Background(), tokenContract, privateKey)
 
 	return session
+}
+
+func stringToBigInt(val string) *big.Int {
+	intVal, ok := new(big.Int).SetString(val, 10)
+
+	if !ok {
+		log.Fatalf("Error casting string to big int: %v", val)
+	}
+
+	return intVal
 }

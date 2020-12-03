@@ -25,9 +25,8 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 		return
 	}
 
-	_, ok := arch.Sarcophaguses[event.AssetDoubleHash]
-	if ok {
-		/* The sarco already exists but should not */
+	if arch.IsArchSarcophagus(event.AssetDoubleHash) {
+		/* The sarco already exists in state but should not */
 		log.Printf("The sarcophagus for this double hash already exists: %v", event.AssetDoubleHash)
 		return
 	}

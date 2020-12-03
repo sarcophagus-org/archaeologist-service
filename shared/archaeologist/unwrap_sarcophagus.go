@@ -1,17 +1,20 @@
 package archaeologist
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"github.com/Dev43/arweave-go/api"
 	"github.com/Dev43/arweave-go/utils"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/crypto"
 	"log"
 	"math/big"
+	"strings"
 	"time"
-	"context"
 )
 
 // TODO: handle rewrapped sarc
@@ -27,26 +30,46 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 			if resTime.Cmp(resurrectionTime) == 0 {
 				singleHash, err := generateSingleHash(arweaveClient, assetId, privateKey)
 				if err != nil {
-					log.Printf("Error generating single hash during unwrapping process: %v", err)
+					log.Printf("Error generating single hash during unwrapping process. Unwrapping cancelled: %v", err)
+				} else {
+
+					/* TODO: Add retry on the estimate gas */
+					/* If it reverts 3 times in a row, then... */
+					/* Add a minute to the time */
+
+					// TODO: Do we need to remove the sarch from state if the unwrap fails?
+
+					/*
+						Estimate Gas is used to check if the unwrap will succeed
+					*/
+					err := estimateGasForUnwrap(arch, assetDoubleHash, singleHash, privateKeyBytes)
+
+					if err != nil {
+						log.Printf("Unwrapping aborted, transaction will fail: %v", err)
+					} else {
+						tx, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
+						if err != nil {
+							log.Printf("Transaction reverted. There was an error unwrapping the sarcophagus: %v", err)
+						} else {
+							log.Printf("Unwrap Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+							log.Printf("Gas Used: %v", tx.Gas())
+							log.Printf("AssetDoubleHash: %v", assetDoubleHash)
+
+							/* Sarcophagus is unwrapped, remove from state */
+							arch.RemoveArchSarcophagus(assetDoubleHash)
+						}
+					}
 				}
-
-				/* Estimate Gas on this transaction --- this will give back an error if this would revert */
-				/* If it reverts 3 times in a row, then... */
-				/* Add a minute to the time */
-
-				tx, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
-				if err != nil {
-					log.Fatalf("Transaction reverted. There was an error unwrapping the sarcophagus: %v", err)
-				}
-
-				log.Printf("Unwrap Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
-				log.Printf("Gas Used: %v", tx.Gas())
-				log.Printf("AssetDoubleHash: %v", assetDoubleHash)
 			} else {
 				// Resurrection time is different in state for this sarc, meaning sarc has been rewrapped
 				log.Printf("Sarco has been rewrapped, rescheduling!")
 				scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 			}
+		} else {
+			// Sarcophagus does not exist in state
+			// It has either been cleaned / buried / cancelled
+			// Do nothing
+			log.Printf("Unwrapping cancelled. Sarcophagus was cancelled, buried, or cleaned.")
 		}
 	})
 
@@ -70,4 +93,23 @@ func generateSingleHash(arweaveClient *api.Client, assetId string, privateKey *e
 	}
 
 	return crypto.Keccak256(decryptedDataBytes), nil
+}
+
+func estimateGasForUnwrap(arch *models.Archaeologist, assetDoubleHash [32]byte, singleHash []byte, privateKeyBytes [32]byte) error {
+	parsed, err := abi.JSON(strings.NewReader(contracts.SarcophagusABI))
+	if err != nil {
+		return err
+	}
+
+	input, err := parsed.Pack("unwrapSarcophagus", assetDoubleHash, singleHash, privateKeyBytes)
+	if err != nil {
+		return err
+	}
+	msg := ethereum.CallMsg{From: arch.SarcoSession.CallOpts.From, To: &arch.SarcoAddress, Data: input}
+	gasLimit, err := arch.Client.EstimateGas(context.Background(), msg)
+	log.Printf("gas limit for unwrapping: %v", gasLimit)
+	if err != nil {
+		return err
+	}
+	return nil
 }

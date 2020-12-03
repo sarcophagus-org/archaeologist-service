@@ -7,15 +7,15 @@ type Config struct {
 	ARWEAVE_NODE          string
 	FILE_PORT             string
 	ENDPOINT              string
-	FEE_PER_BYTE          int64
-	MIN_BOUNTY            int64
-	MIN_DIGGING_FEE       int64
-	MAX_RESURRECTION_TIME int64
+	FEE_PER_BYTE          string
+	MIN_BOUNTY            string
+	MIN_DIGGING_FEE       string
+	MAX_RESURRECTION_TIME string
 	CONTRACT_ADDRESS      string
 	TOKEN_ADDRESS         string
-	ADD_TO_FREE_BOND      int64
-	REMOVE_FROM_FREE_BOND int64
+	ADD_TO_FREE_BOND      string
+	REMOVE_FROM_FREE_BOND string
 	PAYMENT_ADDRESS       string
-	GAS_PRICE_OVERRIDE    int64
+	GAS_PRICE_OVERRIDE    string
 	MNEMONIC              string
 }
