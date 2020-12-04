@@ -20,8 +20,6 @@ import (
 )
 
 func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) {
-	// TODO: Validations for Port and IP Address -- consider testing opening/closing port
-
 	var err error
 
 	arch.FreeBond = calculateFreeBond(stringToBigInt(config.ADD_TO_FREE_BOND), stringToBigInt(config.REMOVE_FROM_FREE_BOND))
@@ -53,6 +51,9 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
+
+	arch.InitAndTestServer()
+
 	if len(arch.FileHandlers) > 0 {
 		go arch.ListenForFile()
 	}

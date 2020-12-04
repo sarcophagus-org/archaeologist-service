@@ -329,7 +329,6 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 
 func (arch *Archaeologist) ListenForFile() {
 	if !arch.IsServerRunning() {
-		arch.InitServer()
 		arch.StartServer()
 	}
 }
@@ -343,6 +342,16 @@ func (arch *Archaeologist) IsServerRunning() bool {
 	return true
 }
 
+func (arch *Archaeologist) InitAndTestServer() {
+	arch.InitServer()
+	log.Printf("Testing Server...")
+	if err := arch.Server.ListenAndServe(); err != nil {
+		log.Fatalf("Could not start server. Please check that the port in CONFIG is set correctly and is open. Error: %v", err)
+	}
+	log.Printf("Server test sucessful, shutting down.")
+	arch.Server.Shutdown(context.Background())
+}
+
 func (arch *Archaeologist) InitServer() {
 	sm := http.NewServeMux()
 	sm.Handle("/file", http.HandlerFunc(arch.fileUploadHandler))
@@ -353,7 +362,7 @@ func (arch *Archaeologist) StartServer() {
 	go func() {
 		log.Printf("Listening for file on %s:", arch.Server.Addr)
 		if err := arch.Server.ListenAndServe(); err != nil {
-			log.Println("Error starting http server:", err)
+			log.Println("Server shutting down:", err)
 		}
 	}()
 
