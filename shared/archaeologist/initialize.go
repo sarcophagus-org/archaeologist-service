@@ -156,7 +156,7 @@ func initArweaveTransactor(arweaveNode string) *transactor.Transactor {
 	ar, err := transactor.NewTransactor(arweaveNode)
 
 	if err != nil {
-		log.Fatal("Could not connect to arweave node. Error: %v\n", err)
+		log.Fatalf("Could not connect to arweave node. Error: %v\n", err)
 	}
 
 	return ar
