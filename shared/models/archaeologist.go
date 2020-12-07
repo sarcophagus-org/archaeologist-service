@@ -345,9 +345,11 @@ func (arch *Archaeologist) IsServerRunning() bool {
 func (arch *Archaeologist) InitAndTestServer() {
 	arch.InitServer()
 	log.Printf("Testing Server...")
-	if err := arch.Server.ListenAndServe(); err != nil {
-		log.Fatalf("Could not start server. Please check that the port in CONFIG is set correctly and is open. Error: %v", err)
-	}
+	go func() {
+		if err := arch.Server.ListenAndServe(); err != nil {
+			log.Fatalf("Could not start server. Please check that the port in CONFIG is set correctly and is open. Error: %v", err)
+		}
+	}()
 	log.Printf("Server test sucessful, shutting down.")
 	arch.Server.Shutdown(context.Background())
 }

@@ -17,13 +17,21 @@ import (
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"log"
 	"math/big"
+	"strings"
 )
 
 func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) {
 	var err error
+	var errStrings []string
 
-	arch.FreeBond = calculateFreeBond(stringToBigInt(config.ADD_TO_FREE_BOND), stringToBigInt(config.REMOVE_FROM_FREE_BOND))
+	arch.FreeBond, err = calculateFreeBond(stringToBigInt(config.ADD_TO_FREE_BOND), stringToBigInt(config.REMOVE_FROM_FREE_BOND))
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
+
 	arch.Client = ethereum.InitEthClient(config.ETH_NODE)
+
+
 	arch.ArweaveTransactor = initArweaveTransactor(config.ARWEAVE_NODE)
 	arch.ArweaveWallet = initArweaveWallet(config.ARWEAVE_KEY_FILE)
 	arch.PrivateKey, err = utility.PrivateKeyHexToECDSA(config.ETH_PRIVATE_KEY)
@@ -52,7 +60,13 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
 
-	arch.InitAndTestServer()
+	log.Printf("err strings len: %v", len(errStrings))
+	if len(errStrings) > 0 {
+		fmt.Println(fmt.Errorf(strings.Join(errStrings, "\n")))
+		log.Fatal("Please fix these errors in your config file and restart the service.")
+	}
+
+	arch.InitServer()
 
 	if len(arch.FileHandlers) > 0 {
 		go arch.ListenForFile()
@@ -136,20 +150,20 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 	return sarcophaguses, fileHandlers, accountIndex
 }
 
-func calculateFreeBond(addFreeBond *big.Int, removeFreeBond *big.Int) *big.Int {
+func calculateFreeBond(addFreeBond *big.Int, removeFreeBond *big.Int) (*big.Int, error) {
 	var zero = big.NewInt(0)
 	var archFreeBond = zero
 
 	if addFreeBond.Cmp(zero) == 1 {
 		if removeFreeBond.Cmp(zero) == 1 {
-			log.Fatal("ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND cannot both be > 0")
+			return big.NewInt(0), fmt.Errorf("ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND cannot both be > 0")
 		}
 		archFreeBond = addFreeBond
 	} else if removeFreeBond.Cmp(zero) == 1 {
 		archFreeBond = archFreeBond.Neg(removeFreeBond)
 	}
 
-	return archFreeBond
+	return archFreeBond, nil
 }
 
 func initArweaveTransactor(arweaveNode string) *transactor.Transactor {
