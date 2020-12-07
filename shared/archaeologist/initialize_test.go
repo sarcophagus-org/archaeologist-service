@@ -1,6 +1,9 @@
 package archaeologist
 
 import (
+	"github.com/stretchr/testify/assert"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"testing"
 )
@@ -36,5 +39,14 @@ func TestCalculateFreeBond(t *testing.T) {
 	}
 
 	t.Log("CalculateFreeBond with positive and addFreeBond / removeFromFreeBond throws error passes")
+}
 
+func TestSetPaymentAddress(t *testing.T) {
+	archAddress := common.HexToAddress("0x3968927caAbd8d5eF8ADe20B364E038ae785F855")
+	paymentAddress := ""
+	client := ethclient.Client{}
+
+	address, err := setPaymentAddress(archAddress, paymentAddress, &client)
+	assert.Nil(t, err)
+	assert.Equal(t, archAddress, address)
 }

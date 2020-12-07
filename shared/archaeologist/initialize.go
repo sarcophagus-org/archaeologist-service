@@ -29,30 +29,77 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.Client = ethereum.InitEthClient(config.ETH_NODE)
+	arch.Client, err = ethereum.InitEthClient(config.ETH_NODE)
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
 
+	arch.ArweaveTransactor, err = initArweaveTransactor(config.ARWEAVE_NODE)
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
 
-	arch.ArweaveTransactor = initArweaveTransactor(config.ARWEAVE_NODE)
-	arch.ArweaveWallet = initArweaveWallet(config.ARWEAVE_KEY_FILE)
+	arch.ArweaveWallet, err = initArweaveWallet(config.ARWEAVE_KEY_FILE)
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
+
 	arch.PrivateKey, err = utility.PrivateKeyHexToECDSA(config.ETH_PRIVATE_KEY)
 	if err != nil {
-		log.Fatalf("could not load eth private key.  Please check the ETH_NODE value in the config file. Error: %v\n", err)
-	}
-	arch.ArchAddress = utility.PrivateKeyToAddress(arch.PrivateKey)
-	arch.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, arch.Client)
-	arch.SarcoSession = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
-	arch.TokenSession = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
-	arch.Wallet, err = hdwallet.NewFromMnemonic(config.MNEMONIC)
-	if err != nil {
-		log.Fatalf("could not setup HD wallet from mnemonic: %v", err)
+		errStrings = append(errStrings, fmt.Sprintf("could not load eth private key.  Please check the ETH_NODE value in the config file. Error: %v\n", err))
 	}
 
-	arch.PaymentAddress = setPaymentAddress(arch.ArchAddress, config.PAYMENT_ADDRESS, arch.Client)
-	arch.FeePerByte = utility.ValidatePositiveNumber(stringToBigInt(config.FEE_PER_BYTE), "FEE_PER_BYTE")
-	arch.MinBounty = utility.ValidatePositiveNumber(stringToBigInt(config.MIN_BOUNTY), "MIN_BOUNTY")
-	arch.MinDiggingFee = utility.ValidatePositiveNumber(stringToBigInt(config.MIN_DIGGING_FEE), "MIN_DIGGING_FEE")
-	arch.MaxResurectionTime = utility.ValidateTimeInFuture(stringToBigInt(config.MAX_RESURRECTION_TIME), "MAX_RESURRECTION_TIME")
-	arch.Endpoint = utility.ValidateIpAddress(config.ENDPOINT, "ENDPOINT")
+	arch.ArchAddress = utility.PrivateKeyToAddress(arch.PrivateKey)
+	arch.SarcoAddress, err = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, arch.Client)
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
+
+	arch.SarcoSession, err = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
+
+	arch.TokenSession, err = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
+
+	arch.Wallet, err = hdwallet.NewFromMnemonic(config.MNEMONIC)
+	if err != nil {
+		errStrings = append(errStrings, fmt.Sprintf("could not setup HD wallet from mnemonic: %v", err))
+	}
+
+	arch.PaymentAddress, err = setPaymentAddress(arch.ArchAddress, config.PAYMENT_ADDRESS, arch.Client)
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
+
+	arch.FeePerByte, err = utility.ValidatePositiveNumber(stringToBigInt(config.FEE_PER_BYTE), "FEE_PER_BYTE")
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
+
+	arch.MinBounty, err = utility.ValidatePositiveNumber(stringToBigInt(config.MIN_BOUNTY), "MIN_BOUNTY")
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
+
+	arch.MinDiggingFee, err = utility.ValidatePositiveNumber(stringToBigInt(config.MIN_DIGGING_FEE), "MIN_DIGGING_FEE")
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
+
+	arch.MaxResurectionTime, err = utility.ValidateTimeInFuture(stringToBigInt(config.MAX_RESURRECTION_TIME), "MAX_RESURRECTION_TIME")
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
+
+	arch.Endpoint, err = utility.ValidateIpAddress(config.ENDPOINT, "ENDPOINT")
+	if err != nil {
+		errStrings = append(errStrings, err.Error())
+	}
+
 	arch.FilePort = config.FILE_PORT
 
 	arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
@@ -60,13 +107,10 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
 
-	log.Printf("err strings len: %v", len(errStrings))
 	if len(errStrings) > 0 {
 		fmt.Println(fmt.Errorf(strings.Join(errStrings, "\n")))
-		log.Fatal("Please fix these errors in your config file and restart the service.")
+		log.Fatal("**Please fix these errors in your config file and restart the service.**")
 	}
-
-	arch.InitServer()
 
 	if len(arch.FileHandlers) > 0 {
 		go arch.ListenForFile()
@@ -166,63 +210,63 @@ func calculateFreeBond(addFreeBond *big.Int, removeFreeBond *big.Int) (*big.Int,
 	return archFreeBond, nil
 }
 
-func initArweaveTransactor(arweaveNode string) *transactor.Transactor {
+func initArweaveTransactor(arweaveNode string) (*transactor.Transactor, error) {
 	ar, err := transactor.NewTransactor(arweaveNode)
 
 	if err != nil {
-		log.Fatalf("Could not connect to arweave node. Error: %v\n", err)
+		return nil, fmt.Errorf("Could not connect to arweave node. Error: %v\n", err)
 	}
 
-	return ar
+	return ar, nil
 }
 
-func initArweaveWallet(arweaveKeyFileName string) *wallet.Wallet {
-	wallet := wallet.NewWallet()
+func initArweaveWallet(arweaveKeyFileName string) (*wallet.Wallet, error) {
+	wallet_ := wallet.NewWallet()
 
-	if err := wallet.LoadKeyFromFile(fmt.Sprintf("config/%s", arweaveKeyFileName)); err != nil {
-		log.Fatal("Could not load config value ARWEAVE_KEY_FILE. Please check the config.yml file Error:", err)
+	if err := wallet_.LoadKeyFromFile(fmt.Sprintf("config/%s", arweaveKeyFileName)); err != nil {
+		return nil, fmt.Errorf("Could not load config value ARWEAVE_KEY_FILE. Please check the config.yml file Error: %v", err)
 	}
 
-	return wallet
+	return wallet_, nil
 }
 
-func setPaymentAddress(archAddress common.Address, paymentAddress string, client *ethclient.Client) common.Address {
+func setPaymentAddress(archAddress common.Address, paymentAddress string, client *ethclient.Client) (common.Address, error) {
 	var addy common.Address
 
 	if paymentAddress != "" {
 		if utility.IsValidAddress(paymentAddress) && !utility.IsContract(common.HexToAddress(paymentAddress), client) {
 			addy = common.HexToAddress(paymentAddress)
 		} else {
-			log.Fatal("Payment address supplied in config is invalid. Please check that address.")
+			return common.Address{}, fmt.Errorf("payment address supplied in config is invalid, please check that address")
 		}
 	} else {
 		addy = archAddress
 	}
 
-	return addy
+	return addy, nil
 }
 
-func initSarcophagusSession(contractAddress common.Address, client *ethclient.Client, privateKey *ecdsa.PrivateKey) contracts.SarcophagusSession {
+func initSarcophagusSession(contractAddress common.Address, client *ethclient.Client, privateKey *ecdsa.PrivateKey) (contracts.SarcophagusSession, error) {
 	sarcoContract, err := contracts.NewSarcophagus(contractAddress, client)
 	if err != nil {
-		log.Fatalf("Failed to instantiate Sarcophagus contract: %v", err)
+		return contracts.SarcophagusSession{}, fmt.Errorf("failed to instantiate Sarcophagus contract: %v", err)
 	}
 
 	session := NewSarcophagusSession(context.Background(), sarcoContract, privateKey)
 
-	return session
+	return session, nil
 }
 
-func initTokenSession(tokenAddress string, client *ethclient.Client, privateKey *ecdsa.PrivateKey) contracts.TokenSession {
+func initTokenSession(tokenAddress string, client *ethclient.Client, privateKey *ecdsa.PrivateKey) (contracts.TokenSession, error) {
 	address := common.HexToAddress(tokenAddress)
 	tokenContract, err := contracts.NewToken(address, client)
 	if err != nil {
-		log.Fatalf("Failed to instantiate Sarcophagus contract: %v", err)
+		return contracts.TokenSession{}, fmt.Errorf("failed to instantiate Sarcophagus contract: %v", err)
 	}
 
 	session := NewTokenSession(context.Background(), tokenContract, privateKey)
 
-	return session
+	return session, nil
 }
 
 func stringToBigInt(val string) *big.Int {

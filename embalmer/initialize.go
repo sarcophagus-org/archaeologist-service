@@ -12,13 +12,13 @@ import (
 )
 
 func InitEmbalmer(embalmer *Embalmer, config *EmbalmerConfig, resurrectionTime int64) {
-	embalmer.Client = ethereum.InitEthClient(config.ETH_NODE)
+	embalmer.Client, _ = ethereum.InitEthClient(config.ETH_NODE)
 	embalmer.EmbalmerPrivateKey, _ = utility.PrivateKeyHexToECDSA(config.EMBALMER_PRIVATE_KEY)
 	archPrivateKey, _ := utility.PrivateKeyHexToECDSA(config.ARCH_PRIVATE_KEY)
 	embalmer.ArchAddress = utility.PrivateKeyToAddress(archPrivateKey)
 	embalmerPubKey := embalmer.EmbalmerPrivateKey.Public().(*ecdsa.PublicKey)
 	embalmer.EmbalmerAddress = crypto.PubkeyToAddress(*embalmerPubKey)
-	embalmer.SarcoAddress = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, embalmer.Client)
+	embalmer.SarcoAddress, _ = ethereum.SarcoAddress(config.CONTRACT_ADDRESS, embalmer.Client)
 	embalmer.SarcophagusContract, _ = contracts.NewSarcophagus(embalmer.SarcoAddress, embalmer.Client)
 	embalmer.SarcophagusTokenContract, _ = contracts.NewToken(common.HexToAddress(config.TOKEN_ADDRESS), embalmer.Client )
 	embalmer.ResurrectionTime = big.NewInt(time.Now().Unix() + resurrectionTime)

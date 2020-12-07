@@ -329,6 +329,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 
 func (arch *Archaeologist) ListenForFile() {
 	if !arch.IsServerRunning() {
+		arch.InitServer()
 		arch.StartServer()
 	}
 }

@@ -77,6 +77,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 }
 
 func generateSingleHash(arweaveClient *api.Client, assetId string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+	log.Printf("Getting arweave data for assetID: %v", assetId)
 	dataString, err := arweaveClient.GetData(context.Background(), assetId)
 	if err != nil {
 		return nil, err

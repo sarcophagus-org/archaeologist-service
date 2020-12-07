@@ -88,6 +88,15 @@ https://geth.ethereum.org/downloads/
 
 The latest tested version working with the service is Geth & Tools 1.9.22
 
+### Testing
+To generate an updated version of the contract with linked libraries needed for running the test suite:
+```
+solc --abi @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ contracts/Sarcophagus.sol -o abi
+solc --bin  @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ contracts/Sarcophagus.sol -o bin
+solc --combined-json=abi,bin @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ contracts/Sarcophagus.sol -o abi --overwrite
+abigen --combined-json=./abi/combined.json --pkg=sarcophagus --out=Sarcophagus.go
+```
+
 ### Sending a file
 If you want to test sending a file locally (the Sarcophagus payload) after creating a sarcophagus: 
 
