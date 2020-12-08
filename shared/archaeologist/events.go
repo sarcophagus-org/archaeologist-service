@@ -9,6 +9,11 @@ import (
 	"log"
 )
 
+/*
+	This file is responsible for watching all relevant events that get emitted from the contract,
+	And then acting on those events.
+ */
+
 func watchCreateSarcophagus(sarcoEvents *contracts.Events, archAddress []common.Address) (chan *contracts.EventsCreateSarcophagus, event.Subscription) {
 	sink := make(chan *contracts.EventsCreateSarcophagus)
 	sub, err := sarcoEvents.WatchCreateSarcophagus(&bind.WatchOpts{}, sink, nil, archAddress)
@@ -69,6 +74,16 @@ func watchCancelSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.Even
 	return sink, sub
 }
 
+func watchAccuseArchaeologist(sarcoEvents *contracts.Events) (chan *contracts.EventsAccuseArchaeologist, event.Subscription) {
+	sink := make(chan *contracts.EventsAccuseArchaeologist)
+	sub, err := sarcoEvents.WatchAccuseArchaeologist(&bind.WatchOpts{}, sink, nil, nil)
+	if err != nil {
+		log.Fatalf("Error subscribing to Accuse Archaeologist event: %v", err)
+	}
+
+	return sink, sub
+}
+
 func EventsSubscribe(arch *models.Archaeologist) {
 	sarcoEvents, err := contracts.NewEvents(arch.SarcoAddress, arch.Client)
 	if err != nil {
@@ -83,6 +98,7 @@ func EventsSubscribe(arch *models.Archaeologist) {
 	cleanSink, cleanSub := watchCleanUpSarcophagus(sarcoEvents)
 	burySink, burySub := watchBurySarcophagus(sarcoEvents)
 	cancelSink, cancelSub := watchCancelSarcophagus(sarcoEvents)
+	accuseSink, accuseSub := watchAccuseArchaeologist(sarcoEvents)
 
 	log.Println("Listening For Events...")
 
@@ -112,6 +128,10 @@ func EventsSubscribe(arch *models.Archaeologist) {
 			if err != nil {
 				log.Println("Error with Cancel Sarcophagus Subscription:", err)
 			}
+		case err := <-accuseSub.Err():
+			if err != nil {
+				log.Println("Error with Accuse Archaeologist Subscription:", err)
+			}
 		case event := <-createSink:
 			go handleCreateSarcophagus(event, arch)
 		case event := <-updateSink:
@@ -127,6 +147,8 @@ func EventsSubscribe(arch *models.Archaeologist) {
 		case event := <-burySink:
 			arch.RemoveArchSarcophagus(event.AssetDoubleHash)
 		case event := <-cancelSink:
+			arch.RemoveArchSarcophagus(event.AssetDoubleHash)
+		case event := <-accuseSink:
 			arch.RemoveArchSarcophagus(event.AssetDoubleHash)
 		}
 	}

@@ -82,7 +82,7 @@ func (embalmer *Embalmer) EmbalmerSarcoBalance() *big.Int {
 	return balance
 }
 
-func (embalmer *Embalmer) approveCreateSarcophagusTransfer(session *contracts.TokenSession, approvalAmount *big.Int) {
+func (embalmer *Embalmer) approveEmbalmerTransfer(session *contracts.TokenSession, approvalAmount *big.Int) {
 	tx, err := session.Approve(
 		embalmer.SarcoAddress,
 		approvalAmount,
@@ -113,7 +113,7 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDou
 
 	approvalAmount := big.NewInt(0).Add(big.NewInt(0).Add(embalmer.Bounty, embalmer.DiggingFee), embalmer.StorageFee)
 	log.Printf("approval Amount::: %v", approvalAmount)
-	embalmer.approveCreateSarcophagusTransfer(&sarcoTokenSession, approvalAmount)
+	embalmer.approveEmbalmerTransfer(&sarcoTokenSession, approvalAmount)
 
 	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
 	tx, err := sarcoSession.CreateSarcophagus(
@@ -177,6 +177,9 @@ func (embalmer *Embalmer) RewrapSarcophagus(assetDoubleHash [32]byte, resurrecti
 	log.Println("***REWRAPPING SARCOPHAGUS***")
 
 	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
+	sarcoTokenSession := embalmer.NewSarcophagusTokenSession(context.Background())
+	embalmer.approveEmbalmerTransfer(&sarcoTokenSession, embalmer.DiggingFee)
+
 	tx, err := sarcoSession.RewrapSarcophagus(
 		assetDoubleHash,
 		resurrectionTime,

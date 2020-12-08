@@ -24,6 +24,11 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	var err error
 	var errStrings []string
 
+	/*
+		Sets archaeologist struct fields.
+		Keeps a running list of errors. If any exist, outputs them to the console log and exits the service.
+	 */
+
 	arch.FreeBond, err = calculateFreeBond(stringToBigInt(config.ADD_TO_FREE_BOND), stringToBigInt(config.REMOVE_FROM_FREE_BOND))
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
@@ -131,6 +136,8 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 		Iterate through all sarcos
 		For any sarcos where we are the arch, determine state of sarco and build service state
 		Schedule rewraps if Sarco is updated and resurrection time + window is in future
+
+		// TODO: We only cleanup our own sarcos. We could be checking if *any* sarcos need cleanup.
 	*/
 
 	for i := big.NewInt(0); i.Cmp(sarcoCount) == -1; i = big.NewInt(0).Add(i, big.NewInt(1)) {
@@ -159,17 +166,20 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 						fileHandlers = map[[32]byte]*big.Int{}
 						accountIndex += 1
 					}
+
+					// Add the sarcophagus to state
 					sarcophaguses[doubleHash] = sarco.ResurrectionTime
 				} else {
+					// Sarc's unwrap time is in the past
 					log.Printf("Sarcophagus did not get unwrapped in time: %v", doubleHash)
 					if sarco.AssetId != "" {
+						// Sarco has been updated, increment account index as this sarco uses one of our key pairs.
+						// Clear file handlers b/c we only want file handlers for our current account index
 						fileHandlers = map[[32]byte]*big.Int{}
 						accountIndex += 1
 					}
 
-					// Sarc's unwrap time is in the past
 					// Lets get some money by cleaning it up
-
 					tx, err := arch.SarcoSession.CleanUpSarcophagus(doubleHash, arch.PaymentAddress)
 					if err != nil {
 						log.Printf("Cleanup Sarcophagus error: %v", err)
