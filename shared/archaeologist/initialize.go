@@ -27,6 +27,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	/*
 		Sets archaeologist struct fields.
 		Keeps a running list of errors. If any exist, outputs them to the console log and exits the service.
+		UX may be better without the running list, as some of these settings piggy back on each other.
 	 */
 
 	arch.FreeBond, err = calculateFreeBond(stringToBigInt(config.ADD_TO_FREE_BOND), stringToBigInt(config.REMOVE_FROM_FREE_BOND))

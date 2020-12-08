@@ -2,6 +2,12 @@ package test
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/hdw"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
+	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"math/big"
 	"testing"
 
@@ -15,13 +21,14 @@ import (
 
 type ArchTestSuite struct {
 	suite.Suite
-	auth              *bind.TransactOpts
-	sarcoAddress      common.Address
-	sarcoTokenAddress common.Address
-	gAlloc            core.GenesisAlloc
-	sim               *backends.SimulatedBackend
-	sarcophagus       *Sarcophagus
-	sarcoToken        *SarcophagusToken
+	auth               *bind.TransactOpts
+	sarcoAddress       common.Address
+	sarcoTokenAddress  common.Address
+	gAlloc             core.GenesisAlloc
+	sim                *backends.SimulatedBackend
+	arch               *models.Archaeologist
+	sarcophagus        *Sarcophagus
+	sarcoToken         *SarcophagusToken
 	sarcophagusSession SarcophagusSession
 }
 
@@ -67,18 +74,73 @@ func (s *ArchTestSuite) SetupTest() {
 	s.sarcophagus = sarcophagus
 	s.Nil(e)
 	s.sim.Commit()
-	s.sarcophagusSession = SarcophagusSession {
-		Contract: s.sarcophagus,
+	s.sarcophagusSession = SarcophagusSession{
+		Contract:     s.sarcophagus,
 		TransactOpts: *s.auth,
 		CallOpts: bind.CallOpts{
 			From:    s.auth.From,
 			Context: context.Background(),
 		},
 	}
+	s.InitArchaeologist(key)
+}
+
+func (s *ArchTestSuite) InitArchaeologist(privKey *ecdsa.PrivateKey) {
+	wallet, _ := hdwallet.NewFromMnemonic("index cupboard city neither axis spot thumb pet rabbit stuff culture project top fault wisdom")
+	var sarcoSession = contracts.SarcophagusSession{}
+	accountIndex := 0
+	currentPrivateKey := hdw.PrivateKeyFromIndex(wallet, accountIndex)
+	currentPublicKeyBytes := hdw.PublicKeyBytesFromIndex(wallet, accountIndex)
+
+	s.arch = &models.Archaeologist{
+		Client:                nil,
+		ArweaveWallet:         nil,
+		ArweaveTransactor:     nil,
+		PrivateKey:            privKey,
+		CurrentPublicKeyBytes: currentPublicKeyBytes,
+		CurrentPrivateKey:     currentPrivateKey,
+		ArchAddress:           utility.PrivateKeyToAddress(privKey),
+		PaymentAddress:        utility.PrivateKeyToAddress(privKey),
+		SarcoAddress:          s.sarcoAddress,
+		SarcoSession:          sarcoSession,
+		SarcoTokenAddress:     s.sarcoTokenAddress,
+		TokenSession:          contracts.TokenSession{},
+		FreeBond:              big.NewInt(1000),
+		FeePerByte:            big.NewInt(1),
+		MinBounty:             big.NewInt(20),
+		MinDiggingFee:         big.NewInt(5),
+		MaxResurectionTime:    big.NewInt(1641859200),
+		Endpoint:              "192.168.1.1",
+		FilePort:              "7000",
+		Mnemonic:              "index cupboard city neither axis spot thumb pet rabbit stuff culture project top fault wisdom",
+		Wallet:                wallet,
+		AccountIndex:          accountIndex,
+		Server:                nil,
+		Sarcophaguses:         nil,
+		FileHandlers:          nil,
+	}
 }
 
 func (s *ArchTestSuite) TestArchaeologistCount() {
 	count, err := s.sarcophagusSession.ArchaeologistCount()
-	s.Equal(count.Int64(),int64(0))
+	s.Equal(int64(0), count.Int64())
+	s.Nil(err)
+}
+
+func (s *ArchTestSuite) TestArchaeologistRegister() {
+	_, err := s.sarcophagusSession.RegisterArchaeologist(
+		s.arch.CurrentPublicKeyBytes,
+		s.arch.Endpoint,
+		s.arch.PaymentAddress,
+		s.arch.FeePerByte,
+		s.arch.MinBounty,
+		s.arch.MinDiggingFee,
+		s.arch.MaxResurectionTime,
+		s.arch.FreeBond,
+	)
+	s.Nil(err)
+
+	count, err := s.sarcophagusSession.ArchaeologistCount()
+	s.Equal(int64(1), count.Int64())
 	s.Nil(err)
 }

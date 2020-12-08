@@ -89,7 +89,7 @@ func (arch *Archaeologist) WithdrawBond(bondToWithdraw *big.Int) {
 	log.Printf("Gas Used for Withdrawal: %v", txn.Gas())
 }
 
-func (arch *Archaeologist) RegisterArchaeologist() {
+func (arch *Archaeologist) RegisterArchaeologist() error {
 	log.Println("***REGISTERING ARCHAEOLOGIST***")
 	txn, err := arch.SarcoSession.RegisterArchaeologist(
 		arch.CurrentPublicKeyBytes,
@@ -103,12 +103,13 @@ func (arch *Archaeologist) RegisterArchaeologist() {
 	)
 
 	if err != nil {
-		log.Fatalf("Transaction reverted. Error registering Archaeologist: %v Config values ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND have been reset to 0. You will need to reset this.", err)
+		return err
 	}
 
 	arch.FreeBond = big.NewInt(0)
 	log.Printf("Register Archaeologist Successful. Transaction ID: %s", txn.Hash().Hex())
 	log.Printf("Gas Used: %v", txn.Gas())
+	return nil
 }
 
 func (arch *Archaeologist) UpdateArchaeologist() {
