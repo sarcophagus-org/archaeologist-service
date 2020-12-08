@@ -96,7 +96,7 @@ func (embalmer *Embalmer) approveEmbalmerTransfer(session *contracts.TokenSessio
 	log.Printf("Gas Used for Approval: %v", tx.Gas())
 }
 
-func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDoubleHashBytes [32]byte) {
+func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDoubleHashBytes [32]byte, sarcoName string) {
 	/* Initialize recipient public key bytes */
 	if utility.IsHex(recipientPrivateKey) {
 		recipientPrivateKey = recipientPrivateKey[2:]
@@ -117,7 +117,7 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDou
 
 	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
 	tx, err := sarcoSession.CreateSarcophagus(
-		"My Sarcophagus",
+		sarcoName,
 		embalmer.ArchAddress,
 		embalmer.ResurrectionTime,
 		embalmer.StorageFee,

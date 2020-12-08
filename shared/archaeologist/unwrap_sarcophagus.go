@@ -69,7 +69,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 			// Sarcophagus does not exist in state
 			// It has either been cleaned / buried / cancelled
 			// Do nothing
-			log.Printf("Unwrapping cancelled. Sarcophagus was cancelled, buried, or cleaned.")
+			log.Printf("Unwrapping cancelled. Sarcophagus was cancelled, buried, or cleaned, or archaeologist was successfully accused.")
 		}
 	})
 

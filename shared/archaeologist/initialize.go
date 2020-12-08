@@ -17,10 +17,9 @@ import (
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"log"
 	"math/big"
-	"strings"
 )
 
-func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) {
+func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config, configDir string) []string {
 	var err error
 	var errStrings []string
 
@@ -45,7 +44,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.ArweaveWallet, err = initArweaveWallet(config.ARWEAVE_KEY_FILE)
+	arch.ArweaveWallet, err = initArweaveWallet(config.ARWEAVE_KEY_FILE, configDir)
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}
@@ -113,14 +112,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
 
-	if len(errStrings) > 0 {
-		fmt.Println(fmt.Errorf(strings.Join(errStrings, "\n")))
-		log.Fatal("**Please fix these errors in your config file and restart the service.**")
-	}
-
-	if len(arch.FileHandlers) > 0 {
-		go arch.ListenForFile()
-	}
+	return errStrings
 }
 
 func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int, map[[32]byte]*big.Int, int) {
@@ -231,10 +223,10 @@ func initArweaveTransactor(arweaveNode string) (*transactor.Transactor, error) {
 	return ar, nil
 }
 
-func initArweaveWallet(arweaveKeyFileName string) (*wallet.Wallet, error) {
+func initArweaveWallet(arweaveKeyFileName string, configDir string) (*wallet.Wallet, error) {
 	wallet_ := wallet.NewWallet()
 
-	if err := wallet_.LoadKeyFromFile(fmt.Sprintf("config/%s", arweaveKeyFileName)); err != nil {
+	if err := wallet_.LoadKeyFromFile(fmt.Sprintf(configDir + "/%s", arweaveKeyFileName)); err != nil {
 		return nil, fmt.Errorf("Could not load config value ARWEAVE_KEY_FILE. Please check the config.yml file Error: %v", err)
 	}
 
