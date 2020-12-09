@@ -359,7 +359,7 @@ func (arch *Archaeologist) InitAndTestServer() {
 func (arch *Archaeologist) InitServer() {
 	sm := http.NewServeMux()
 	sm.Handle("/file", http.HandlerFunc(arch.fileUploadHandler))
-	arch.Server = &http.Server{Addr: ":" + arch.FilePort, Handler: utility.LimitMiddleware(sm)}
+	arch.Server = &http.Server{Addr: "localhost:" + arch.FilePort, Handler: utility.LimitMiddleware(sm)}
 }
 
 func (arch *Archaeologist) StartServer() {
