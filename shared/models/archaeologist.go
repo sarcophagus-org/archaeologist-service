@@ -52,6 +52,7 @@ type Archaeologist struct {
 	Server				  *http.Server
 	Sarcophaguses         map[[32]byte]*big.Int
 	FileHandlers		  map[[32]byte]*big.Int
+	UnwrapAttempts		  map[[32]byte]int
 }
 
 const (

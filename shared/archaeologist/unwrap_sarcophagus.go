@@ -17,6 +17,9 @@ import (
 	"time"
 )
 
+const UNWRAP_RETRY_LIMIT = 2
+const UNWRAP_RETRY_INTERVAL_MILLISECONDS = 3000
+
 // TODO: handle rewrapped sarc
 func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Client, resurrectionTime *big.Int, arch *models.Archaeologist, assetDoubleHash [32]byte, privateKey *ecdsa.PrivateKey, assetId string) {
 	timeToUnwrap := time.Until(time.Unix(resurrectionTime.Int64(), 0))
@@ -32,23 +35,33 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 				if err != nil {
 					log.Printf("Error generating single hash during unwrapping process. Unwrapping cancelled: %v", err)
 				} else {
-
-					/* TODO: Add retry on the estimate gas */
-					/* If it reverts 3 times in a row, then... */
-					/* Add a minute to the time */
-
-					// TODO: Do we need to remove the sarch from state if the unwrap fails?
+					// TODO: Do we need to remove the sarco from state if the unwrap fails?
 					/*
 						Estimate Gas is used to check if the unwrap will succeed
 					*/
+					attempts, ok := arch.UnwrapAttempts[assetDoubleHash]
+					if !ok {
+						attempts = 1
+					} else {
+						attempts += 1
+					}
+					arch.UnwrapAttempts[assetDoubleHash] = attempts
 					err := estimateGasForUnwrap(arch, assetDoubleHash, singleHash, privateKeyBytes)
 
 					if err != nil {
 						log.Printf("Unwrapping aborted, transaction will fail: %v", err)
+						if attempts <= UNWRAP_RETRY_LIMIT {
+							time.Sleep(UNWRAP_RETRY_INTERVAL_MILLISECONDS * time.Millisecond)
+							scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
+						}
 					} else {
 						tx, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
 						if err != nil {
 							log.Printf("Transaction reverted. There was an error unwrapping the sarcophagus: %v", err)
+							if attempts <= UNWRAP_RETRY_LIMIT {
+								time.Sleep(UNWRAP_RETRY_INTERVAL_MILLISECONDS * time.Millisecond)
+								scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
+							}
 						} else {
 							log.Printf("Unwrap Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
 							log.Printf("Gas Used: %v", tx.Gas())

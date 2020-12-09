@@ -111,6 +111,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config, 
 
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
+	arch.UnwrapAttempts	= map[[32]byte]int{}
 
 	return errStrings
 }

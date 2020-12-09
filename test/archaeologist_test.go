@@ -286,4 +286,5 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	s.Nil(err)
 	s.Equal(uint8(2), sarcoUnwrapped.State)
 	s.Equal(0, len(s.arch.Sarcophaguses))
+	time.Sleep(20000 * time.Millisecond)
 }
