@@ -1,13 +1,13 @@
 package archaeologist
 
 import (
+	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"fmt"
 	"github.com/Dev43/arweave-go/api"
-	"github.com/Dev43/arweave-go/transactor"
-	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/hdw"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
@@ -39,12 +39,12 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config, 
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.ArweaveTransactor, err = initArweaveTransactor(config.ARWEAVE_NODE)
+	arch.ArweaveTransactor, err = arweave.InitArweaveTransactor(config.ARWEAVE_NODE)
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.ArweaveWallet, err = initArweaveWallet(config.ARWEAVE_KEY_FILE, configDir)
+	arch.ArweaveWallet, err = arweave.InitArweaveWallet(config.ARWEAVE_KEY_FILE, configDir)
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}
@@ -118,6 +118,10 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config, 
 func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int, map[[32]byte]*big.Int, int) {
 	var sarcophaguses = map[[32]byte]*big.Int{}
 	var fileHandlers = map[[32]byte]*big.Int{}
+
+	/* Create a slice of sarcos (double hashes) indexed by public keys */
+	var pubKeyMap = map[[64]byte][][32]byte{}
+
 	var accountIndex = 0
 
 	sarcoCount, err := arch.SarcoSession.SarcophagusCount()
@@ -148,20 +152,40 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 			switch state := sarco.State; state {
 			case 1:
 				if utility.TimeWithWindowInFuture(sarco.ResurrectionTime, sarco.ResurrectionWindow) {
+					/* Check if the current account index public key matches the one on the current sarco */
+					currentPublicKey := hdw.PublicKeyBytesFromIndex(arch.Wallet, accountIndex)
+					pubKeyMatches := bytes.Compare(sarco.ArchaeologistPublicKey, currentPublicKey) == 0
+
+					var currentPublicKeyIndex [64]byte
+					copy(currentPublicKeyIndex[:], currentPublicKey)
+					doubleHashList := append(pubKeyMap[currentPublicKeyIndex], doubleHash)
+					pubKeyMap[currentPublicKeyIndex] = doubleHashList
+
 					if sarco.AssetId == "" {
-						// This is a created sarc that is not updated
-						fileHandlers[doubleHash] = sarco.StorageFee
+						/* This is a created sarc that is not updated */
+						/* If our current pub key matches the sarc's, this means no sarc has used our current public key yet */
+						if pubKeyMatches {
+							fileHandlers[doubleHash] = sarco.StorageFee
+						}
 					} else {
-						// This an updated sarc that is not unwrapped yet
-						// Schedule an unwrap using the current account index private key
+						/* This an updated sarc that is not unwrapped yet */
+						/* Schedule an unwrap using the current account index private key */
 						privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
 						scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
 						fileHandlers = map[[32]byte]*big.Int{}
 						accountIndex += 1
+						for i := range pubKeyMap[currentPublicKeyIndex] {
+							/* Remove any previous sarcos from state that used this public key */
+							if bytes.Compare(pubKeyMap[currentPublicKeyIndex][i][:], doubleHash[:]) != 0 {
+								delete(sarcophaguses, pubKeyMap[currentPublicKeyIndex][i])
+							}
+						}
 					}
 
-					// Add the sarcophagus to state
-					sarcophaguses[doubleHash] = sarco.ResurrectionTime
+					if pubKeyMatches {
+						/* Add the sarcophagus to state */
+						sarcophaguses[doubleHash] = sarco.ResurrectionTime
+					}
 				} else {
 					// Sarc's unwrap time is in the past
 					log.Printf("Sarcophagus did not get unwrapped in time: %v", doubleHash)
@@ -179,7 +203,6 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 					}
 					log.Printf("Cleanup Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
 					log.Printf("Gas Used: %v", tx.Gas())
-
 				}
 			case 2:
 				// Sarco is 'done', increment account index as this sarco uses one of our key pairs.
@@ -211,26 +234,6 @@ func calculateFreeBond(addFreeBond *big.Int, removeFreeBond *big.Int) (*big.Int,
 	}
 
 	return archFreeBond, nil
-}
-
-func initArweaveTransactor(arweaveNode string) (*transactor.Transactor, error) {
-	ar, err := transactor.NewTransactor(arweaveNode)
-
-	if err != nil {
-		return nil, fmt.Errorf("Could not connect to arweave node. Error: %v\n", err)
-	}
-
-	return ar, nil
-}
-
-func initArweaveWallet(arweaveKeyFileName string, configDir string) (*wallet.Wallet, error) {
-	wallet_ := wallet.NewWallet()
-
-	if err := wallet_.LoadKeyFromFile(fmt.Sprintf(configDir + "/%s", arweaveKeyFileName)); err != nil {
-		return nil, fmt.Errorf("Could not load config value ARWEAVE_KEY_FILE. Please check the config.yml file Error: %v", err)
-	}
-
-	return wallet_, nil
 }
 
 func setPaymentAddress(archAddress common.Address, paymentAddress string, client *ethclient.Client) (common.Address, error) {
