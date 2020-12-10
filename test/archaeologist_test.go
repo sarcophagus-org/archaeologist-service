@@ -105,7 +105,7 @@ func (s *ArchTestSuite) deployArweave() {
 		select {
 		case logLine := <-readerLog:
 			if strings.Contains(logLine, "bridge") {
-				args := []string{"./transfer_arweave.sh", arweaveAddress}
+				args := []string{"./transfer_arweave.sh", arweaveAddress, s.arweavePort}
 				cmd = exec.Command("/bin/sh", args...)
 				cmd.Start()
 				cmd.Wait()
