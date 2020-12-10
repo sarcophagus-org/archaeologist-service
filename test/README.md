@@ -14,7 +14,7 @@ For the sarcophagus contracts, these tests assume `npm install` & `npm run build
 Update the values in: `/test/test_setup.yml`.
 
 The tests load the `test/test_config.yml`. 
-The values in this file are pre-configured to work with the defaults in the Sarcophagus contracts. 
+The values in this file are pre-configured to work with the values in the embalmer config file. 
 You can update these values if you want to use a different arch private key, etc.
 
 `test/arweave.json` - This arweave wallet can be replaced if you want to use a different local arweave wallet for testing.

@@ -1,2 +1,2 @@
 #!/bin/sh
-docker run --rm --publish 8000:8000 rootmos/loom
+docker run --rm --publish $1:$1 rootmos/loom

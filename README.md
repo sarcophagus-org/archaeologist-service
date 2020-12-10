@@ -69,7 +69,6 @@ solc --abi @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ contracts/libraries
 ```
 
 Compile Contracts to Go
-
 ```
 abigen --abi=./abi/Sarcophagus.abi --pkg=sarcophagus --out=Sarcophagus.go
 abigen --abi=./abiToken/SarcophagusToken.abi --pkg=token --out=SarcophagusToken.go
@@ -88,7 +87,7 @@ The latest tested version working with the service is Geth & Tools 1.9.22
 ##### Testing
 An embalmer package is provided for local testing. 
 Embalmer config values can be updated in `embalmer/embalmer_config.yml`
-These config values are configured to work with the main service's config at `config/config.example.yml`
+These config values are configured to work with the main service's test config at `test/test_config.yml`
 
 Examples are below.
 ```

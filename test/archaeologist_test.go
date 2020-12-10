@@ -26,6 +26,7 @@ type ArchTestSuite struct {
 	arch           *models.Archaeologist
 	embalmer       *embalmer.Embalmer
 	contractPort   string
+	arweavePort    string
 	contractDir    string
 }
 
@@ -41,7 +42,7 @@ func (s *ArchTestSuite) exitContract() {
 }
 
 func (s *ArchTestSuite) exitArweave() {
-	args := []string{"./exit_arweave.sh"}
+	args := []string{"./exit_arweave.sh", s.arweavePort}
 	cmd := exec.Command("/bin/sh", args...)
 	cmd.Start()
 	cmd.Wait()
@@ -84,7 +85,7 @@ func (s *ArchTestSuite) deployArweave() {
 
 	s.T().Logf("Arweave Address: %v", arweaveAddress)
 
-	args := []string{"./deploy_arweave.sh"}
+	args := []string{"./deploy_arweave.sh", s.arweavePort}
 	cmd := exec.Command("/bin/sh", args...)
 	cmdReader, err := cmd.StdoutPipe()
 	if err != nil {
@@ -127,6 +128,7 @@ func (s *ArchTestSuite) initEnv() {
 		}
 	}
 	s.contractPort = viper.GetString("CONTRACT_PORT")
+	s.arweavePort = viper.GetString("ARWEAVE_PORT")
 	s.contractDir = viper.GetString("CONTRACT_DIR")
 }
 
@@ -286,5 +288,5 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	s.Nil(err)
 	s.Equal(uint8(2), sarcoUnwrapped.State)
 	s.Equal(0, len(s.arch.Sarcophaguses))
-	time.Sleep(20000 * time.Millisecond)
+	time.Sleep(5000 * time.Millisecond)
 }

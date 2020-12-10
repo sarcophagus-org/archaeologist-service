@@ -3,3 +3,6 @@ CONTRACT_DIR: "../../sarco_contracts_virgin"
 
 # Port that ganache will run on (8545 by default)
 CONTRACT_PORT: 8545
+
+# Port used to deploy arweave
+ARWEAVE_PORT: 8000
