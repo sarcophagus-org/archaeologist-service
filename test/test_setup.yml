@@ -1,2 +1,5 @@
+# Relative link to where the sarcophagus smart-contracts code lives
 CONTRACT_DIR: "../../sarco_contracts_virgin"
+
+# Port that ganache will run on (8545 by default)
 CONTRACT_PORT: 8545
