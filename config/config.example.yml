@@ -1,15 +1,64 @@
-# TODO: ADD DESCRIPTIONS
-ETH_NODE: ""
-ETH_PRIVATE_KEY: ""
-ARWEAVE_KEY_FILE: ""
-ARWEAVE_NODE: ""
-CONTRACT_ADDRESS: ""
-TOKEN_ADDRESS: ""
-FILE_PORT: ""
-FEE_PER_BYTE: ""
-MIN_BOUNTY: ""
-MIN_DIGGING_FEE: ""
-MAX_RESURRECTION_TIME: ""
-ADD_TO_FREE_BOND: ""
-REMOVE_FROM_FREE_BOND: ""
-MNEMONIC: ""
+# ETH node address. Websockets must be enabled.
+ETH_NODE: ws://localhost:8545
+
+# (Optional) The ETH address where you want payments to be made.
+# If no payment address is provided, the address derived from the ETH_PRIVATE_KEY below will be used.
+payment_address: 0x89ee060717762819b0dfa501d1f3c246f059fd70a1b54c7231e617b32594e555
+
+# Private key for signing transactions.
+# Eth will need to be in this address to pay for Gas.
+eth_private_key: 0x89ee060717762819b0dfa501d1f3c246f059fd70a1b54c7231e617b32594e555
+
+# Mnemonic used to generate wallet which will be used for generating public/private key pairs
+# https://iancoleman.io/bip39/
+mnemonic: index cupboard city neither axis spot thumb pet rabbit stuff culture project top fault wisdom
+
+# Arweave wallet file name
+arweave_key_file: arweave.json
+
+# Arweave node address
+arweave_node: http://localhost:8000/arweave
+
+# Sarcophagus Contract Address
+CONTRACT_ADDRESS: 0x65411a12F5Ddc37b6f1f7355cd3fCe77499961aB
+
+# Sarcophagus Token Contract Address
+TOKEN_ADDRESS: 0xa92BdfF0B44CcacFb2027c1292627a272AB7d87E
+
+# Endpoint which will be exposed for receiving a sarcophagus asset file
+# You are responsible for exposing this endpoint and mapping it to the port below
+endpoint: 200.200.200.100
+
+# The file port that will be opened to receive the sarcophagus asset file
+file_port: 8080
+
+# Used to calculate the storage fee you expect to receive for doing a Sarcophagus job.
+# The minimum storage fee will be calculated as: fee_per_byte * file_bytes_size
+# Expressed with 18 decimals (1000000000000000000 = 1.0 Sarco Tokens)
+fee_per_byte: 1000000000000000000
+
+# The minimum amount of Sarco Tokens you want to receive for doing a Sarcophagus job.
+# This is a 1-time payment that will be paid when a Sarcophagus job is complete (when the Sarcophagus is unwrapped).
+# Expressed with 18 decimals (20000000000000000000 = 20.0 Sarco Tokenss)
+MIN_BOUNTY: 20000000000000000000
+
+# The minimum amount of Sarco Tokens you want to receive for doing a Sarcophagus job.
+# Expressed with 18 decimals (1000000000000000000 = 1.0 Sarco Tokens)
+MIN_DIGGING_FEE: 1000000000000000000
+
+# The resurrection time is when the Sarcophagus will be unwrapped or need to be rewrapped by.
+# MAX_RESURRECTION_TIME is the farthest point in the future for which you will accept Sarcophagus jobs.
+# Expressed in Unix Time
+# https://www.unixtimestamp.com/
+MAX_RESURRECTION_TIME: 1641859200
+
+# Expressed in Sarco Tokens with 18 decimals (1000000000000000000 = 1.0 Sarco Tokens)
+# When the service starts, the number here will be added to your "Free Bond" on the Sarcophagus Contract
+# This number will be reset to 0 after the service attempts to transfer Tokens to the free bond.
+# You must have Free Bond available on the Sarcophagus Contract to accept new jobs.
+ADD_TO_FREE_BOND: 1000000000000000000
+
+# Expressed in Sarco Tokens with 18 decimals (1000000000000000000 = 1.0 Sarco Tokens)
+# When the service starts, the number here will be subtracted from your "Free Bond" on the Sarcophagus Contract
+# This number will be reset to 0 after the service attempts to transfer Tokens from the free bond.
+REMOVE_FROM_FREE_BOND: 0

@@ -1,47 +1,30 @@
 package main
 
 import (
+	"fmt"
 	"github.com/Dev43/arweave-go/api"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/archaeologist"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
-	"github.com/spf13/viper"
 	"log"
+	"strings"
 )
 
-func loadConfig() *models.Config {
-	viper.SetConfigName("config")
-	viper.AddConfigPath("config")
-	viper.AutomaticEnv()
-	viper.SetConfigType("yml")
-	var config models.Config
-
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Fatalf("Could not find config file. It should be setup under config/config.yml")
-		} else {
-			log.Fatalf("Could not read config file. Please check it is configured correctly. Error: %v \n", err)
-		}
-	}
-
-	if err := viper.Unmarshal(&config); err != nil {
-		log.Fatalf("Could not load config file. Please check it is configured correctly. Error: %v \n", err)
-	}
-
-	// Write Free Bond Values to 0 in the config file.
-	// They have already been loaded into the config struct.
-	viper.Set("ADD_TO_FREE_BOND", 0)
-	viper.Set("REMOVE_FROM_FREE_BOND", 0)
-	viper.WriteConfig()
-
-	return &config
-}
-
 func main(){
-	config := loadConfig()
+	config := new(models.Config)
+	config.LoadConfig("config", "config", true)
 	arch := new(models.Archaeologist)
-	archaeologist.InitializeArchaeologist(arch, config)
+	errStrings := archaeologist.InitializeArchaeologist(arch, config, "config")
+	if len(errStrings) > 0 {
+		fmt.Println(fmt.Errorf(strings.Join(errStrings, "\n")))
+		log.Fatal("**Please fix these errors in your config file and restart the service.**")
+	}
+
+	if len(arch.FileHandlers) > 0 {
+		go arch.ListenForFile()
+	}
+
 	archaeologist.RegisterOrUpdateArchaeologist(arch)
 
 	log.Printf("Eth Balance: %v", utility.ToDecimal(arch.EthBalance(), 18))

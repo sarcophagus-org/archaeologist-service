@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -68,20 +69,20 @@ func PrivateToPublicKeyBytes(privateKey *ecdsa.PrivateKey) []byte {
 	return crypto.FromECDSAPub(pubKey)
 }
 
-func ValidatePositiveNumber(num *big.Int, numField string) *big.Int {
+func ValidatePositiveNumber(num *big.Int, numField string) (*big.Int, error) {
 	if num.Cmp(big.NewInt(0)) != 1 {
-		log.Fatalf("%s must be greater than 0. Please check the value in the config file", numField)
+		return nil, fmt.Errorf("%s must be greater than 0. Please check the value in the config file", numField)
 	}
 
-	return num
+	return num, nil
 }
 
-func ValidateIpAddress(ip string, ipField string) string {
+func ValidateIpAddress(ip string, ipField string) (string, error) {
 	if net.ParseIP(ip) == nil {
-		log.Fatalf("%s IP Address is invalid. Please check the value in the config file", ipField)
+		return "", fmt.Errorf("%s IP Address is invalid. Please check the value in the config file", ipField)
 	}
 
-	return ip
+	return ip, nil
 }
 
 func TimeInFuture(unixTimestamp *big.Int) bool {
@@ -96,12 +97,12 @@ func TimeWithWindowInFuture(unixTimestamp *big.Int, window *big.Int) bool {
 	return TimeInFuture(timePlusWindow)
 }
 
-func ValidateTimeInFuture(unixTimestamp *big.Int, timeField string) *big.Int {
+func ValidateTimeInFuture(unixTimestamp *big.Int, timeField string) (*big.Int, error) {
 	if !TimeInFuture(unixTimestamp) {
-		log.Fatalf("%s must be in the future. Please check the value in the config file", timeField)
+		return nil, fmt.Errorf("%s must be in the future. Please check the value in the config file", timeField)
 	}
 
-	return unixTimestamp
+	return unixTimestamp, nil
 }
 
 func FileToBytes(file *os.File) ([]byte, error) {

@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"encoding/json"
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
@@ -82,7 +83,7 @@ func (embalmer *Embalmer) EmbalmerSarcoBalance() *big.Int {
 	return balance
 }
 
-func (embalmer *Embalmer) approveCreateSarcophagusTransfer(session *contracts.TokenSession, approvalAmount *big.Int) {
+func (embalmer *Embalmer) approveEmbalmerTransfer(session *contracts.TokenSession, approvalAmount *big.Int) {
 	tx, err := session.Approve(
 		embalmer.SarcoAddress,
 		approvalAmount,
@@ -96,7 +97,7 @@ func (embalmer *Embalmer) approveCreateSarcophagusTransfer(session *contracts.To
 	log.Printf("Gas Used for Approval: %v", tx.Gas())
 }
 
-func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDoubleHashBytes [32]byte) {
+func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDoubleHashBytes [32]byte, sarcoName string) {
 	/* Initialize recipient public key bytes */
 	if utility.IsHex(recipientPrivateKey) {
 		recipientPrivateKey = recipientPrivateKey[2:]
@@ -113,11 +114,11 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDou
 
 	approvalAmount := big.NewInt(0).Add(big.NewInt(0).Add(embalmer.Bounty, embalmer.DiggingFee), embalmer.StorageFee)
 	log.Printf("approval Amount::: %v", approvalAmount)
-	embalmer.approveCreateSarcophagusTransfer(&sarcoTokenSession, approvalAmount)
+	embalmer.approveEmbalmerTransfer(&sarcoTokenSession, approvalAmount)
 
 	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
 	tx, err := sarcoSession.CreateSarcophagus(
-		"My Sarcophagus",
+		sarcoName,
 		embalmer.ArchAddress,
 		embalmer.ResurrectionTime,
 		embalmer.StorageFee,
@@ -135,10 +136,40 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDou
 	log.Printf("Gas Used: %v", tx.Gas())
 }
 
-func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filename string) {
+func (embalmer *Embalmer) EncryptFileBytes(fileBytes []byte) []byte {
+	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
+	contractArch, err := sarcoSession.Archaeologists(embalmer.ArchAddress)
+	if err != nil {
+		log.Fatalf("Call to Archaeologists in Sarcophagus Contract failed. Please check CONTRACT_ADDRESS is correct in the config file: %v", err)
+	}
+
+	currentPublicKeyBytes := append([]byte{4}, contractArch.CurrentPublicKey...)
+	pubKeyEcdsa, err := crypto.UnmarshalPubkey(currentPublicKeyBytes)
+	if err != nil {
+		log.Fatalf("Error unmarshaling public key during embalmer update:", err)
+	}
+
+	pubkeyBytes := crypto.FromECDSAPub(pubKeyEcdsa)
+	pubKey, err := btcec.ParsePubKey(pubkeyBytes, btcec.S256())
+	if err != nil {
+		log.Fatalf("error casting public key to btcec: %v", err)
+	}
+	encryptedBytes, err := btcec.Encrypt(pubKey, fileBytes)
+	if err != nil {
+		log.Fatalf("Error encrypting file: %v", err)
+	}
+	log.Printf("ENCRYPTED BYTES: %v", encryptedBytes)
+	return encryptedBytes
+}
+
+func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, fileBytes []byte) {
 	log.Println("***UPDATING SARCOPHAGUS***")
+	encryptedBytes := embalmer.EncryptFileBytes(fileBytes)
+	tmpFile := CreateTmpFile(encryptedBytes)
+	defer os.Remove(tmpFile.Name())
+
 	url := "http://127.0.0.1:8080/file"
-	response, err := embalmer.SendFile(url, filename, "file")
+	response, err := embalmer.SendFile(url, tmpFile.Name(), "file")
 	if err != nil {
 		log.Fatalf("Error sending file:", err)
 	}
@@ -171,12 +202,18 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, filename s
 
 	log.Printf("Update Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
 	log.Printf("Gas Used: %v", tx.Gas())
+	if err := tmpFile.Close(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (embalmer *Embalmer) RewrapSarcophagus(assetDoubleHash [32]byte, resurrectionTime *big.Int) {
 	log.Println("***REWRAPPING SARCOPHAGUS***")
 
 	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
+	sarcoTokenSession := embalmer.NewSarcophagusTokenSession(context.Background())
+	embalmer.approveEmbalmerTransfer(&sarcoTokenSession, embalmer.DiggingFee)
+
 	tx, err := sarcoSession.RewrapSarcophagus(
 		assetDoubleHash,
 		resurrectionTime,

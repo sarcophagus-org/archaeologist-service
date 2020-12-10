@@ -52,6 +52,7 @@ type Archaeologist struct {
 	Server				  *http.Server
 	Sarcophaguses         map[[32]byte]*big.Int
 	FileHandlers		  map[[32]byte]*big.Int
+	UnwrapAttempts		  map[[32]byte]int
 }
 
 const (
@@ -89,7 +90,7 @@ func (arch *Archaeologist) WithdrawBond(bondToWithdraw *big.Int) {
 	log.Printf("Gas Used for Withdrawal: %v", txn.Gas())
 }
 
-func (arch *Archaeologist) RegisterArchaeologist() {
+func (arch *Archaeologist) RegisterArchaeologist() error {
 	log.Println("***REGISTERING ARCHAEOLOGIST***")
 	txn, err := arch.SarcoSession.RegisterArchaeologist(
 		arch.CurrentPublicKeyBytes,
@@ -103,12 +104,13 @@ func (arch *Archaeologist) RegisterArchaeologist() {
 	)
 
 	if err != nil {
-		log.Fatalf("Transaction reverted. Error registering Archaeologist: %v Config values ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND have been reset to 0. You will need to reset this.", err)
+		return err
 	}
 
 	arch.FreeBond = big.NewInt(0)
 	log.Printf("Register Archaeologist Successful. Transaction ID: %s", txn.Hash().Hex())
 	log.Printf("Gas Used: %v", txn.Gas())
+	return nil
 }
 
 func (arch *Archaeologist) UpdateArchaeologist() {
@@ -343,17 +345,29 @@ func (arch *Archaeologist) IsServerRunning() bool {
 	return true
 }
 
+func (arch *Archaeologist) InitAndTestServer() {
+	arch.InitServer()
+	log.Printf("Testing Server...")
+	go func() {
+		if err := arch.Server.ListenAndServe(); err != nil {
+			log.Fatalf("Could not start server. Please check that the port in CONFIG is set correctly and is open. Error: %v", err)
+		}
+	}()
+	log.Printf("Server test sucessful, shutting down.")
+	arch.Server.Shutdown(context.Background())
+}
+
 func (arch *Archaeologist) InitServer() {
 	sm := http.NewServeMux()
 	sm.Handle("/file", http.HandlerFunc(arch.fileUploadHandler))
-	arch.Server = &http.Server{Addr: ":" + arch.FilePort, Handler: utility.LimitMiddleware(sm)}
+	arch.Server = &http.Server{Addr: "localhost:" + arch.FilePort, Handler: utility.LimitMiddleware(sm)}
 }
 
 func (arch *Archaeologist) StartServer() {
 	go func() {
 		log.Printf("Listening for file on %s:", arch.Server.Addr)
 		if err := arch.Server.ListenAndServe(); err != nil {
-			log.Println("Error starting http server:", err)
+			log.Println("Server shutting down:", err)
 		}
 	}()
 
