@@ -29,7 +29,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config, 
 		UX may be better without the running list, as some of these settings piggy back on each other.
 	 */
 
-	arch.FreeBond, err = calculateFreeBond(stringToBigInt(config.ADD_TO_FREE_BOND), stringToBigInt(config.REMOVE_FROM_FREE_BOND))
+	arch.FreeBond, err = calculateFreeBond(utility.ToWei(config.ADD_TO_FREE_BOND, 18), utility.ToWei(config.REMOVE_FROM_FREE_BOND, 18))
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}
@@ -80,17 +80,17 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config, 
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.FeePerByte, err = utility.ValidatePositiveNumber(stringToBigInt(config.FEE_PER_BYTE), "FEE_PER_BYTE")
+	arch.FeePerByte, err = utility.ValidatePositiveNumber(utility.ToWei(config.FEE_PER_BYTE, 18), "FEE_PER_BYTE")
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.MinBounty, err = utility.ValidatePositiveNumber(stringToBigInt(config.MIN_BOUNTY), "MIN_BOUNTY")
+	arch.MinBounty, err = utility.ValidatePositiveNumber(utility.ToWei(config.MIN_BOUNTY, 18), "MIN_BOUNTY")
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.MinDiggingFee, err = utility.ValidatePositiveNumber(stringToBigInt(config.MIN_DIGGING_FEE), "MIN_DIGGING_FEE")
+	arch.MinDiggingFee, err = utility.ValidatePositiveNumber(utility.ToWei(config.MIN_DIGGING_FEE, 18), "MIN_DIGGING_FEE")
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}

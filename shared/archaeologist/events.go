@@ -136,11 +136,11 @@ func EventsSubscribe(arch *models.Archaeologist) {
 			go handleCreateSarcophagus(event, arch)
 		case event := <-updateSink:
 			if arch.IsArchSarcophagus(event.AssetDoubleHash) {
-				handleUpdateSarcophagus(event, arch)
+				go handleUpdateSarcophagus(event, arch)
 			}
 		case event := <-rewrapSink:
 			if arch.IsArchSarcophagus(event.AssetDoubleHash) {
-				handleRewrapSarcophagus(event, arch)
+				go handleRewrapSarcophagus(event, arch)
 			}
 		case event := <-cleanSink:
 			arch.RemoveArchSarcophagus(event.AssetDoubleHash)

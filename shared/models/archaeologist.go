@@ -152,7 +152,7 @@ func (arch *Archaeologist) ApproveFreeBondTransfer() {
 		log.Fatalf("Transaction reverted. Error Approving Transaction: %v \n Config value ADD_TO_FREE_BOND has been reset to 0. You will need to reset this.", err)
 	}
 
-	log.Printf("Approval Transaction for %v Sarco Tokens successful. Transaction ID: %v", arch.FreeBond, txn.Hash().Hex())
+	log.Printf("Approval Transaction for %v Sarco Tokens successful. Transaction ID: %v", utility.ToDecimal(arch.FreeBond, 18), txn.Hash().Hex())
 	log.Printf("Gas Used for Approval: %v", txn.Gas())
 }
 

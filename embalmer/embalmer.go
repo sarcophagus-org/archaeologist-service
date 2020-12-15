@@ -93,7 +93,7 @@ func (embalmer *Embalmer) approveEmbalmerTransfer(session *contracts.TokenSessio
 		log.Fatalf("Transaction reverted. Error Approving Transaction: %v \n Config value ADD_TO_FREE_BOND has been reset to 0. You will need to reset this.", err)
 	}
 
-	log.Printf("Approval Transaction for %v Create Sarcophagus Tokens successful. Transaction ID: %v", approvalAmount, tx.Hash().Hex())
+	log.Printf("Approval Transaction for %v Sarcophagus Tokens successful. Transaction ID: %v", utility.ToDecimal(approvalAmount, 18), tx.Hash().Hex())
 	log.Printf("Gas Used for Approval: %v", tx.Gas())
 }
 
@@ -110,10 +110,10 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDou
 
 	sarcoTokenSession := embalmer.NewSarcophagusTokenSession(context.Background())
 	bountyPlusDiggingFee := big.NewInt(0).Add(embalmer.Bounty, embalmer.DiggingFee)
-	log.Printf("bountyPlusDiggingFee: %v", bountyPlusDiggingFee)
+	log.Printf("bountyPlusDiggingFee: %v", utility.ToDecimal(bountyPlusDiggingFee, 18))
 
 	approvalAmount := big.NewInt(0).Add(big.NewInt(0).Add(embalmer.Bounty, embalmer.DiggingFee), embalmer.StorageFee)
-	log.Printf("approval Amount::: %v", approvalAmount)
+	log.Printf("Approval Amount::: %v", utility.ToDecimal(approvalAmount, 18))
 	embalmer.approveEmbalmerTransfer(&sarcoTokenSession, approvalAmount)
 
 	sarcoSession := embalmer.NewSarcophagusSession(context.Background())

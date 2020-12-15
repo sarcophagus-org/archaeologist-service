@@ -32,19 +32,22 @@ endpoint: 200.200.200.100
 # The file port that will be opened to receive the sarcophagus asset file
 file_port: 8080
 
+# Expressed in Sarco Tokens with up to 18 decimals
 # Used to calculate the storage fee you expect to receive for doing a Sarcophagus job.
 # The minimum storage fee will be calculated as: fee_per_byte * file_bytes_size
-# Expressed with 18 decimals (1000000000000000000 = 1.0 Sarco Tokens)
-fee_per_byte: 1000000000000000000
+# Default is 1.000000000000000000 (1.0 Sarco Tokens)
+fee_per_byte: 1.000000000000000000
 
+# Expressed in Sarco Tokens with up to 18 decimals
 # The minimum amount of Sarco Tokens you want to receive for doing a Sarcophagus job.
 # This is a 1-time payment that will be paid when a Sarcophagus job is complete (when the Sarcophagus is unwrapped).
-# Expressed with 18 decimals (20000000000000000000 = 20.0 Sarco Tokenss)
-MIN_BOUNTY: 20000000000000000000
+# Default is 100.000000000000000000 (100.0 Sarco Tokens)
+MIN_BOUNTY: 100.000000000000000000
 
+# Expressed in Sarco Tokens with up to 18 decimals
 # The minimum amount of Sarco Tokens you want to receive for doing a Sarcophagus job.
-# Expressed with 18 decimals (1000000000000000000 = 1.0 Sarco Tokens)
-MIN_DIGGING_FEE: 1000000000000000000
+# Default is 10.000000000000000000 (10.0 Sarco Tokens)
+MIN_DIGGING_FEE: 10.000000000000000000
 
 # The resurrection time is when the Sarcophagus will be unwrapped or need to be rewrapped by.
 # MAX_RESURRECTION_TIME is the farthest point in the future for which you will accept Sarcophagus jobs.
@@ -52,13 +55,14 @@ MIN_DIGGING_FEE: 1000000000000000000
 # https://www.unixtimestamp.com/
 MAX_RESURRECTION_TIME: 1641859200
 
-# Expressed in Sarco Tokens with 18 decimals (1000000000000000000 = 1.0 Sarco Tokens)
+# Expressed in Sarco Tokens with up to 18 decimals
 # When the service starts, the number here will be added to your "Free Bond" on the Sarcophagus Contract
 # This number will be reset to 0 after the service attempts to transfer Tokens to the free bond.
 # You must have Free Bond available on the Sarcophagus Contract to accept new jobs.
-ADD_TO_FREE_BOND: 1000000000000000000
+# Default is 100.000000000000000000 (100.0 Sarco Tokens)
+ADD_TO_FREE_BOND: 100.000000000000000000
 
-# Expressed in Sarco Tokens with 18 decimals (1000000000000000000 = 1.0 Sarco Tokens)
+# Expressed in Sarco Tokens with up to 18 decimals
 # When the service starts, the number here will be subtracted from your "Free Bond" on the Sarcophagus Contract
 # This number will be reset to 0 after the service attempts to transfer Tokens from the free bond.
 REMOVE_FROM_FREE_BOND: 0

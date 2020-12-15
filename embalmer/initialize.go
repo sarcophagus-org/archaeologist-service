@@ -22,7 +22,7 @@ func InitEmbalmer(embalmer *Embalmer, config *EmbalmerConfig, resurrectionTime i
 	embalmer.SarcophagusContract, _ = contracts.NewSarcophagus(embalmer.SarcoAddress, embalmer.Client)
 	embalmer.SarcophagusTokenContract, _ = contracts.NewToken(common.HexToAddress(config.TOKEN_ADDRESS), embalmer.Client )
 	embalmer.ResurrectionTime = big.NewInt(time.Now().Unix() + resurrectionTime)
-	embalmer.StorageFee, _ = new(big.Int).SetString(config.STORAGE_FEE, 10)
-	embalmer.DiggingFee, _ = new(big.Int).SetString(config.DIGGING_FEE, 10)
-	embalmer.Bounty, _ = new(big.Int).SetString(config.BOUNTY, 10)
+	embalmer.StorageFee = utility.ToWei(config.STORAGE_FEE, 18)
+	embalmer.DiggingFee = utility.ToWei(config.DIGGING_FEE, 18)
+	embalmer.Bounty = utility.ToWei(config.BOUNTY, 18)
 }
