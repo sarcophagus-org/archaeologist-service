@@ -1,6 +1,5 @@
 .env
 .idea/
-config/config.yml
-embalmer/embalmer_config.yml
-config/arweave.json
+config.yml
+arweave.json
 tmp/

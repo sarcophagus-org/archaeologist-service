@@ -3,6 +3,7 @@ package archaeologist
 import (
 	"bytes"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"log"
 	"math/big"
 )
@@ -45,11 +46,11 @@ func RegisterOrUpdateArchaeologist(arch *models.Archaeologist) {
 	}
 
 	archaeologistUpdated, _ := arch.SarcoSession.Archaeologists(arch.ArchAddress)
-	log.Printf("Current Free Bond: %v", archaeologistUpdated.FreeBond)
+	log.Printf("Current Free Bond: %v", utility.ToDecimal(archaeologistUpdated.FreeBond, 18))
 
 	if archaeologistUpdated.FreeBond.Cmp(big.NewInt(0)) == 0 {
 		log.Printf("CURRENT FREE BOND IS 0. YOU WILL BE UNABLE TO ACCEPT NEW JOBS.")
 	}
 
-	log.Printf("Current Cursed Bond: %v", archaeologistUpdated.CursedBond)
+	log.Printf("Current Cursed Bond: %v", utility.ToDecimal(archaeologistUpdated.CursedBond, 18))
 }

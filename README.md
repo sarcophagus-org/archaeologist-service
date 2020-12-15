@@ -5,6 +5,28 @@ This respository contains the archaeologist service.
 This service is responsible for executing Sarcophagus jobs created via the Sarcophagus contract:
 https://github.com/sarcophagus-org/smart-contracts
 
+### Quick Start
+```
+git clone https://github.com/sarcophagus-org/archaeologist-service
+cp config.example.yml config.yml
+go build
+```
+
+Edit the config.yml file to setup the service, and then run the service:
+```
+./archaeologist-service
+```
+
+All comments in config.yml will be removed after the first time the service is run.
+
+Alternatively you can install the service globally with:
+
+```
+go install
+cp config.example.yml $GOPATH/bin
+```
+
+
 ### Local Development 
 ##### Deploy Sarcophagus Contract
 Clone https://github.com/sarcophagus-org/smart-contracts
