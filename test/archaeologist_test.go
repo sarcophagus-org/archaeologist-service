@@ -155,7 +155,7 @@ func (s *ArchTestSuite) SetupTest() {
 	s.deployArweave()
 }
 
-func (s *ArchTestSuite) AfterTest() {
+func (s *ArchTestSuite) TeardownSuite() {
 	s.T().Log("*** Stopping blockchains ***")
 
 	s.exitContract()

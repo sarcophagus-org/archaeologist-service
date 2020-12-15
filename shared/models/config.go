@@ -33,7 +33,7 @@ func (config *Config) LoadConfig(name string, path string, writeConfig bool) {
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Fatalf("Could not find config file. It should be setup under config/config.yml")
+			log.Fatalf("Could not find config file. Please make sure it is setup under %v/%v", path, name)
 		} else {
 			log.Fatalf("Could not read config file. Please check it is configured correctly. Error: %v \n", err)
 		}

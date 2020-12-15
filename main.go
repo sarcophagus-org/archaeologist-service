@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/Dev43/arweave-go/api"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/archaeologist"
@@ -12,10 +13,14 @@ import (
 )
 
 func main(){
+	var configFile = flag.String("config", "config", "Location of the config file.")
+	configDir := "./"
+	flag.Parse()
+
 	config := new(models.Config)
-	config.LoadConfig("config", "config", true)
+	config.LoadConfig(*configFile, configDir, true)
 	arch := new(models.Archaeologist)
-	errStrings := archaeologist.InitializeArchaeologist(arch, config, "config")
+	errStrings := archaeologist.InitializeArchaeologist(arch, config, configDir)
 	if len(errStrings) > 0 {
 		fmt.Println(fmt.Errorf(strings.Join(errStrings, "\n")))
 		log.Fatal("**Please fix these errors in your config file and restart the service.**")
