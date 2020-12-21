@@ -155,7 +155,7 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 				if utility.TimeWithWindowInFuture(sarco.ResurrectionTime, sarco.ResurrectionWindow) {
 					/* Check if the current account index public key matches the one on the current sarco */
 					currentPublicKey := hdw.PublicKeyBytesFromIndex(arch.Wallet, accountIndex)
-					pubKeyMatches := bytes.Compare(sarco.ArchaeologistPublicKey, currentPublicKey) == 0
+					pubKeyMatches := bytes.Equal(sarco.ArchaeologistPublicKey, currentPublicKey)
 
 					var currentPublicKeyIndex [64]byte
 					copy(currentPublicKeyIndex[:], currentPublicKey)
@@ -177,7 +177,7 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 						accountIndex += 1
 						for i := range pubKeyMap[currentPublicKeyIndex] {
 							/* Remove any previous sarcos from state that used this public key */
-							if bytes.Compare(pubKeyMap[currentPublicKeyIndex][i][:], doubleHash[:]) != 0 {
+							if !bytes.Equal(pubKeyMap[currentPublicKeyIndex][i][:], doubleHash[:]) {
 								delete(sarcophaguses, pubKeyMap[currentPublicKeyIndex][i])
 							}
 						}

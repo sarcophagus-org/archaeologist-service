@@ -20,7 +20,7 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 	log.Println("CursedBond:", event.CursedBond)
 	log.Println("CurrentPublicKey:", event.ArchaeologistPublicKey)
 
-	if bytes.Compare(event.ArchaeologistPublicKey, arch.CurrentPublicKeyBytes) != 0 {
+	if !bytes.Equal(event.ArchaeologistPublicKey, arch.CurrentPublicKeyBytes) {
 		log.Printf("Public Key on Sarcophagus does not match current Public Key : %v. Not listening for file.", arch.CurrentPublicKeyBytes)
 		return
 	}

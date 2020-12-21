@@ -233,7 +233,7 @@ func (arch *Archaeologist) fileHandlerCheck() {
 }
 
 func (arch *Archaeologist) fileUploadError(logMsg string, httpErrMsg string, httpErrType int, w http.ResponseWriter) {
-	log.Printf(logMsg)
+	log.Printf("Error uploading file: %v", logMsg)
 	http.Error(w, httpErrMsg, httpErrType)
 
 	arch.fileHandlerCheck()
@@ -339,10 +339,7 @@ func (arch *Archaeologist) ListenForFile() {
 func (arch *Archaeologist) IsServerRunning() bool {
 	timeout := 1 * time.Second
 	_, err := net.DialTimeout("tcp", net.JoinHostPort("localhost", arch.FilePort), timeout)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 func (arch *Archaeologist) InitAndTestServer() {
