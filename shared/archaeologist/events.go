@@ -68,7 +68,7 @@ func watchCancelSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.Even
 	sink := make(chan *contracts.EventsCancelSarcophagus)
 	sub, err := sarcoEvents.WatchCancelSarcophagus(&bind.WatchOpts{}, sink, nil)
 	if err != nil {
-		log.Fatalf("Error subscribing to Bury Sarcophagus event: %v", err)
+		log.Fatalf("Error subscribing to Cancel Sarcophagus event: %v", err)
 	}
 
 	return sink, sub
@@ -87,11 +87,12 @@ func watchAccuseArchaeologist(sarcoEvents *contracts.Events) (chan *contracts.Ev
 func EventsSubscribe(arch *models.Archaeologist) {
 	sarcoEvents, err := contracts.NewEvents(arch.SarcoAddress, arch.Client)
 	if err != nil {
-		log.Printf("Error creating events contract")
+		log.Printf("Error instantiating Events in EventsSubscribe: %v", err)
 	}
 
 	/* Add arch address to slice for filtering purposes */
 	var archAddress = []common.Address{arch.ArchAddress}
+
 	createSink, createSub := watchCreateSarcophagus(sarcoEvents, archAddress)
 	updateSink, updateSub := watchUpdateSarcophagus(sarcoEvents)
 	rewrapSink, rewrapSub := watchRewrapSarcophagus(sarcoEvents)
