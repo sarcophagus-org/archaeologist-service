@@ -13,12 +13,18 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"log"
 	"math/big"
+	"math/rand"
 	"strings"
+	"sync"
 	"time"
 )
 
-const UNWRAP_RETRY_LIMIT = 2
-const UNWRAP_RETRY_INTERVAL_MILLISECONDS = 3000
+const (
+	UNWRAP_RETRY_LIMIT = 2 // How many attempts after first failure to retry the unwrapping if it fails
+	UNWRAP_RETRY_INTERVAL_LB = 100 // lower bound of retry (will be multiplied by 10 milliseconds)
+	UNWRAP_RETRY_INTERVAL_UB = 1000 // upper bound of retry (will be multiplied by 10 milliseconds)
+)
+var mutex = &sync.Mutex{}
 
 // TODO: handle rewrapped sarc
 func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Client, resurrectionTime *big.Int, arch *models.Archaeologist, assetDoubleHash [32]byte, privateKey *ecdsa.PrivateKey, assetId string) {
@@ -39,19 +45,25 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 					/*
 						Estimate Gas is used to check if the unwrap will succeed
 					*/
+					mutex.Lock()
 					attempts, ok := arch.UnwrapAttempts[assetDoubleHash]
+					mutex.Unlock()
+
 					if !ok {
 						attempts = 1
 					} else {
 						attempts += 1
 					}
+					mutex.Lock()
 					arch.UnwrapAttempts[assetDoubleHash] = attempts
+					mutex.Unlock()
+
 					err := estimateGasForUnwrap(arch, assetDoubleHash, singleHash, privateKeyBytes)
 
 					if err != nil {
 						log.Printf("Unwrapping aborted, transaction will fail: %v", err)
 						if attempts <= UNWRAP_RETRY_LIMIT {
-							time.Sleep(UNWRAP_RETRY_INTERVAL_MILLISECONDS * time.Millisecond)
+							time.Sleep(randomRetryInterval() * time.Millisecond)
 							scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 						}
 					} else {
@@ -59,7 +71,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 						if err != nil {
 							log.Printf("Transaction reverted. There was an error unwrapping the sarcophagus: %v", err)
 							if attempts <= UNWRAP_RETRY_LIMIT {
-								time.Sleep(UNWRAP_RETRY_INTERVAL_MILLISECONDS * time.Millisecond)
+								time.Sleep(randomRetryInterval() * time.Millisecond)
 								scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 							}
 						} else {
@@ -86,6 +98,11 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 	})
 
 	log.Println("Unwrap scheduled in:", timeToUnwrap)
+}
+
+func randomRetryInterval() time.Duration {
+	rand.Seed(time.Now().UnixNano())
+	return time.Duration((rand.Intn(UNWRAP_RETRY_INTERVAL_UB - UNWRAP_RETRY_INTERVAL_LB) + UNWRAP_RETRY_INTERVAL_LB) * 10)
 }
 
 func generateSingleHash(arweaveClient *api.Client, assetId string, privateKey *ecdsa.PrivateKey) ([]byte, error) {

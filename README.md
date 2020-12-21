@@ -104,7 +104,7 @@ If you have any issues with the compiled go code, you may need to download an ol
 
 https://geth.ethereum.org/downloads/
 
-The latest tested version working with the service is Geth & Tools 1.9.22
+The latest tested version working with the service is Geth & Tools 1.9.25
 
 ##### Testing
 An embalmer package is provided for local testing. 

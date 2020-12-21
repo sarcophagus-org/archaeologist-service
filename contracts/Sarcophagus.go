@@ -137,7 +137,7 @@ func bindSarcophagus(address common.Address, caller bind.ContractCaller, transac
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Sarcophagus *SarcophagusRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_Sarcophagus *SarcophagusRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _Sarcophagus.Contract.SarcophagusCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_Sarcophagus *SarcophagusRaw) Transact(opts *bind.TransactOpts, method str
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Sarcophagus *SarcophagusCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_Sarcophagus *SarcophagusCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _Sarcophagus.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -175,12 +175,17 @@ func (_Sarcophagus *SarcophagusTransactorRaw) Transact(opts *bind.TransactOpts, 
 //
 // Solidity: function archaeologistAddresses(uint256 index) view returns(address)
 func (_Sarcophagus *SarcophagusCaller) ArchaeologistAddresses(opts *bind.CallOpts, index *big.Int) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _Sarcophagus.contract.Call(opts, out, "archaeologistAddresses", index)
-	return *ret0, err
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologistAddresses", index)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // ArchaeologistAddresses is a free data retrieval call binding the contract method 0x66086784.
@@ -201,12 +206,17 @@ func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistAddresses(index *big.
 //
 // Solidity: function archaeologistCount() view returns(uint256)
 func (_Sarcophagus *SarcophagusCaller) ArchaeologistCount(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _Sarcophagus.contract.Call(opts, out, "archaeologistCount")
-	return *ret0, err
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologistCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // ArchaeologistCount is a free data retrieval call binding the contract method 0x1a7ac550.
@@ -239,7 +249,10 @@ func (_Sarcophagus *SarcophagusCaller) Archaeologists(opts *bind.CallOpts, addy 
 	FreeBond                *big.Int
 	CursedBond              *big.Int
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologists", addy)
+
+	outstruct := new(struct {
 		Exists                  bool
 		Archaeologist           common.Address
 		CurrentPublicKey        []byte
@@ -252,9 +265,21 @@ func (_Sarcophagus *SarcophagusCaller) Archaeologists(opts *bind.CallOpts, addy 
 		FreeBond                *big.Int
 		CursedBond              *big.Int
 	})
-	out := ret
-	err := _Sarcophagus.contract.Call(opts, out, "archaeologists", addy)
-	return *ret, err
+
+	outstruct.Exists = out[0].(bool)
+	outstruct.Archaeologist = out[1].(common.Address)
+	outstruct.CurrentPublicKey = out[2].([]byte)
+	outstruct.Endpoint = out[3].(string)
+	outstruct.PaymentAddress = out[4].(common.Address)
+	outstruct.FeePerByte = out[5].(*big.Int)
+	outstruct.MinimumBounty = out[6].(*big.Int)
+	outstruct.MinimumDiggingFee = out[7].(*big.Int)
+	outstruct.MaximumResurrectionTime = out[8].(*big.Int)
+	outstruct.FreeBond = out[9].(*big.Int)
+	outstruct.CursedBond = out[10].(*big.Int)
+
+	return *outstruct, err
+
 }
 
 // Archaeologists is a free data retrieval call binding the contract method 0xf8fc6f7b.
@@ -299,12 +324,17 @@ func (_Sarcophagus *SarcophagusCallerSession) Archaeologists(addy common.Address
 //
 // Solidity: function sarcoToken() view returns(address)
 func (_Sarcophagus *SarcophagusCaller) SarcoToken(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _Sarcophagus.contract.Call(opts, out, "sarcoToken")
-	return *ret0, err
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "sarcoToken")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
 }
 
 // SarcoToken is a free data retrieval call binding the contract method 0x607e8f09.
@@ -334,7 +364,10 @@ func (_Sarcophagus *SarcophagusCaller) Sarcophagus(opts *bind.CallOpts, doubleHa
 	AssetId                string
 	StorageFee             *big.Int
 }, error) {
-	ret := new(struct {
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "sarcophagus", doubleHash)
+
+	outstruct := new(struct {
 		State                  uint8
 		Archaeologist          common.Address
 		ArchaeologistPublicKey []byte
@@ -344,9 +377,18 @@ func (_Sarcophagus *SarcophagusCaller) Sarcophagus(opts *bind.CallOpts, doubleHa
 		AssetId                string
 		StorageFee             *big.Int
 	})
-	out := ret
-	err := _Sarcophagus.contract.Call(opts, out, "sarcophagus", doubleHash)
-	return *ret, err
+
+	outstruct.State = out[0].(uint8)
+	outstruct.Archaeologist = out[1].(common.Address)
+	outstruct.ArchaeologistPublicKey = out[2].([]byte)
+	outstruct.ResurrectionTime = out[3].(*big.Int)
+	outstruct.ResurrectionWindow = out[4].(*big.Int)
+	outstruct.Name = out[5].(string)
+	outstruct.AssetId = out[6].(string)
+	outstruct.StorageFee = out[7].(*big.Int)
+
+	return *outstruct, err
+
 }
 
 // Sarcophagus is a free data retrieval call binding the contract method 0x972770ac.
@@ -385,12 +427,17 @@ func (_Sarcophagus *SarcophagusCallerSession) Sarcophagus(doubleHash [32]byte) (
 //
 // Solidity: function sarcophagusCount() view returns(uint256)
 func (_Sarcophagus *SarcophagusCaller) SarcophagusCount(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _Sarcophagus.contract.Call(opts, out, "sarcophagusCount")
-	return *ret0, err
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "sarcophagusCount")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
 // SarcophagusCount is a free data retrieval call binding the contract method 0x555912b7.
@@ -411,12 +458,17 @@ func (_Sarcophagus *SarcophagusCallerSession) SarcophagusCount() (*big.Int, erro
 //
 // Solidity: function sarcophagusDoubleHash(uint256 index) view returns(bytes32)
 func (_Sarcophagus *SarcophagusCaller) SarcophagusDoubleHash(opts *bind.CallOpts, index *big.Int) ([32]byte, error) {
-	var (
-		ret0 = new([32]byte)
-	)
-	out := ret0
-	err := _Sarcophagus.contract.Call(opts, out, "sarcophagusDoubleHash", index)
-	return *ret0, err
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "sarcophagusDoubleHash", index)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
 }
 
 // SarcophagusDoubleHash is a free data retrieval call binding the contract method 0x8917aa28.

@@ -137,7 +137,7 @@ func bindEvents(address common.Address, caller bind.ContractCaller, transactor b
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Events *EventsRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_Events *EventsRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _Events.Contract.EventsCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_Events *EventsRaw) Transact(opts *bind.TransactOpts, method string, param
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Events *EventsCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_Events *EventsCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _Events.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -322,6 +322,7 @@ func (_Events *EventsFilterer) ParseAccuseArchaeologist(log types.Log) (*EventsA
 	if err := _Events.contract.UnpackLog(event, "AccuseArchaeologist", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -465,6 +466,7 @@ func (_Events *EventsFilterer) ParseBurySarcophagus(log types.Log) (*EventsBuryS
 	if err := _Events.contract.UnpackLog(event, "BurySarcophagus", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -608,6 +610,7 @@ func (_Events *EventsFilterer) ParseCancelSarcophagus(log types.Log) (*EventsCan
 	if err := _Events.contract.UnpackLog(event, "CancelSarcophagus", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -762,6 +765,7 @@ func (_Events *EventsFilterer) ParseCleanUpSarcophagus(log types.Log) (*EventsCl
 	if err := _Events.contract.UnpackLog(event, "CleanUpSarcophagus", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -924,6 +928,7 @@ func (_Events *EventsFilterer) ParseCreateSarcophagus(log types.Log) (*EventsCre
 	if err := _Events.contract.UnpackLog(event, "CreateSarcophagus", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1057,6 +1062,7 @@ func (_Events *EventsFilterer) ParseCreation(log types.Log) (*EventsCreation, er
 	if err := _Events.contract.UnpackLog(event, "Creation", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1208,6 +1214,7 @@ func (_Events *EventsFilterer) ParseRegisterArchaeologist(log types.Log) (*Event
 	if err := _Events.contract.UnpackLog(event, "RegisterArchaeologist", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1357,6 +1364,7 @@ func (_Events *EventsFilterer) ParseRewrapSarcophagus(log types.Log) (*EventsRew
 	if err := _Events.contract.UnpackLog(event, "RewrapSarcophagus", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1503,6 +1511,7 @@ func (_Events *EventsFilterer) ParseUnwrapSarcophagus(log types.Log) (*EventsUnw
 	if err := _Events.contract.UnpackLog(event, "UnwrapSarcophagus", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1653,6 +1662,7 @@ func (_Events *EventsFilterer) ParseUpdateArchaeologist(log types.Log) (*EventsU
 	if err := _Events.contract.UnpackLog(event, "UpdateArchaeologist", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1797,6 +1807,7 @@ func (_Events *EventsFilterer) ParseUpdateArchaeologistPublicKey(log types.Log) 
 	if err := _Events.contract.UnpackLog(event, "UpdateArchaeologistPublicKey", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -1941,6 +1952,7 @@ func (_Events *EventsFilterer) ParseUpdateSarcophagus(log types.Log) (*EventsUpd
 	if err := _Events.contract.UnpackLog(event, "UpdateSarcophagus", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
 
@@ -2085,5 +2097,6 @@ func (_Events *EventsFilterer) ParseWithdrawalFreeBond(log types.Log) (*EventsWi
 	if err := _Events.contract.UnpackLog(event, "WithdrawalFreeBond", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }

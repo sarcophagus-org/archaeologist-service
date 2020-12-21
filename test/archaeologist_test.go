@@ -44,6 +44,7 @@ func (s *ArchTestSuite) exitContract() {
 	cmd := exec.Command("/bin/sh", args...)
 	cmd.Start()
 	cmd.Wait()
+	time.Sleep(1 * time.Second)
 }
 
 func (s *ArchTestSuite) exitArweave() {
@@ -51,6 +52,7 @@ func (s *ArchTestSuite) exitArweave() {
 	cmd := exec.Command("/bin/sh", args...)
 	cmd.Start()
 	cmd.Wait()
+	time.Sleep(1 * time.Second)
 }
 
 func (s *ArchTestSuite) deployContract() {
@@ -73,6 +75,7 @@ func (s *ArchTestSuite) deployContract() {
 	for {
 		select {
 		case logLine := <-readerLog:
+			log.Print(logLine)
 			if logLine == "name:    Sarcophagus" {
 				return
 			}
