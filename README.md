@@ -12,7 +12,7 @@ cp config.example.yml config.yml
 go build
 ```
 
-Edit the config.yml file to setup the service, and then run the service:
+Update the config.yml file using the comments in that file as a guide, and then run the service:
 ```
 ./archaeologist-service
 ```
