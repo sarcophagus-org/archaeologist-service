@@ -39,7 +39,7 @@ func EncryptFile(file *os.File, publicKey *ecdsa.PublicKey) ([]byte, error) {
 	fileBytes, _ := FileToBytes(file)
 
 	publicKeyBytes := crypto.FromECDSAPub(publicKey)
-	pubKey, err := btcec.ParsePubKey(publicKeyBytes, btcec.S256())
+	pubKey, _ := btcec.ParsePubKey(publicKeyBytes, btcec.S256())
 	encryptedFileBytes, err := btcec.Encrypt(pubKey, fileBytes)
 
 	return encryptedFileBytes, err
