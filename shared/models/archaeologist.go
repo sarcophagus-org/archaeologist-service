@@ -181,7 +181,7 @@ func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arwea
 	return txn, nil
 }
 
-func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transaction, error) {
+func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte, contentType string) (*tx.Transaction, error) {
 	// create a transaction
 	ar := arch.ArweaveTransactor
 	w := arch.ArweaveWallet
@@ -194,6 +194,12 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transactio
 	txBuilder, err := arch.CreateArweaveTransaction(context.TODO(), w, "0", fileBytes, "")
 	if err != nil {
 		log.Printf("Error creating transaction: %v", err)
+		return &tx.Transaction{}, err
+	}
+
+	err = txBuilder.AddTag("Content-Type", contentType)
+	if err != nil {
+		log.Printf("Error adding content type tag: %v", err)
 		return &tx.Transaction{}, err
 	}
 
@@ -252,6 +258,8 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	contentType := header.Header.Get("Content-Type")
+
 	defer file.Close()
 	fileBytes, _ := ioutil.ReadAll(file)
 	fileByteLen := len(fileBytes)
@@ -288,9 +296,9 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	log.Printf("File %s was validated successfully:", header.Filename)
+	log.Printf("File %s was validated successfully with type %s", header.Filename, contentType)
 
-	arweaveTx, err := arch.UploadFileToArweave(fileBytes)
+	arweaveTx, err := arch.UploadFileToArweave(fileBytes, contentType)
 	if err != nil {
 		errMsg := fmt.Sprintf("There was an error with the file. Error: %v", err)
 		arch.fileUploadError(errMsg, errMsg, http.StatusBadRequest, w)
