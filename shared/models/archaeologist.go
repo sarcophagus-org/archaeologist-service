@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/Dev43/arweave-go"
@@ -16,7 +17,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
-	"io/ioutil"
 	"log"
 	"math/big"
 	"net"
@@ -49,10 +49,15 @@ type Archaeologist struct {
 	Mnemonic              string
 	Wallet                *hdwallet.Wallet
 	AccountIndex          int
-	Server				  *http.Server
+	Server                *http.Server
 	Sarcophaguses         map[[32]byte]*big.Int
-	FileHandlers		  map[[32]byte]*big.Int
-	UnwrapAttempts		  map[[32]byte]int
+	FileHandlers          map[[32]byte]*big.Int
+	UnwrapAttempts        map[[32]byte]int
+}
+
+type SarcoFile struct {
+	FileType  string `json:"fileType"`
+	FileBytes string `json:"fileBytes"`
 }
 
 const (
@@ -247,26 +252,44 @@ func (arch *Archaeologist) fileUploadError(logMsg string, httpErrMsg string, htt
 }
 
 func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
+
+	if r.Method != "POST" && r.Method != "OPTIONS" {
 		arch.fileUploadError("File handler received non-post method, exiting.", "Method not allowed", http.StatusMethodNotAllowed, w)
 		return
 	}
 
-	file, header, err := r.FormFile("file")
-	if err != nil {
-		arch.fileUploadError("Couldnt receive file:" + err.Error(), "There was an error receiving your file:"+err.Error(), http.StatusBadRequest, w)
+	var sarcoFile SarcoFile
+
+	if r.Body == nil {
+		http.Error(w, "Please send a request body", 400)
 		return
 	}
 
-	contentType := header.Header.Get("Content-Type")
+	log.Printf("request: %v", r)
+	log.Printf("body: %v", r.Body)
 
-	defer file.Close()
-	fileBytes, _ := ioutil.ReadAll(file)
+	err := json.NewDecoder(r.Body).Decode(&sarcoFile)
+	if err != nil {
+		log.Printf("error decoding: %v", err)
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	contentType := sarcoFile.FileType
+	log.Printf("file type: %v", contentType)
+	fileBytes, err := base64.StdEncoding.DecodeString(sarcoFile.FileBytes)
+
+	if err != nil {
+		log.Printf("error decoding string: %v", err)
+	}
+
+	log.Printf("file bytes: %v", fileBytes)
+
 	fileByteLen := len(fileBytes)
 
 	/* Validate Size. */
 	if fileByteLen > (3 * MB) {
-		arch.fileUploadError("File was too large to receive. Size:" + string(fileByteLen), "The file sent is larger than the limit of 3MB.", http.StatusBadRequest, w)
+		arch.fileUploadError("File was too large to receive. Size:"+string(fileByteLen), "The file sent is larger than the limit of 3MB.", http.StatusBadRequest, w)
 		return
 	}
 
@@ -276,13 +299,13 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	decryptedFileBytes, err := utility.DecryptFile(fileBytes, currentPrivateKey)
 	assetDoubleHash := utility.FileBytesToDoubleHashBytes(decryptedFileBytes)
 	if err != nil {
-		arch.fileUploadError("Error decrypting file:" + err.Error(), "The file cannot be decrypted by archaeologist. Confirm it was encrypted with the correct public key.", http.StatusBadRequest, w)
+		arch.fileUploadError("Error decrypting file:"+err.Error(), "The file cannot be decrypted by archaeologist. Confirm it was encrypted with the correct public key.", http.StatusBadRequest, w)
 		return
 	}
 
 	/* Validate the inner layer double hash matches a double hash */
 	storageFee, ok := arch.FileHandlers[assetDoubleHash]
-	if !ok{
+	if !ok {
 		errMsg := "The double hash of the file does not match any open double hashes."
 		arch.fileUploadError(errMsg, errMsg, http.StatusBadRequest, w)
 		return
@@ -290,13 +313,13 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 
 	/* Validate Storage Fee is sufficient */
 	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), arch.FeePerByte)
-	if storageExpectation.Cmp(storageFee) == 1  {
+	if storageExpectation.Cmp(storageFee) == 1 {
 		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", storageExpectation, storageFee)
 		arch.fileUploadError(errMsg, errMsg, http.StatusBadRequest, w)
 		return
 	}
 
-	log.Printf("File %s was validated successfully with type %s", header.Filename, contentType)
+	log.Printf("File was validated successfully")
 
 	arweaveTx, err := arch.UploadFileToArweave(fileBytes, contentType)
 	if err != nil {
@@ -318,7 +341,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	hash := crypto.Keccak256Hash(pubKeyConcatTxHash)
 	assetIdSig, err := crypto.Sign(hash.Bytes(), arch.PrivateKey)
 	if err != nil {
-		arch.fileUploadError("Couldnt sign the arweave tx: " + err.Error(), "There was an error with the file.", http.StatusBadRequest, w)
+		arch.fileUploadError("Couldnt sign the arweave tx: "+err.Error(), "There was an error with the file.", http.StatusBadRequest, w)
 		return
 	}
 
