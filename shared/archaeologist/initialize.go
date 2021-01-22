@@ -100,7 +100,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config, 
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.Endpoint, err = utility.ValidateIpAddress(config.ENDPOINT, "ENDPOINT")
+	arch.Endpoint = config.ENDPOINT
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}

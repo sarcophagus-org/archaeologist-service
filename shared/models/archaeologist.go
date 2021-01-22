@@ -251,6 +251,11 @@ func (arch *Archaeologist) fileUploadError(logMsg string, httpErrMsg string, htt
 	arch.fileHandlerCheck()
 }
 
+func (arch *Archaeologist) pingHandler(w http.ResponseWriter, r *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
+	fmt.Fprintf(w, "true")
+}
+
 func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -392,6 +397,7 @@ func (arch *Archaeologist) InitAndTestServer() {
 
 func (arch *Archaeologist) InitServer() {
 	sm := http.NewServeMux()
+	sm.Handle("/ping", http.HandlerFunc(arch.pingHandler))
 	sm.Handle("/file", http.HandlerFunc(arch.fileUploadHandler))
 	arch.Server = &http.Server{Addr: "localhost:" + arch.FilePort, Handler: utility.LimitMiddleware(sm)}
 }

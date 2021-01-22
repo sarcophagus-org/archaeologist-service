@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"context"
 	"crypto/ecdsa"
+	"crypto/rand"
 	"encoding/json"
-	"github.com/btcsuite/btcd/btcec"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto/ecies"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"io"
 	"io/ioutil"
@@ -149,12 +150,8 @@ func (embalmer *Embalmer) EncryptFileBytes(fileBytes []byte) []byte {
 		log.Fatalf("Error unmarshaling public key during embalmer update:", err)
 	}
 
-	pubkeyBytes := crypto.FromECDSAPub(pubKeyEcdsa)
-	pubKey, err := btcec.ParsePubKey(pubkeyBytes, btcec.S256())
-	if err != nil {
-		log.Fatalf("error casting public key to btcec: %v", err)
-	}
-	encryptedBytes, err := btcec.Encrypt(pubKey, fileBytes)
+	pubKey := ecies.ImportECDSAPublic(pubKeyEcdsa)
+	encryptedBytes, err := ecies.Encrypt(rand.Reader, pubKey, fileBytes, nil, nil)
 	if err != nil {
 		log.Fatalf("Error encrypting file: %v", err)
 	}
