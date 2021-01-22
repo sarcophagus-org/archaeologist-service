@@ -9,7 +9,7 @@ import (
 )
 
 func handleUpdateSarcophagus(event *contracts.EventsUpdateSarcophagus, arch *models.Archaeologist) {
-	log.Println("Update Sarcophagus Event Sent:", event.AssetId)
+	log.Println("Update Sarcophagus Event Sent for asset ID:", event.AssetId)
 
 	/* Delete open file handler for the double hash */
 	delete(arch.FileHandlers, event.AssetDoubleHash)

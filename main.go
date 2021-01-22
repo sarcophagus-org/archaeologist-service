@@ -4,15 +4,20 @@ import (
 	"flag"
 	"fmt"
 	"github.com/Dev43/arweave-go/api"
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/archaeologist"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
+	"github.com/ethereum/go-ethereum/crypto/ecies"
 	"log"
 	"strings"
 )
 
 func main(){
+	/* Add curve used by pub/priv keys in hdwallet to the accepted curves for ecies */
+	ecies.AddParamsForCurve(btcec.S256(), ecies.ECIES_AES128_SHA256)
+
 	var configFile = flag.String("config", "config", "Location of the config file.")
 	configDir := "./"
 	flag.Parse()

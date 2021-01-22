@@ -13,7 +13,6 @@ import (
 	"io"
 	"log"
 	"math/big"
-	"net"
 	"os"
 	"regexp"
 	"strconv"
@@ -78,9 +77,9 @@ func ValidatePositiveNumber(num *big.Int, numField string) (*big.Int, error) {
 }
 
 func ValidateIpAddress(ip string, ipField string) (string, error) {
-	if net.ParseIP(ip) == nil {
-		return "", fmt.Errorf("%s IP Address is invalid. Please check the value in the config file", ipField)
-	}
+	//if net.ParseIP(ip) == nil {
+	//	return "", fmt.Errorf("%s IP Address is invalid. Please check the value in the config file", ipField)
+	//}
 
 	return ip, nil
 }

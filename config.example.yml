@@ -17,7 +17,8 @@ mnemonic: index cupboard city neither axis spot thumb pet rabbit stuff culture p
 arweave_key_file: arweave.json
 
 # Arweave node address
-arweave_node: http://localhost:8000/arweave
+# If using rootmos/loom docker image locally, you can use: http://localhost:8000/arweave
+arweave_node: https://arweave.net:443
 
 # Sarcophagus Contract Address
 contract_address: 0x65411a12F5Ddc37b6f1f7355cd3fCe77499961aB

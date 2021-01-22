@@ -259,6 +259,12 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	/*
+		Double Encrypted file bytes are sent as encoded json
+		Decode the file bytes into a struct
+		File Type is sent as a separate field. Create a "Content-Type" tag on the arweave tx with this value.
+	*/
+
 	var sarcoFile SarcoFile
 
 	if r.Body == nil {
@@ -266,24 +272,19 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	log.Printf("request: %v", r)
-	log.Printf("body: %v", r.Body)
-
 	err := json.NewDecoder(r.Body).Decode(&sarcoFile)
 	if err != nil {
 		log.Printf("error decoding: %v", err)
 		http.Error(w, err.Error(), 400)
 		return
 	}
+
 	contentType := sarcoFile.FileType
-	log.Printf("file type: %v", contentType)
+
 	fileBytes, err := base64.StdEncoding.DecodeString(sarcoFile.FileBytes)
-
 	if err != nil {
-		log.Printf("error decoding string: %v", err)
+		log.Printf("error decoding file: %v", err)
 	}
-
-	log.Printf("file bytes: %v", fileBytes)
 
 	fileByteLen := len(fileBytes)
 
@@ -293,15 +294,18 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	log.Print("Decrypting file...")
 	/* Decrypt the outer layer of file */
+	log.Print("Decrypting file...")
 	currentPrivateKey := hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	decryptedFileBytes, err := utility.DecryptFile(fileBytes, currentPrivateKey)
-	assetDoubleHash := utility.FileBytesToDoubleHashBytes(decryptedFileBytes)
+
 	if err != nil {
 		arch.fileUploadError("Error decrypting file:"+err.Error(), "The file cannot be decrypted by archaeologist. Confirm it was encrypted with the correct public key.", http.StatusBadRequest, w)
 		return
 	}
+
+	assetDoubleHash := utility.FileBytesToDoubleHashBytes(decryptedFileBytes)
+	log.Printf("asset double hash: %v", assetDoubleHash)
 
 	/* Validate the inner layer double hash matches a double hash */
 	storageFee, ok := arch.FileHandlers[assetDoubleHash]
@@ -350,8 +354,8 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	w.Header().Set("Content-Type", "application/json")
 	response := ResponseToEmbalmer{
 		NewPublicKey:    crypto.FromECDSAPub(newPublicKey)[1:],
-		AssetId:         arweaveTxHash,
 		AssetDoubleHash: assetDoubleHash,
+		AssetId:         arweaveTxHash,
 		V:               V,
 		R:               R,
 		S:               S,
