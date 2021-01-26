@@ -35,6 +35,9 @@ func SignatureValid(signature string, signedMsg []byte, msgSenderAddress common.
 }
 
 func DecryptFile(fileBytes []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+	log.Printf("priv key: %v", privateKey)
+	log.Printf("fileBytes: %v", fileBytes)
+
 	eciesPrivateKey := ecies.ImportECDSA(privateKey)
 	return eciesPrivateKey.Decrypt(fileBytes, nil, nil)
 }

@@ -3,3 +3,4 @@
 config.yml
 arweave.json
 tmp/
+test/arweave.prod.json

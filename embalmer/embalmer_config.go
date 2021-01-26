@@ -16,6 +16,7 @@ type EmbalmerConfig struct {
 	STORAGE_FEE string
 	DIGGING_FEE string
 	BOUNTY string
+	ARWEAVE_NODE string
 }
 
 func (config *EmbalmerConfig) LoadEmbalmerConfig(name string, path string) {

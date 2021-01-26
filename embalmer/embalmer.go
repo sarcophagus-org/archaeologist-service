@@ -5,7 +5,11 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"github.com/Dev43/arweave-go/transactor"
+	"github.com/Dev43/arweave-go/tx"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
@@ -14,14 +18,11 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/ecies"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"io"
 	"io/ioutil"
 	"log"
 	"math/big"
-	"mime/multipart"
 	"net/http"
-	"os"
-	"path/filepath"
+	"time"
 )
 
 type Embalmer struct {
@@ -36,6 +37,7 @@ type Embalmer struct {
 	StorageFee               *big.Int
 	DiggingFee               *big.Int
 	Bounty                   *big.Int
+	ArweaveNode              string
 }
 
 func (embalmer *Embalmer) initAuth() *bind.TransactOpts {
@@ -147,7 +149,7 @@ func (embalmer *Embalmer) EncryptFileBytes(fileBytes []byte) []byte {
 	currentPublicKeyBytes := append([]byte{4}, contractArch.CurrentPublicKey...)
 	pubKeyEcdsa, err := crypto.UnmarshalPubkey(currentPublicKeyBytes)
 	if err != nil {
-		log.Fatalf("Error unmarshaling public key during embalmer update:", err)
+		log.Fatalf("Error unmarshaling public key during embalmer update: %v", err)
 	}
 
 	pubKey := ecies.ImportECDSAPublic(pubKeyEcdsa)
@@ -162,13 +164,16 @@ func (embalmer *Embalmer) EncryptFileBytes(fileBytes []byte) []byte {
 func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, fileBytes []byte) {
 	log.Println("***UPDATING SARCOPHAGUS***")
 	encryptedBytes := embalmer.EncryptFileBytes(fileBytes)
-	tmpFile := CreateTmpFile(encryptedBytes)
-	defer os.Remove(tmpFile.Name())
+
+	body := &models.SarcoFile{
+		FileType:  "txt",
+		FileBytes: base64.StdEncoding.EncodeToString(encryptedBytes),
+	}
 
 	url := "http://127.0.0.1:8080/file"
-	response, err := embalmer.SendFile(url, tmpFile.Name(), "file")
+	response, err := embalmer.SendFile(url, body)
 	if err != nil {
-		log.Fatalf("Error sending file:", err)
+		log.Fatalf("Error sending file: %v", err)
 	}
 
 	var responseToEmbalmer = new(models.ResponseToEmbalmer)
@@ -177,11 +182,11 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, fileBytes 
 		log.Fatalf("Error: %v", string(response))
 	}
 
-	log.Printf("NewPublicKey:", responseToEmbalmer.NewPublicKey)
-	log.Printf("AssetID:", responseToEmbalmer.AssetId)
-	log.Printf("V", responseToEmbalmer.V)
-	log.Printf("R", responseToEmbalmer.R)
-	log.Printf("S", responseToEmbalmer.S)
+	log.Printf("NewPublicKey: %v", responseToEmbalmer.NewPublicKey)
+	log.Printf("AssetID: %v", responseToEmbalmer.AssetId)
+	log.Printf("V: %v", responseToEmbalmer.V)
+	log.Printf("R: %v", responseToEmbalmer.R)
+	log.Printf("S: %v", responseToEmbalmer.S)
 
 	sarcoSession := embalmer.NewSarcophagusSession(context.Background())
 	tx, err := sarcoSession.UpdateSarcophagus(
@@ -199,9 +204,6 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, fileBytes 
 
 	log.Printf("Update Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
 	log.Printf("Gas Used: %v", tx.Gas())
-	if err := tmpFile.Close(); err != nil {
-		log.Fatal(err)
-	}
 }
 
 func (embalmer *Embalmer) RewrapSarcophagus(assetDoubleHash [32]byte, resurrectionTime *big.Int) {
@@ -275,37 +277,22 @@ func (embalmer *Embalmer) CancelSarcophagus(assetDoubleHash [32]byte) {
 	log.Printf("Gas Used: %v", tx.Gas())
 }
 
-func (embalmer *Embalmer) SendFile(url string, filename string, filetype string) ([]byte, error) {
-	file, err := os.Open(filename)
+func (embalmer *Embalmer) SendFile(url string, body *models.SarcoFile) ([]byte, error) {
+	payloadBuf := new(bytes.Buffer)
+	json.NewEncoder(payloadBuf).Encode(body)
+	request, err := http.NewRequest("POST", url, payloadBuf)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile(filetype, filepath.Base(file.Name()))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	io.Copy(part, file)
-	writer.Close()
-	request, err := http.NewRequest("POST", url, body)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	request.Header.Add("Content-Type", writer.FormDataContentType())
 	client := &http.Client{}
-
 	response, err := client.Do(request)
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer response.Body.Close()
 
 	content, err := ioutil.ReadAll(response.Body)
@@ -315,4 +302,27 @@ func (embalmer *Embalmer) SendFile(url string, filename string, filetype string)
 	}
 
 	return content, err
+}
+
+// WaitMined waits for the transaction to be mined
+func waitMined(ctx context.Context, tr *transactor.Transactor, txHash string) (*tx.Transaction, error) {
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	for {
+		receipt, err := tr.Client.GetTransaction(ctx, txHash)
+		if receipt != nil {
+			return receipt, nil
+		}
+		if err != nil {
+			fmt.Printf("Error retrieving transaction %s \n", err.Error())
+		} else {
+			fmt.Printf("Transaction not yet mined \n")
+		}
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-ticker.C:
+		}
+	}
 }

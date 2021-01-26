@@ -55,11 +55,6 @@ type Archaeologist struct {
 	UnwrapAttempts        map[[32]byte]int
 }
 
-type SarcoFile struct {
-	FileType  string `json:"fileType"`
-	FileBytes string `json:"fileBytes"`
-}
-
 const (
 	MB = 1 << 20
 )
@@ -226,14 +221,13 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte, contentType str
 
 	log.Printf("Arweave Transaction Sent: %v", resp)
 
-	// wait for the transaction to get mined
 	finalTx, err := ar.WaitMined(context.TODO(), txn)
 	if err != nil {
 		log.Printf("Error with transaction getting mined: %v", err)
-		return &tx.Transaction{}, err
 	}
+	log.Printf("final tx: %v", finalTx)
 
-	return finalTx, nil
+	return txn, nil
 }
 
 func (arch *Archaeologist) fileHandlerCheck() {
