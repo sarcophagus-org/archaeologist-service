@@ -42,9 +42,6 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 					log.Printf("Error generating single hash during unwrapping process. Unwrapping cancelled: %v", err)
 				} else {
 					// TODO: Do we need to remove the sarco from state if the unwrap fails?
-					/*
-						Estimate Gas is used to check if the unwrap will succeed
-					*/
 					mutex.Lock()
 					attempts, ok := arch.UnwrapAttempts[assetDoubleHash]
 					mutex.Unlock()
@@ -58,6 +55,9 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 					arch.UnwrapAttempts[assetDoubleHash] = attempts
 					mutex.Unlock()
 
+					/*
+						Estimate Gas is used to check if the unwrap will succeed
+					*/
 					err := estimateGasForUnwrap(arch, assetDoubleHash, singleHash, privateKeyBytes)
 
 					if err != nil {

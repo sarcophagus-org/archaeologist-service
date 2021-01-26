@@ -3,11 +3,10 @@ package utility
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
-	"github.com/btcsuite/btcd/btcec"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/crypto/ecies"
 	"log"
-	"os"
 )
 
 func SignatureValid(signature string, signedMsg []byte, msgSenderAddress common.Address) bool {
@@ -35,21 +34,12 @@ func SignatureValid(signature string, signedMsg []byte, msgSenderAddress common.
 	return true
 }
 
-func EncryptFile(file *os.File, publicKey *ecdsa.PublicKey) ([]byte, error) {
-	fileBytes, _ := FileToBytes(file)
-
-	publicKeyBytes := crypto.FromECDSAPub(publicKey)
-	pubKey, _ := btcec.ParsePubKey(publicKeyBytes, btcec.S256())
-	encryptedFileBytes, err := btcec.Encrypt(pubKey, fileBytes)
-
-	return encryptedFileBytes, err
-}
-
 func DecryptFile(fileBytes []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
-	privateKeyBytes := crypto.FromECDSA(privateKey)
-	privKey, _ := btcec.PrivKeyFromBytes(btcec.S256(), privateKeyBytes)
+	log.Printf("priv key: %v", privateKey)
+	log.Printf("fileBytes: %v", fileBytes)
 
-	return btcec.Decrypt(privKey, fileBytes)
+	eciesPrivateKey := ecies.ImportECDSA(privateKey)
+	return eciesPrivateKey.Decrypt(fileBytes, nil, nil)
 }
 
 func FileBytesToDoubleHashBytes(fileBytes []byte) [32]byte {
