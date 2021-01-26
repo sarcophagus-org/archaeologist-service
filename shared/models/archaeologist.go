@@ -221,12 +221,6 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte, contentType str
 
 	log.Printf("Arweave Transaction Sent: %v", resp)
 
-	finalTx, err := ar.WaitMined(context.TODO(), txn)
-	if err != nil {
-		log.Printf("Error with transaction getting mined: %v", err)
-	}
-	log.Printf("final tx: %v", finalTx)
-
 	return txn, nil
 }
 
