@@ -7,9 +7,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
-	"github.com/Dev43/arweave-go/transactor"
-	"github.com/Dev43/arweave-go/tx"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
@@ -22,7 +19,6 @@ import (
 	"log"
 	"math/big"
 	"net/http"
-	"time"
 )
 
 type Embalmer struct {
@@ -302,27 +298,4 @@ func (embalmer *Embalmer) SendFile(url string, body *models.SarcoFile) ([]byte, 
 	}
 
 	return content, err
-}
-
-// WaitMined waits for the transaction to be mined
-func waitMined(ctx context.Context, tr *transactor.Transactor, txHash string) (*tx.Transaction, error) {
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-
-	for {
-		receipt, err := tr.Client.GetTransaction(ctx, txHash)
-		if receipt != nil {
-			return receipt, nil
-		}
-		if err != nil {
-			fmt.Printf("Error retrieving transaction %s \n", err.Error())
-		} else {
-			fmt.Printf("Transaction not yet mined \n")
-		}
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		case <-ticker.C:
-		}
-	}
 }

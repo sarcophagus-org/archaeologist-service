@@ -37,63 +37,51 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 	time.AfterFunc(timeToUnwrap, func() {
 		if resTime, ok := arch.Sarcophaguses[assetDoubleHash]; ok {
 			if resTime.Cmp(resurrectionTime) == 0 {
-				/* Verify Transaction has been mined */
-				arweaveTx, err := arch.ArweaveTransactor.Client.GetTransaction(context.Background(), assetId)
-				if arweaveTx != nil {
-					singleHash, err := generateSingleHash(arweaveClient, assetId, privateKey)
-					if err != nil {
-						log.Printf("Error generating single hash during unwrapping process. Unwrapping cancelled: %v", err)
+				singleHash, err := generateSingleHash(arweaveClient, assetId, privateKey)
+				if err != nil {
+					log.Printf("Error generating single hash during unwrapping process. Unwrapping cancelled: %v", err)
+				} else {
+					// TODO: Do we need to remove the sarco from state if the unwrap fails?
+					mutex.Lock()
+					attempts, ok := arch.UnwrapAttempts[assetDoubleHash]
+					mutex.Unlock()
+
+					if !ok {
+						attempts = 1
 					} else {
-						// TODO: Do we need to remove the sarco from state if the unwrap fails?
-						/*
-							Estimate Gas is used to check if the unwrap will succeed
-						*/
-						mutex.Lock()
-						attempts, ok := arch.UnwrapAttempts[assetDoubleHash]
-						mutex.Unlock()
+						attempts += 1
+					}
+					mutex.Lock()
+					arch.UnwrapAttempts[assetDoubleHash] = attempts
+					mutex.Unlock()
 
-						if !ok {
-							attempts = 1
-						} else {
-							attempts += 1
+					/*
+						Estimate Gas is used to check if the unwrap will succeed
+					*/
+					err := estimateGasForUnwrap(arch, assetDoubleHash, singleHash, privateKeyBytes)
+
+					if err != nil {
+						log.Printf("Unwrapping aborted, transaction will fail: %v", err)
+						if attempts <= UNWRAP_RETRY_LIMIT {
+							time.Sleep(randomRetryInterval() * time.Millisecond)
+							scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 						}
-						mutex.Lock()
-						arch.UnwrapAttempts[assetDoubleHash] = attempts
-						mutex.Unlock()
-
-						err := estimateGasForUnwrap(arch, assetDoubleHash, singleHash, privateKeyBytes)
-
+					} else {
+						tx, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
 						if err != nil {
-							log.Printf("Unwrapping aborted, transaction will fail: %v", err)
+							log.Printf("Transaction reverted. There was an error unwrapping the sarcophagus: %v", err)
 							if attempts <= UNWRAP_RETRY_LIMIT {
 								time.Sleep(randomRetryInterval() * time.Millisecond)
 								scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 							}
 						} else {
-							tx, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
-							if err != nil {
-								log.Printf("Transaction reverted. There was an error unwrapping the sarcophagus: %v", err)
-								if attempts <= UNWRAP_RETRY_LIMIT {
-									time.Sleep(randomRetryInterval() * time.Millisecond)
-									scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
-								}
-							} else {
-								log.Printf("Unwrap Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
-								log.Printf("Gas Used: %v", tx.Gas())
-								log.Printf("AssetDoubleHash: %v", assetDoubleHash)
+							log.Printf("Unwrap Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+							log.Printf("Gas Used: %v", tx.Gas())
+							log.Printf("AssetDoubleHash: %v", assetDoubleHash)
 
-								/* Sarcophagus is unwrapped, remove from state */
-								arch.RemoveArchSarcophagus(assetDoubleHash)
-							}
+							/* Sarcophagus is unwrapped, remove from state */
+							arch.RemoveArchSarcophagus(assetDoubleHash)
 						}
-					}
-				} else {
-					if err != nil {
-						log.Printf("Unwrapping cancelled. Error retrieving arweave transaction %s \n", err.Error())
-					} else {
-						log.Printf("Transaction not yet mined, rescheduling unwrap \n")
-						time.Sleep(randomRetryInterval() * time.Millisecond)
-						scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 					}
 				}
 			} else {
@@ -130,7 +118,6 @@ func generateSingleHash(arweaveClient *api.Client, assetId string, privateKey *e
 	}
 
 	decryptedDataBytes, err := utility.DecryptFile(dataBytes, privateKey)
-
 	if err != nil {
 		return nil, err
 	}
