@@ -15,6 +15,8 @@ import (
 )
 
 func main(){
+	log.Printf("%v", loadArt())
+
 	/* Add curve used by pub/priv keys in hdwallet to the accepted curves for ecies */
 	ecies.AddParamsForCurve(btcec.S256(), ecies.ECIES_AES128_SHA256)
 
@@ -26,6 +28,7 @@ func main(){
 	config.LoadConfig(*configFile, configDir, true)
 	arch := new(models.Archaeologist)
 	errStrings := archaeologist.InitializeArchaeologist(arch, config, configDir)
+
 	if len(errStrings) > 0 {
 		fmt.Println(fmt.Errorf(strings.Join(errStrings, "\n")))
 		log.Fatal("**Please fix these errors in your config file and restart the service.**")
@@ -42,4 +45,8 @@ func main(){
 	log.Println("Arweave Balance:", utility.ToDecimal(arweave.ArweaveBalance(arch.ArweaveTransactor.Client.(*api.Client), arch.ArweaveWallet), 12))
 	log.Printf("Arweave Address: %v", arch.ArweaveWallet.Address())
 	archaeologist.EventsSubscribe(arch)
+}
+
+func loadArt() string{
+	return "\n\n ██   █▄▄▄▄ ▄█▄     ▄  █ ██   ▄███▄   ████▄ █    ████▄   ▄▀  ▄█    ▄▄▄▄▄      ▄▄▄▄▀ \n█ █  █  ▄▀ █▀ ▀▄  █   █ █ █  █▀   ▀  █   █ █    █   █ ▄▀    ██   █     ▀▄ ▀▀▀ █    \n█▄▄█ █▀▀▌  █   ▀  ██▀▀█ █▄▄█ ██▄▄    █   █ █    █   █ █ ▀▄  ██ ▄  ▀▀▀▀▄       █    \n█  █ █  █  █▄  ▄▀ █   █ █  █ █▄   ▄▀ ▀████ ███▄ ▀████ █   █ ▐█  ▀▄▄▄▄▀       █     \n   █   █   ▀███▀     █     █ ▀███▀             ▀       ███   ▐              ▀      \n  █   ▀             ▀     █                                                        \n ▀                       ▀                                                         \n\n"
 }
