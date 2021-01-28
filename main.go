@@ -28,7 +28,6 @@ func main(){
 	config.LoadConfig(*configFile, configDir, true)
 	arch := new(models.Archaeologist)
 	errStrings := archaeologist.InitializeArchaeologist(arch, config, configDir)
-	log.Printf("feePerByte: %v", arch.FeePerByte)
 
 	if len(errStrings) > 0 {
 		fmt.Println(fmt.Errorf(strings.Join(errStrings, "\n")))
