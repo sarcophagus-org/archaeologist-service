@@ -2,7 +2,7 @@
 eth_node: ws://localhost:8545
 
 # (Optional) The ETH address where you want payments to be made.
-# If no payment address is provided, the address derived from the eth_private_key below will be used.
+# If no payment address is provided, the address derived from the eth_private_key will be used.
 # payment_address: 0x...
 
 # Private key for signing transactions.
@@ -33,22 +33,25 @@ endpoint: 200.200.200.100
 # The file port that will be opened to receive the sarcophagus asset file
 file_port: 8080
 
-# Expressed in Sarco Tokens with up to 18 decimals
+# Expressed in Sarco Tokens with up to 18 decimals.
+# Set as a string to allow for 18 decimals when config gets parsed.
 # Used to calculate the storage fee you expect to receive for doing a Sarcophagus job.
 # The minimum storage fee will be calculated as: fee_per_byte * file_bytes_size
 # Default is 1.000000000000000000 (1.0 Sarco Tokens)
-fee_per_byte: 1.000000000000000000
+fee_per_byte: "1.000000000000000000"
 
 # Expressed in Sarco Tokens with up to 18 decimals
+# Set as a string to allow for 18 decimals when config gets parsed.
 # The minimum amount of Sarco Tokens you want to receive for doing a Sarcophagus job.
 # This is a 1-time payment that will be paid when a Sarcophagus job is complete (when the Sarcophagus is unwrapped).
 # Default is 100.000000000000000000 (100.0 Sarco Tokens)
-min_bounty: 100.000000000000000000
+min_bounty: "100.000000000000000000"
 
 # Expressed in Sarco Tokens with up to 18 decimals
+# Set as a string to allow for 18 decimals when config gets parsed.
 # The minimum amount of Sarco Tokens you want to receive for doing a Sarcophagus job.
 # Default is 10.000000000000000000 (10.0 Sarco Tokens)
-min_digging_fee: 10.000000000000000000
+min_digging_fee: "10.000000000000000000"
 
 # The resurrection time is when the Sarcophagus will be unwrapped or need to be rewrapped by.
 # MAX_RESURRECTION_TIME is the farthest point in the future for which you will accept Sarcophagus jobs.
@@ -57,13 +60,15 @@ min_digging_fee: 10.000000000000000000
 max_resurrection_time: 1641859200
 
 # Expressed in Sarco Tokens with up to 18 decimals
+# Set as a string to allow for 18 decimals when config gets parsed.
 # When the service starts, the number here will be added to your "Free Bond" on the Sarcophagus Contract
 # This number will be reset to 0 after the service attempts to transfer Tokens to the free bond.
 # You must have Free Bond available on the Sarcophagus Contract to accept new jobs.
 # Default is 100.000000000000000000 (100.0 Sarco Tokens)
-add_to_free_bond: 100.000000000000000000
+add_to_free_bond: "100.000000000000000000"
 
 # Expressed in Sarco Tokens with up to 18 decimals
+# Set as a string to allow for 18 decimals when config gets parsed.
 # When the service starts, the number here will be subtracted from your "Free Bond" on the Sarcophagus Contract
 # This number will be reset to 0 after the service attempts to transfer Tokens from the free bond.
-remove_from_free_bond: 0
+remove_from_free_bond: "0"
