@@ -7,10 +7,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Dev43/arweave-go"
+	"github.com/Dev43/arweave-go/api"
 	"github.com/Dev43/arweave-go/transactor"
 	"github.com/Dev43/arweave-go/tx"
 	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
+	ar "github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/hdw"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
@@ -183,7 +185,7 @@ func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arwea
 
 func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte, contentType string) (*tx.Transaction, error) {
 	// create a transaction
-	ar := arch.ArweaveTransactor
+	arTrans := arch.ArweaveTransactor
 	w := arch.ArweaveWallet
 
 	/*
@@ -212,7 +214,7 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte, contentType str
 
 	// send the transaction
 	log.Printf("Sending transaction: %v", txn.Hash())
-	resp, err := ar.SendTransaction(context.TODO(), txn)
+	resp, err := arTrans.SendTransaction(context.TODO(), txn)
 
 	if err != nil {
 		log.Printf("Error sending transaction: %v", err)
@@ -237,6 +239,17 @@ func (arch *Archaeologist) fileUploadError(logMsg string, httpErrMsg string, htt
 	http.Error(w, httpErrMsg, httpErrType)
 
 	arch.fileHandlerCheck()
+}
+
+func (arch *Archaeologist) validateArweaveBalance(fileBytes []byte) bool {
+	txFeeInt := new(big.Int)
+	balanceInt := new(big.Int)
+	txFee, _ := arch.ArweaveTransactor.Client.GetReward(context.Background(), fileBytes)
+	balance := ar.ArweaveBalance(arch.ArweaveTransactor.Client.(*api.Client), arch.ArweaveWallet)
+	txFeeInt, _ = txFeeInt.SetString(txFee, 10)
+	balanceInt, _ = balanceInt.SetString(balance, 10)
+
+	return balanceInt.Cmp(txFeeInt) != -1
 }
 
 func (arch *Archaeologist) pingHandler(w http.ResponseWriter, r *http.Request) {
