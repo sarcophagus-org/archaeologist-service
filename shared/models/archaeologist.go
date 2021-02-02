@@ -119,7 +119,7 @@ func (arch *Archaeologist) RegisterArchaeologist() {
 	}
 
 	arch.FreeBond = big.NewInt(0)
-	log.Printf("Register Archaeologist Successful. Transaction ID: %s", txn.Hash().Hex())
+	log.Printf("Register Archaeologist Transaction Submitted. Transaction ID: %s", txn.Hash().Hex())
 	log.Printf("Gas Used: %v", txn.Gas())
 
 	err = ethereum.WaitMined(arch.Client, txn.Hash(), "Registering Archaeologist")
@@ -149,7 +149,7 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 	}
 
 	arch.FreeBond = big.NewInt(0)
-	log.Printf("Update Archaeologist Successful. Transaction ID: %s", txn.Hash().Hex())
+	log.Printf("Update Archaeologist Transaction Submitted. Transaction ID: %s", txn.Hash().Hex())
 	log.Printf("Gas Used: %v", txn.Gas())
 
 	err = ethereum.WaitMined(arch.Client, txn.Hash(), "Update Archaeologist")
@@ -178,7 +178,7 @@ func (arch *Archaeologist) ApproveFreeBondTransfer() {
 		log.Fatalf("Transaction reverted. Error Approving Transaction: %v \n Config value ADD_TO_FREE_BOND has been reset to 0. You will need to reset this.", err)
 	}
 
-	log.Printf("Approval Transaction for %v Sarco Tokens successful. Transaction ID: %v", utility.ToDecimal(arch.FreeBond, 18), txn.Hash().Hex())
+	log.Printf("Approval Transaction for %v Sarco Tokens Submitted. Transaction ID: %v", utility.ToDecimal(arch.FreeBond, 18), txn.Hash().Hex())
 	log.Printf("Gas Used for Approval: %v", txn.Gas())
 
 	err = ethereum.WaitMined(arch.Client, txn.Hash(), "Approval of Free Bond")

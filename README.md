@@ -17,6 +17,7 @@ Update the config.yml file using the comments in that file as a guide, and then 
 ./archaeologist-service
 ```
 
+**The config.yml needs to be writable.**
 All comments in config.yml will be removed after the first time the service is run.
 
 Alternatively you can install the service globally with:

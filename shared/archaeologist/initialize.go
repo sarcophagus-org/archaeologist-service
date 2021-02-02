@@ -202,14 +202,17 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 					if err != nil {
 						log.Printf("Cleanup Sarcophagus error: %v", err)
 					}
-					log.Printf("Cleanup Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+					log.Printf("Cleanup Sarcophagus Tx Submitted. Transaction ID: %s", tx.Hash().Hex())
 					log.Printf("Gas Used: %v", tx.Gas())
 				}
 			case 2:
-				// Sarco is 'done', increment account index as this sarco uses one of our key pairs.
-				// Clear file handlers b/c we only want file handlers for our current account index
-				fileHandlers = map[[32]byte]*big.Int{}
-				accountIndex += 1
+				// Sarco is 'done'
+				if sarco.AssetId != "" {
+					// Sarco has been updated, increment account index as this sarco uses one of our key pairs.
+					// Clear file handlers b/c we only want file handlers for our current account index
+					fileHandlers = map[[32]byte]*big.Int{}
+					accountIndex += 1
+				}
 			}
 		}
 	}
