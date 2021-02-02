@@ -7,10 +7,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Dev43/arweave-go"
+	"github.com/Dev43/arweave-go/api"
 	"github.com/Dev43/arweave-go/transactor"
 	"github.com/Dev43/arweave-go/tx"
 	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
+	ar "github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/hdw"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
@@ -86,11 +89,19 @@ func (arch *Archaeologist) WithdrawBond(bondToWithdraw *big.Int) {
 		log.Fatalf("Transaction reverted. Error Withdrawing Bond: %v \n Config value REMOVE_FROM_FREE_BOND has been reset to 0. You will need to reset this.", err)
 	}
 
-	log.Printf("Withdrawal of %v Sarco Tokens successful. Transaction ID: %v", bondToWithdraw, txn.Hash().Hex())
+	log.Printf("Withdrawal of %v Sarco Tokens transaction submitted. Transaction ID: %v", bondToWithdraw, txn.Hash().Hex())
 	log.Printf("Gas Used for Withdrawal: %v", txn.Gas())
+
+	err = ethereum.WaitMined(arch.Client, txn.Hash(), "Withdraw Bond")
+
+	if err != nil {
+		log.Fatalf("There was an error mining the withdraw bond transaction: %v", err)
+	} else {
+		log.Printf("Withdrawal of Sarco Tokens transaction successful")
+	}
 }
 
-func (arch *Archaeologist) RegisterArchaeologist() error {
+func (arch *Archaeologist) RegisterArchaeologist() {
 	log.Println("***REGISTERING ARCHAEOLOGIST***")
 	txn, err := arch.SarcoSession.RegisterArchaeologist(
 		arch.CurrentPublicKeyBytes,
@@ -104,13 +115,20 @@ func (arch *Archaeologist) RegisterArchaeologist() error {
 	)
 
 	if err != nil {
-		return err
+		log.Fatalf("Transaction reverted. Error registering Archaeologist: %v Config values ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND have been reset to 0. You will need to reset this.", err)
 	}
 
 	arch.FreeBond = big.NewInt(0)
 	log.Printf("Register Archaeologist Successful. Transaction ID: %s", txn.Hash().Hex())
 	log.Printf("Gas Used: %v", txn.Gas())
-	return nil
+
+	err = ethereum.WaitMined(arch.Client, txn.Hash(), "Registering Archaeologist")
+
+	if err != nil {
+		log.Fatalf("There was an error mining the register archaeologist transaction: %v", err)
+	} else {
+		log.Printf("Register Archaeologist Transaction Successful")
+	}
 }
 
 func (arch *Archaeologist) UpdateArchaeologist() {
@@ -133,6 +151,14 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 	arch.FreeBond = big.NewInt(0)
 	log.Printf("Update Archaeologist Successful. Transaction ID: %s", txn.Hash().Hex())
 	log.Printf("Gas Used: %v", txn.Gas())
+
+	err = ethereum.WaitMined(arch.Client, txn.Hash(), "Update Archaeologist")
+
+	if err != nil {
+		log.Fatalf("There was an error mining the update archaeologist transaction: %v", err)
+	} else {
+		log.Printf("Update Archaeologist Transaction Successful")
+	}
 }
 
 func (arch *Archaeologist) ApproveFreeBondTransfer() {
@@ -154,6 +180,12 @@ func (arch *Archaeologist) ApproveFreeBondTransfer() {
 
 	log.Printf("Approval Transaction for %v Sarco Tokens successful. Transaction ID: %v", utility.ToDecimal(arch.FreeBond, 18), txn.Hash().Hex())
 	log.Printf("Gas Used for Approval: %v", txn.Gas())
+
+	err = ethereum.WaitMined(arch.Client, txn.Hash(), "Approval of Free Bond")
+
+	if err != nil {
+		log.Fatalf("There was an error mining the approval of free bond transaction: %v", err)
+	}
 }
 
 func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arweave.WalletSigner, amount string, data []byte, target string) (*tx.Transaction, error) {
@@ -183,7 +215,7 @@ func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arwea
 
 func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte, contentType string) (*tx.Transaction, error) {
 	// create a transaction
-	ar := arch.ArweaveTransactor
+	arTrans := arch.ArweaveTransactor
 	w := arch.ArweaveWallet
 
 	/*
@@ -212,7 +244,7 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte, contentType str
 
 	// send the transaction
 	log.Printf("Sending transaction: %v", txn.Hash())
-	resp, err := ar.SendTransaction(context.TODO(), txn)
+	resp, err := arTrans.SendTransaction(context.TODO(), txn)
 
 	if err != nil {
 		log.Printf("Error sending transaction: %v", err)
@@ -237,6 +269,17 @@ func (arch *Archaeologist) fileUploadError(logMsg string, httpErrMsg string, htt
 	http.Error(w, httpErrMsg, httpErrType)
 
 	arch.fileHandlerCheck()
+}
+
+func (arch *Archaeologist) validateArweaveBalance(fileBytes []byte) bool {
+	txFeeInt := new(big.Int)
+	balanceInt := new(big.Int)
+	txFee, _ := arch.ArweaveTransactor.Client.GetReward(context.Background(), fileBytes)
+	balance := ar.ArweaveBalance(arch.ArweaveTransactor.Client.(*api.Client), arch.ArweaveWallet)
+	txFeeInt, _ = txFeeInt.SetString(txFee, 10)
+	balanceInt, _ = balanceInt.SetString(balance, 10)
+
+	return balanceInt.Cmp(txFeeInt) != -1
 }
 
 func (arch *Archaeologist) pingHandler(w http.ResponseWriter, r *http.Request) {

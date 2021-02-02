@@ -84,7 +84,7 @@ func (s *ArchTestSuite) deployContract() {
 }
 
 func (s *ArchTestSuite) deployArweave() {
-	arweaveWallet, err := arweave.InitArweaveWallet("arweave.json", "./")
+	arweaveWallet, err := ar.InitArweaveWallet("arweave.json", "./")
 	if err != nil {
 		s.T().Fatalf("Arweave Wallet could not be initialized: %v", err)
 	}

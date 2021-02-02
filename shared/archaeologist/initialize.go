@@ -39,12 +39,12 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config, 
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.ArweaveTransactor, err = arweave.InitArweaveTransactor(config.ARWEAVE_NODE)
+	arch.ArweaveTransactor, err = ar.InitArweaveTransactor(config.ARWEAVE_NODE)
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.ArweaveWallet, err = arweave.InitArweaveWallet(config.ARWEAVE_KEY_FILE, configDir)
+	arch.ArweaveWallet, err = ar.InitArweaveWallet(config.ARWEAVE_KEY_FILE, configDir)
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}
