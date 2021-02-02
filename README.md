@@ -26,6 +26,10 @@ go install
 cp config.example.yml $GOPATH/bin
 ```
 
+If installing on Ubuntu, before building/installing, you may need to run:
+```
+apt-get install build-essential
+```
 
 ### Local Development 
 ##### Deploy Sarcophagus Contract

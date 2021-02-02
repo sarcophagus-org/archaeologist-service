@@ -39,10 +39,7 @@ func RegisterOrUpdateArchaeologist(arch *models.Archaeologist) {
 			log.Printf("Archaeologist did not need to get updated, no config values have changed.")
 		}
 	} else {
-		err := arch.RegisterArchaeologist()
-		if err != nil {
-			log.Fatalf("Transaction reverted. Error registering Archaeologist: %v Config values ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND have been reset to 0. You will need to reset this.", err)
-		}
+		arch.RegisterArchaeologist()
 	}
 
 	archaeologistUpdated, _ := arch.SarcoSession.Archaeologists(arch.ArchAddress)

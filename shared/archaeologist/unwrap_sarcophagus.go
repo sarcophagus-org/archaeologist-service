@@ -7,6 +7,7 @@ import (
 	"github.com/Dev43/arweave-go/utils"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
+	eth "github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -67,7 +68,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 							scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 						}
 					} else {
-						tx, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
+						txn, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
 						if err != nil {
 							log.Printf("Transaction reverted. There was an error unwrapping the sarcophagus: %v", err)
 							if attempts <= UNWRAP_RETRY_LIMIT {
@@ -75,11 +76,22 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 								scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 							}
 						} else {
-							log.Printf("Unwrap Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
-							log.Printf("Gas Used: %v", tx.Gas())
+							log.Printf("Unwrap Sarcophagus Transaction Submitted. Transaction ID: %s", txn.Hash().Hex())
+							log.Printf("Gas Used: %v", txn.Gas())
 							log.Printf("AssetDoubleHash: %v", assetDoubleHash)
 
-							/* Sarcophagus is unwrapped, remove from state */
+							err = eth.WaitMined(arch.Client, txn.Hash(), "Unwrap Sarcophagus")
+
+							if err != nil {
+								if attempts <= UNWRAP_RETRY_LIMIT {
+									log.Printf("There was an error mining the update archaeologist transaction: %v. Retrying...", err)
+									scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
+								}
+							} else {
+								log.Printf("Unwrap Sarcophagus Transaction Successful. Transaction ID: %s", txn.Hash().Hex())
+							}
+
+							/* Remove from state */
 							arch.RemoveArchSarcophagus(assetDoubleHash)
 						}
 					}
