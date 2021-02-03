@@ -20,12 +20,17 @@ Update the config.yml file using the comments in that file as a guide, and then 
 **The config.yml needs to be writable.**
 All comments in config.yml will be removed after the first time the service is run.
 
+Put your arweave wallet in the root directory of the service and update the corresponding config.yml value accordingly.
+
+
 Alternatively you can install the service globally with:
 
 ```
 go install
 cp config.example.yml $GOPATH/bin
 ```
+
+Make sure to update the config.yml `areave_key_file` value to point to the location of your arweave wallet.
 
 If installing on Ubuntu, before building/installing, you may need to run:
 ```

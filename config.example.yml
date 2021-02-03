@@ -13,8 +13,8 @@ eth_private_key: 0x89ee060717762819b0dfa501d1f3c246f059fd70a1b54c7231e617b32594e
 # https://iancoleman.io/bip39/
 mnemonic: index cupboard city neither axis spot thumb pet rabbit stuff culture project top fault wisdom
 
-# Arweave wallet file name
-arweave_key_file: arweave.json
+# Full path (including filename) to your arweave wallet
+arweave_key_file: "$GOPATH/bin/arweave.json"
 
 # Arweave node address
 # If using rootmos/loom docker image locally, you can use: http://localhost:8000/arweave

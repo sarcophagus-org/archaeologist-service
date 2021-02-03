@@ -19,7 +19,7 @@ import (
 	"math/big"
 )
 
-func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config, configDir string) []string {
+func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) []string {
 	var err error
 	var errStrings []string
 
@@ -44,7 +44,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config, 
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.ArweaveWallet, err = ar.InitArweaveWallet(config.ARWEAVE_KEY_FILE, configDir)
+	arch.ArweaveWallet, err = ar.InitArweaveWallet(config.ARWEAVE_KEY_FILE)
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}
