@@ -39,12 +39,12 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config, 
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.ArweaveTransactor, err = arweave.InitArweaveTransactor(config.ARWEAVE_NODE)
+	arch.ArweaveTransactor, err = ar.InitArweaveTransactor(config.ARWEAVE_NODE)
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.ArweaveWallet, err = arweave.InitArweaveWallet(config.ARWEAVE_KEY_FILE, configDir)
+	arch.ArweaveWallet, err = ar.InitArweaveWallet(config.ARWEAVE_KEY_FILE, configDir)
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}
@@ -202,14 +202,17 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 					if err != nil {
 						log.Printf("Cleanup Sarcophagus error: %v", err)
 					}
-					log.Printf("Cleanup Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
+					log.Printf("Cleanup Sarcophagus Tx Submitted. Transaction ID: %s", tx.Hash().Hex())
 					log.Printf("Gas Used: %v", tx.Gas())
 				}
 			case 2:
-				// Sarco is 'done', increment account index as this sarco uses one of our key pairs.
-				// Clear file handlers b/c we only want file handlers for our current account index
-				fileHandlers = map[[32]byte]*big.Int{}
-				accountIndex += 1
+				// Sarco is 'done'
+				if sarco.AssetId != "" {
+					// Sarco has been updated, increment account index as this sarco uses one of our key pairs.
+					// Clear file handlers b/c we only want file handlers for our current account index
+					fileHandlers = map[[32]byte]*big.Int{}
+					accountIndex += 1
+				}
 			}
 		}
 	}

@@ -42,7 +42,7 @@ func main(){
 
 	log.Printf("Eth Balance: %v", utility.ToDecimal(arch.EthBalance(), 18))
 	log.Printf("Sarco Token Balance: %v", utility.ToDecimal(arch.SarcoBalance(), 18))
-	log.Println("Arweave Balance:", utility.ToDecimal(arweave.ArweaveBalance(arch.ArweaveTransactor.Client.(*api.Client), arch.ArweaveWallet), 12))
+	log.Println("Arweave Balance:", utility.ToDecimal(ar.ArweaveBalance(arch.ArweaveTransactor.Client.(*api.Client), arch.ArweaveWallet), 12))
 	log.Printf("Arweave Address: %v", arch.ArweaveWallet.Address())
 	archaeologist.EventsSubscribe(arch)
 }

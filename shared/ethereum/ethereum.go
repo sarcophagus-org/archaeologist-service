@@ -5,6 +5,9 @@ import (
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"context"
+	"log"
+	"time"
 )
 
 func InitEthClient(ethNode string) (*ethclient.Client, error) {
@@ -23,4 +26,29 @@ func SarcoAddress(contractAddress string, client *ethclient.Client) (common.Addr
 	}
 
 	return address, nil
+}
+
+func WaitMined(client *ethclient.Client, txHash common.Hash, label string) error {
+	var miningErr error = nil
+
+	log.Printf("Waiting for %s transaction to be mined", label)
+
+	for {
+		_, pending, err := client.TransactionByHash(context.Background(), txHash)
+
+		if err != nil {
+			miningErr = err
+			break
+		}
+
+		fmt.Print(".")
+		time.Sleep(1 * time.Second)
+
+		if !pending {
+			fmt.Println("")
+			break
+		}
+	}
+
+	return miningErr
 }

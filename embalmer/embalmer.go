@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -94,6 +95,12 @@ func (embalmer *Embalmer) approveEmbalmerTransfer(session *contracts.TokenSessio
 
 	log.Printf("Approval Transaction for %v Sarcophagus Tokens successful. Transaction ID: %v", utility.ToDecimal(approvalAmount, 18), tx.Hash().Hex())
 	log.Printf("Gas Used for Approval: %v", tx.Gas())
+
+	err = ethereum.WaitMined(embalmer.Client, tx.Hash(), "Approval of Embalmer Transfer")
+
+	if err != nil {
+		log.Fatalf("There was an error mining the approval of embalmer transfer: %v", err)
+	}
 }
 
 func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDoubleHashBytes [32]byte, sarcoName string) {
@@ -133,6 +140,12 @@ func (embalmer *Embalmer) CreateSarcophagus(recipientPrivateKey string, assetDou
 
 	log.Printf("Create Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
 	log.Printf("Gas Used: %v", tx.Gas())
+
+	err = ethereum.WaitMined(embalmer.Client, tx.Hash(), "Approval of Embalmer Create Sarcophagus")
+
+	if err != nil {
+		log.Fatalf("There was an error mining the approval of embalmer create sarcophagus: %v", err)
+	}
 }
 
 func (embalmer *Embalmer) EncryptFileBytes(fileBytes []byte) []byte {
@@ -166,7 +179,7 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, fileBytes 
 		FileBytes: base64.StdEncoding.EncodeToString(encryptedBytes),
 	}
 
-	url := "http://127.0.0.1:8080/file"
+	url := "http://174.129.152.160/file"
 	response, err := embalmer.SendFile(url, body)
 	if err != nil {
 		log.Fatalf("Error sending file: %v", err)
@@ -200,6 +213,12 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, fileBytes 
 
 	log.Printf("Update Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
 	log.Printf("Gas Used: %v", tx.Gas())
+
+	err = ethereum.WaitMined(embalmer.Client, tx.Hash(), "Embalmer Update Sarcophagus")
+
+	if err != nil {
+		log.Fatalf("There was an error mining the approval of embalmer update sarcophagus: %v", err)
+	}
 }
 
 func (embalmer *Embalmer) RewrapSarcophagus(assetDoubleHash [32]byte, resurrectionTime *big.Int) {
@@ -222,6 +241,12 @@ func (embalmer *Embalmer) RewrapSarcophagus(assetDoubleHash [32]byte, resurrecti
 
 	log.Printf("Rewrap Sarcophagus Successful. Transaction ID: %s", tx.Hash().Hex())
 	log.Printf("Gas Used: %v", tx.Gas())
+
+	err = ethereum.WaitMined(embalmer.Client, tx.Hash(), "Embalmer Rewrap Sarcophagus")
+
+	if err != nil {
+		log.Fatalf("There was an error mining the approval of embalmer rewrap sarcophagus: %v", err)
+	}
 }
 
 func (embalmer *Embalmer) CleanupSarcophagus(assetDoubleHash [32]byte) {
