@@ -28,6 +28,7 @@ type Config struct {
 func (config *Config) LoadConfig(name string, path string, writeConfig bool) {
 	viper.SetConfigName(name)
 	viper.AddConfigPath(path)
+	viper.AddConfigPath("$GOPATH/bin")
 	viper.AutomaticEnv()
 	viper.SetConfigType("yml")
 
