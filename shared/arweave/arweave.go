@@ -31,7 +31,7 @@ func InitArweaveTransactor(arweaveNode string) (*transactor.Transactor, error) {
 func InitArweaveWallet(arweaveKeyFileName string) (*wallet.Wallet, error) {
 	wallet_ := wallet.NewWallet()
 
-	if err := wallet_.LoadKeyFromFile(fmt.Sprintf(arweaveKeyFileName)); err != nil {
+	if err := wallet_.LoadKeyFromFile(arweaveKeyFileName); err != nil {
 		return nil, fmt.Errorf("Could not load config value ARWEAVE_KEY_FILE. Please check the config.yml file Error: %v", err)
 	}
 
