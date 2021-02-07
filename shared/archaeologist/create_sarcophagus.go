@@ -8,7 +8,7 @@ import (
 )
 
 func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *models.Archaeologist) {
-	log.Println("Name:", event.Name)
+	log.Println("Event Name:", event.Name)
 	log.Println("Asset Double Hash:", event.AssetDoubleHash)
 	log.Println("Archaeologist:", event.Archaeologist)
 	log.Println("Embalmer:", event.Embalmer)

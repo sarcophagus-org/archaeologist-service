@@ -6,7 +6,7 @@ This service is responsible for executing Sarcophagus jobs created via the Sarco
 https://github.com/sarcophagus-org/smart-contracts
 
 ### Quick Start
-You must have an arweave wallet (with Arweave tokens) to use this service. [You can get a wallet here.](https://www.arweave.org/wallet)
+You must have an arweave wallet (with Arweave tokens) to accept new jobs. [You can get a wallet here.](https://www.arweave.org/wallet)
 
 ```
 git clone https://github.com/sarcophagus-org/archaeologist-service
@@ -15,16 +15,15 @@ go build
 ```
 
 Update the config.yml file with the appropriate values. 
-- Use the comments in that file as a guide. 
+- Use the comments in the config.example.yml file as a guide. 
 - **The config.yml must be writable.**
 - All comments in config.yml will be removed after the first time the service is run.
-- Put your arweave wallet file in a path on the filesystem, and update the corresponding config.yml value accordingly (e.g "/usr/local/arweave.json")
+- Put your arweave wallet file in a path on the filesystem, and update the config.yml `areave_key_file` value to point to the location of your arweave wallet. (e.g "/usr/local/arweave.json")
 
 To run the service:
 ```
 ./archaeologist-service
 ```
-
 
 **Alternatively you can install the service globally with:**
 
@@ -32,14 +31,13 @@ To run the service:
 go install
 ```
 
-Copy the config file to $GOPATH/bin (assumes you have `$GOPATH/bin` in your $PATH)
+Copy the config file to $GOPATH/bin (assuming you have `$GOPATH/bin` in your $PATH)
 ```
 cp config.example.yml config.yml
 cp config.yml $GOPATH/bin
 ```
 
 Update the config.yml `areave_key_file` value to point to the location of your arweave wallet.
-
 
 If installing on Ubuntu, before building/installing, you may need to run:
 ```
