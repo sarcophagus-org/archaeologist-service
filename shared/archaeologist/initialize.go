@@ -125,9 +125,9 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 
 	var accountIndex = 0
 
-	sarcoCount, err := arch.SarcoSession.SarcophagusCount()
+	sarcoCount, err := arch.SarcoSession.ArchaeologistSarcophagusCount(arch.ArchAddress)
 	if err != nil {
-		log.Fatalf("Call to get Sarcophagus count in Contract failed. Please check CONTRACT_ADDRESS is correct in the config file: %v", err)
+		log.Fatalf("Call to ArchaeologistSarcophagusCount in Contract failed. Please check CONTRACT_ADDRESS is correct in the config file: %v", err)
 	}
 
 	/*
@@ -139,80 +139,78 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 	*/
 
 	for i := big.NewInt(0); i.Cmp(sarcoCount) == -1; i = big.NewInt(0).Add(i, big.NewInt(1)) {
-		doubleHash, _ := arch.SarcoSession.SarcophagusDoubleHash(i)
+		doubleHash, _ := arch.SarcoSession.ArchaeologistSarcophagusDoubleHash(arch.ArchAddress, i)
 		sarco, _ := arch.SarcoSession.Sarcophagus(doubleHash)
 
-		if sarco.Archaeologist == arch.ArchAddress {
-			/*
-				Sarco States:
-				0 - Does not Exist
-				1 - Exists
-				2 - Done
-			*/
+		/*
+			Sarco States:
+			0 - Does not Exist
+			1 - Exists
+			2 - Done
+		*/
 
-			switch state := sarco.State; state {
-			case 1:
-				if utility.TimeWithWindowInFuture(sarco.ResurrectionTime, sarco.ResurrectionWindow) {
-					/* Check if the current account index public key matches the one on the current sarco */
-					currentPublicKey := hdw.PublicKeyBytesFromIndex(arch.Wallet, accountIndex)
-					pubKeyMatches := bytes.Equal(sarco.ArchaeologistPublicKey, currentPublicKey)
+		switch state := sarco.State; state {
+		case 1:
+			if utility.TimeWithWindowInFuture(sarco.ResurrectionTime, sarco.ResurrectionWindow) {
+				/* Check if the current account index public key matches the one on the current sarco */
+				currentPublicKey := hdw.PublicKeyBytesFromIndex(arch.Wallet, accountIndex)
+				pubKeyMatches := bytes.Equal(sarco.ArchaeologistPublicKey, currentPublicKey)
 
-					var currentPublicKeyIndex [64]byte
-					copy(currentPublicKeyIndex[:], currentPublicKey)
-					doubleHashList := append(pubKeyMap[currentPublicKeyIndex], doubleHash)
-					pubKeyMap[currentPublicKeyIndex] = doubleHashList
+				var currentPublicKeyIndex [64]byte
+				copy(currentPublicKeyIndex[:], currentPublicKey)
+				doubleHashList := append(pubKeyMap[currentPublicKeyIndex], doubleHash)
+				pubKeyMap[currentPublicKeyIndex] = doubleHashList
 
-					if sarco.AssetId == "" {
-						/* This is a created sarc that is not updated */
-						/* If our current pub key matches the sarc's, this means no sarc has used our current public key yet */
-						if pubKeyMatches {
-							fileHandlers[doubleHash] = sarco.StorageFee
-						}
-					} else {
-						/* This an updated sarc that is not unwrapped yet */
-						/* Schedule an unwrap using the current account index private key */
-						privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
-						scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
-						fileHandlers = map[[32]byte]*big.Int{}
-						accountIndex += 1
-						for i := range pubKeyMap[currentPublicKeyIndex] {
-							/* Remove any previous sarcos from state that used this public key */
-							if !bytes.Equal(pubKeyMap[currentPublicKeyIndex][i][:], doubleHash[:]) {
-								delete(sarcophaguses, pubKeyMap[currentPublicKeyIndex][i])
-							}
-						}
-					}
-
+				if sarco.AssetId == "" {
+					/* This is a created sarc that is not updated */
+					/* If our current pub key matches the sarc's, this means no sarc has used our current public key yet */
 					if pubKeyMatches {
-						/* Add the sarcophagus to state */
-						sarcophaguses[doubleHash] = sarco.ResurrectionTime
+						fileHandlers[doubleHash] = sarco.StorageFee
 					}
 				} else {
-					// Sarc's unwrap time is in the past
-					log.Printf("Sarcophagus did not get unwrapped in time: %v", doubleHash)
-					if sarco.AssetId != "" {
-						// Sarco has been updated, increment account index as this sarco uses one of our key pairs.
-						// Clear file handlers b/c we only want file handlers for our current account index
-						fileHandlers = map[[32]byte]*big.Int{}
-						accountIndex += 1
+					/* This an updated sarc that is not unwrapped yet */
+					/* Schedule an unwrap using the current account index private key */
+					privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
+					scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
+					fileHandlers = map[[32]byte]*big.Int{}
+					accountIndex += 1
+					for i := range pubKeyMap[currentPublicKeyIndex] {
+						/* Remove any previous sarcos from state that used this public key */
+						if !bytes.Equal(pubKeyMap[currentPublicKeyIndex][i][:], doubleHash[:]) {
+							delete(sarcophaguses, pubKeyMap[currentPublicKeyIndex][i])
+						}
 					}
-
-					// Lets get some money by cleaning it up
-					tx, err := arch.SarcoSession.CleanUpSarcophagus(doubleHash, arch.PaymentAddress)
-					if err != nil {
-						log.Printf("Cleanup Sarcophagus error: %v", err)
-					}
-					log.Printf("Cleanup Sarcophagus Tx Submitted. Transaction ID: %s", tx.Hash().Hex())
-					log.Printf("Gas Used: %v", tx.Gas())
 				}
-			case 2:
-				// Sarco is 'done'
+
+				if pubKeyMatches {
+					/* Add the sarcophagus to state */
+					sarcophaguses[doubleHash] = sarco.ResurrectionTime
+				}
+			} else {
+				// Sarc's unwrap time + resurrection window is in the past
+				log.Printf("Sarcophagus did not get unwrapped in time: %v", doubleHash)
 				if sarco.AssetId != "" {
 					// Sarco has been updated, increment account index as this sarco uses one of our key pairs.
 					// Clear file handlers b/c we only want file handlers for our current account index
 					fileHandlers = map[[32]byte]*big.Int{}
 					accountIndex += 1
 				}
+
+				// Lets get some money by cleaning it up
+				tx, err := arch.SarcoSession.CleanUpSarcophagus(doubleHash, arch.PaymentAddress)
+				if err != nil {
+					log.Printf("Cleanup Sarcophagus error: %v", err)
+				}
+				log.Printf("Cleanup Sarcophagus Tx Submitted. Transaction ID: %s", tx.Hash().Hex())
+				log.Printf("Gas Used: %v", tx.Gas())
+			}
+		case 2:
+			// Sarco is 'done'
+			if sarco.AssetId != "" {
+				// Sarco has been updated, increment account index as this sarco uses one of our key pairs.
+				// Clear file handlers b/c we only want file handlers for our current account index
+				fileHandlers = map[[32]byte]*big.Int{}
+				accountIndex += 1
 			}
 		}
 	}
