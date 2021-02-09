@@ -28,7 +28,6 @@ func RegisterOrUpdateArchaeologist(arch *models.Archaeologist) {
 		if arch.FreeBond.Cmp(big.NewInt(0)) == 1 ||
 			!bytes.Equal(contractArch.CurrentPublicKey, arch.CurrentPublicKeyBytes) ||
 			contractArch.Endpoint != arch.Endpoint ||
-			contractArch.Archaeologist != arch.ArchAddress ||
 			contractArch.PaymentAddress != arch.PaymentAddress ||
 			contractArch.FeePerByte.Cmp(arch.FeePerByte) != 0 ||
 			contractArch.MinimumBounty.Cmp(arch.MinBounty) != 0 ||
