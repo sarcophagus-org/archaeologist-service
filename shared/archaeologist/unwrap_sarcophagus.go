@@ -68,6 +68,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 							scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 						}
 					} else {
+						// TODO: Remove SingleHash from params after updating ABI
 						txn, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
 						if err != nil {
 							log.Printf("Transaction reverted. There was an error unwrapping the sarcophagus: %v", err)

@@ -54,10 +54,11 @@ min_bounty: "100.000000000000000000"
 min_digging_fee: "10.000000000000000000"
 
 # The resurrection time is when the Sarcophagus will be unwrapped or need to be rewrapped by.
-# MAX_RESURRECTION_TIME is the farthest point in the future for which you will accept Sarcophagus jobs.
-# Expressed in Unix Time
+# MAX_RESURRECTION_TIME is the relative time interval from the creation or rewrapping of the sarcophagut that you are willing to accept jobs within.
+# For example, if you set max_resurrection_time to 1 month -- when a sarcophagus is created, the resurrection time set by the embalmer cannot be greater than 1 month in the future for you to accept the job.
+# Expressed in Seconds (1 year = 31536000)
 # https://www.unixtimestamp.com/
-max_resurrection_time: 1641859200
+max_resurrection_time: 31536000
 
 # Expressed in Sarco Tokens with up to 18 decimals
 # Set as a string to allow for 18 decimals when config gets parsed.

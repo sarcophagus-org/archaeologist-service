@@ -95,10 +95,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.MaxResurectionTime, err = utility.ValidateTimeInFuture(stringToBigInt(config.MAX_RESURRECTION_TIME), "MAX_RESURRECTION_TIME")
-	if err != nil {
-		errStrings = append(errStrings, err.Error())
-	}
+	arch.MaxResurectionTime = stringToBigInt(config.MAX_RESURRECTION_TIME)
 
 	arch.Endpoint = config.ENDPOINT
 	if err != nil {
@@ -139,7 +136,7 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 	*/
 
 	for i := big.NewInt(0); i.Cmp(sarcoCount) == -1; i = big.NewInt(0).Add(i, big.NewInt(1)) {
-		doubleHash, _ := arch.SarcoSession.ArchaeologistSarcophagusDoubleHash(arch.ArchAddress, i)
+		doubleHash, _ := arch.SarcoSession.ArchaeologistSarcophagusIdentifier(arch.ArchAddress, i)
 		sarco, _ := arch.SarcoSession.Sarcophagus(doubleHash)
 
 		/*
