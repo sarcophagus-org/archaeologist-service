@@ -103,14 +103,14 @@ Use abigen to compile abi -- below examples output to "abi" & "abiToken" directo
 NOTE: The solidity compiler version must match the version specified in the contract (currently ^0.6.0)
 ```
 solc --abi @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ contracts/Sarcophagus.sol -o abi
-solc --abi @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ contracts/SarcophagusToken.sol -o abiToken
+solc --abi @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ contracts/mocks/SarcoTokenMock.sol -o abiToken --allow-paths $(pwd)
 solc --abi @openzeppelin/=$(pwd)/node_modules/@openzeppelin/ contracts/libraries/Events.sol -o abiEvents
 ```
 
 Compile Contracts to Go
 ```
 abigen --abi=./abi/Sarcophagus.abi --pkg=sarcophagus --out=Sarcophagus.go
-abigen --abi=./abiToken/SarcophagusToken.abi --pkg=token --out=SarcophagusToken.go
+abigen --abi=./abiToken/SarcoTokenMock.abi --pkg=token --out=SarcophagusToken.go
 abigen --abi=./abiEvents/Events.abi --pkg=events --out=Events.go
 ```
 

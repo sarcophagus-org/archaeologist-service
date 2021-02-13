@@ -26,8 +26,40 @@ var (
 	_ = event.NewSubscription
 )
 
+// TypesArchaeologist is an auto generated low-level Go binding around an user-defined struct.
+type TypesArchaeologist struct {
+	Exists                  bool
+	CurrentPublicKey        []byte
+	Endpoint                string
+	PaymentAddress          common.Address
+	FeePerByte              *big.Int
+	MinimumBounty           *big.Int
+	MinimumDiggingFee       *big.Int
+	MaximumResurrectionTime *big.Int
+	FreeBond                *big.Int
+	CursedBond              *big.Int
+}
+
+// TypesSarcophagus is an auto generated low-level Go binding around an user-defined struct.
+type TypesSarcophagus struct {
+	State                  uint8
+	Archaeologist          common.Address
+	ArchaeologistPublicKey []byte
+	Embalmer               common.Address
+	Name                   string
+	ResurrectionTime       *big.Int
+	ResurrectionWindow     *big.Int
+	AssetId                string
+	RecipientPublicKey     []byte
+	StorageFee             *big.Int
+	DiggingFee             *big.Int
+	Bounty                 *big.Int
+	CurrentCursedBond      *big.Int
+	PrivateKey             [32]byte
+}
+
 // SarcophagusABI is the input ABI used to generate the binding from.
-const SarcophagusABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sarcoToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"singleHash\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"}],\"name\":\"accuseArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"archaeologistCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"}],\"name\":\"archaeologistSarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistSarcophagusDoubleHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"addy\",\"type\":\"address\"}],\"name\":\"archaeologists\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"exists\",\"type\":\"bool\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"cursedBond\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"}],\"name\":\"burySarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"}],\"name\":\"cancelSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"}],\"name\":\"cleanUpSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"recipientPublicKey\",\"type\":\"bytes\"}],\"name\":\"createSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"}],\"name\":\"embalmerSarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"embalmerSarcophagusDoubleHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"}],\"name\":\"recipientSarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"recipientSarcophagusDoubleHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"}],\"name\":\"registerArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"}],\"name\":\"rewrapSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sarcoToken\",\"outputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"doubleHash\",\"type\":\"bytes32\"}],\"name\":\"sarcophagus\",\"outputs\":[{\"internalType\":\"enumTypes.SarcophagusStates\",\"name\":\"state\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"archaeologistPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionWindow\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"sarcophagusDoubleHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"singleHash\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"privateKey\",\"type\":\"bytes32\"}],\"name\":\"unwrapSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"}],\"name\":\"updateArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"newPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"updateSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdrawBond\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const SarcophagusABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sarcoToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"singleHash\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"}],\"name\":\"accuseArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"archaeologistCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"}],\"name\":\"archaeologistSarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistSarcophagusIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"archaeologists\",\"outputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"exists\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"cursedBond\",\"type\":\"uint256\"}],\"internalType\":\"structTypes.Archaeologist\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"}],\"name\":\"burySarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"}],\"name\":\"cancelSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"}],\"name\":\"cleanUpSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"recipientPublicKey\",\"type\":\"bytes\"}],\"name\":\"createSarcophagus\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"}],\"name\":\"embalmerSarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"embalmerSarcophagusIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"}],\"name\":\"recipientSarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"recipientSarcophagusIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"}],\"name\":\"registerArchaeologist\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"}],\"name\":\"rewrapSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sarcoToken\",\"outputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"}],\"name\":\"sarcophagus\",\"outputs\":[{\"components\":[{\"internalType\":\"enumTypes.SarcophagusStates\",\"name\":\"state\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"archaeologistPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionWindow\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"recipientPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"currentCursedBond\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"privateKey\",\"type\":\"bytes32\"}],\"internalType\":\"structTypes.Sarcophagus\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"sarcophagusIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"privateKey\",\"type\":\"bytes32\"}],\"name\":\"unwrapSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"newPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"}],\"name\":\"updateArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"newPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"updateSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdrawBond\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // Sarcophagus is an auto generated Go binding around an Ethereum contract.
 type Sarcophagus struct {
@@ -264,12 +296,12 @@ func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistSarcophagusCount(arch
 	return _Sarcophagus.Contract.ArchaeologistSarcophagusCount(&_Sarcophagus.CallOpts, archaeologist)
 }
 
-// ArchaeologistSarcophagusDoubleHash is a free data retrieval call binding the contract method 0xb3106d2e.
+// ArchaeologistSarcophagusIdentifier is a free data retrieval call binding the contract method 0x125a0c84.
 //
-// Solidity: function archaeologistSarcophagusDoubleHash(address archaeologist, uint256 index) view returns(bytes32)
-func (_Sarcophagus *SarcophagusCaller) ArchaeologistSarcophagusDoubleHash(opts *bind.CallOpts, archaeologist common.Address, index *big.Int) ([32]byte, error) {
+// Solidity: function archaeologistSarcophagusIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCaller) ArchaeologistSarcophagusIdentifier(opts *bind.CallOpts, archaeologist common.Address, index *big.Int) ([32]byte, error) {
 	var out []interface{}
-	err := _Sarcophagus.contract.Call(opts, &out, "archaeologistSarcophagusDoubleHash", archaeologist, index)
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologistSarcophagusIdentifier", archaeologist, index)
 
 	if err != nil {
 		return *new([32]byte), err
@@ -281,105 +313,49 @@ func (_Sarcophagus *SarcophagusCaller) ArchaeologistSarcophagusDoubleHash(opts *
 
 }
 
-// ArchaeologistSarcophagusDoubleHash is a free data retrieval call binding the contract method 0xb3106d2e.
+// ArchaeologistSarcophagusIdentifier is a free data retrieval call binding the contract method 0x125a0c84.
 //
-// Solidity: function archaeologistSarcophagusDoubleHash(address archaeologist, uint256 index) view returns(bytes32)
-func (_Sarcophagus *SarcophagusSession) ArchaeologistSarcophagusDoubleHash(archaeologist common.Address, index *big.Int) ([32]byte, error) {
-	return _Sarcophagus.Contract.ArchaeologistSarcophagusDoubleHash(&_Sarcophagus.CallOpts, archaeologist, index)
+// Solidity: function archaeologistSarcophagusIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusSession) ArchaeologistSarcophagusIdentifier(archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.ArchaeologistSarcophagusIdentifier(&_Sarcophagus.CallOpts, archaeologist, index)
 }
 
-// ArchaeologistSarcophagusDoubleHash is a free data retrieval call binding the contract method 0xb3106d2e.
+// ArchaeologistSarcophagusIdentifier is a free data retrieval call binding the contract method 0x125a0c84.
 //
-// Solidity: function archaeologistSarcophagusDoubleHash(address archaeologist, uint256 index) view returns(bytes32)
-func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistSarcophagusDoubleHash(archaeologist common.Address, index *big.Int) ([32]byte, error) {
-	return _Sarcophagus.Contract.ArchaeologistSarcophagusDoubleHash(&_Sarcophagus.CallOpts, archaeologist, index)
+// Solidity: function archaeologistSarcophagusIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistSarcophagusIdentifier(archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.ArchaeologistSarcophagusIdentifier(&_Sarcophagus.CallOpts, archaeologist, index)
 }
 
 // Archaeologists is a free data retrieval call binding the contract method 0xf8fc6f7b.
 //
-// Solidity: function archaeologists(address addy) view returns(bool exists, address archaeologist, bytes currentPublicKey, string endpoint, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond, uint256 cursedBond)
-func (_Sarcophagus *SarcophagusCaller) Archaeologists(opts *bind.CallOpts, addy common.Address) (struct {
-	Exists                  bool
-	Archaeologist           common.Address
-	CurrentPublicKey        []byte
-	Endpoint                string
-	PaymentAddress          common.Address
-	FeePerByte              *big.Int
-	MinimumBounty           *big.Int
-	MinimumDiggingFee       *big.Int
-	MaximumResurrectionTime *big.Int
-	FreeBond                *big.Int
-	CursedBond              *big.Int
-}, error) {
+// Solidity: function archaeologists(address account) view returns((bool,bytes,string,address,uint256,uint256,uint256,uint256,uint256,uint256))
+func (_Sarcophagus *SarcophagusCaller) Archaeologists(opts *bind.CallOpts, account common.Address) (TypesArchaeologist, error) {
 	var out []interface{}
-	err := _Sarcophagus.contract.Call(opts, &out, "archaeologists", addy)
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologists", account)
 
-	outstruct := new(struct {
-		Exists                  bool
-		Archaeologist           common.Address
-		CurrentPublicKey        []byte
-		Endpoint                string
-		PaymentAddress          common.Address
-		FeePerByte              *big.Int
-		MinimumBounty           *big.Int
-		MinimumDiggingFee       *big.Int
-		MaximumResurrectionTime *big.Int
-		FreeBond                *big.Int
-		CursedBond              *big.Int
-	})
+	if err != nil {
+		return *new(TypesArchaeologist), err
+	}
 
-	outstruct.Exists = out[0].(bool)
-	outstruct.Archaeologist = out[1].(common.Address)
-	outstruct.CurrentPublicKey = out[2].([]byte)
-	outstruct.Endpoint = out[3].(string)
-	outstruct.PaymentAddress = out[4].(common.Address)
-	outstruct.FeePerByte = out[5].(*big.Int)
-	outstruct.MinimumBounty = out[6].(*big.Int)
-	outstruct.MinimumDiggingFee = out[7].(*big.Int)
-	outstruct.MaximumResurrectionTime = out[8].(*big.Int)
-	outstruct.FreeBond = out[9].(*big.Int)
-	outstruct.CursedBond = out[10].(*big.Int)
+	out0 := *abi.ConvertType(out[0], new(TypesArchaeologist)).(*TypesArchaeologist)
 
-	return *outstruct, err
+	return out0, err
 
 }
 
 // Archaeologists is a free data retrieval call binding the contract method 0xf8fc6f7b.
 //
-// Solidity: function archaeologists(address addy) view returns(bool exists, address archaeologist, bytes currentPublicKey, string endpoint, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond, uint256 cursedBond)
-func (_Sarcophagus *SarcophagusSession) Archaeologists(addy common.Address) (struct {
-	Exists                  bool
-	Archaeologist           common.Address
-	CurrentPublicKey        []byte
-	Endpoint                string
-	PaymentAddress          common.Address
-	FeePerByte              *big.Int
-	MinimumBounty           *big.Int
-	MinimumDiggingFee       *big.Int
-	MaximumResurrectionTime *big.Int
-	FreeBond                *big.Int
-	CursedBond              *big.Int
-}, error) {
-	return _Sarcophagus.Contract.Archaeologists(&_Sarcophagus.CallOpts, addy)
+// Solidity: function archaeologists(address account) view returns((bool,bytes,string,address,uint256,uint256,uint256,uint256,uint256,uint256))
+func (_Sarcophagus *SarcophagusSession) Archaeologists(account common.Address) (TypesArchaeologist, error) {
+	return _Sarcophagus.Contract.Archaeologists(&_Sarcophagus.CallOpts, account)
 }
 
 // Archaeologists is a free data retrieval call binding the contract method 0xf8fc6f7b.
 //
-// Solidity: function archaeologists(address addy) view returns(bool exists, address archaeologist, bytes currentPublicKey, string endpoint, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond, uint256 cursedBond)
-func (_Sarcophagus *SarcophagusCallerSession) Archaeologists(addy common.Address) (struct {
-	Exists                  bool
-	Archaeologist           common.Address
-	CurrentPublicKey        []byte
-	Endpoint                string
-	PaymentAddress          common.Address
-	FeePerByte              *big.Int
-	MinimumBounty           *big.Int
-	MinimumDiggingFee       *big.Int
-	MaximumResurrectionTime *big.Int
-	FreeBond                *big.Int
-	CursedBond              *big.Int
-}, error) {
-	return _Sarcophagus.Contract.Archaeologists(&_Sarcophagus.CallOpts, addy)
+// Solidity: function archaeologists(address account) view returns((bool,bytes,string,address,uint256,uint256,uint256,uint256,uint256,uint256))
+func (_Sarcophagus *SarcophagusCallerSession) Archaeologists(account common.Address) (TypesArchaeologist, error) {
+	return _Sarcophagus.Contract.Archaeologists(&_Sarcophagus.CallOpts, account)
 }
 
 // EmbalmerSarcophagusCount is a free data retrieval call binding the contract method 0xfcbbb735.
@@ -413,12 +389,12 @@ func (_Sarcophagus *SarcophagusCallerSession) EmbalmerSarcophagusCount(embalmer 
 	return _Sarcophagus.Contract.EmbalmerSarcophagusCount(&_Sarcophagus.CallOpts, embalmer)
 }
 
-// EmbalmerSarcophagusDoubleHash is a free data retrieval call binding the contract method 0x420ab6c5.
+// EmbalmerSarcophagusIdentifier is a free data retrieval call binding the contract method 0x072dcee4.
 //
-// Solidity: function embalmerSarcophagusDoubleHash(address embalmer, uint256 index) view returns(bytes32)
-func (_Sarcophagus *SarcophagusCaller) EmbalmerSarcophagusDoubleHash(opts *bind.CallOpts, embalmer common.Address, index *big.Int) ([32]byte, error) {
+// Solidity: function embalmerSarcophagusIdentifier(address embalmer, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCaller) EmbalmerSarcophagusIdentifier(opts *bind.CallOpts, embalmer common.Address, index *big.Int) ([32]byte, error) {
 	var out []interface{}
-	err := _Sarcophagus.contract.Call(opts, &out, "embalmerSarcophagusDoubleHash", embalmer, index)
+	err := _Sarcophagus.contract.Call(opts, &out, "embalmerSarcophagusIdentifier", embalmer, index)
 
 	if err != nil {
 		return *new([32]byte), err
@@ -430,18 +406,18 @@ func (_Sarcophagus *SarcophagusCaller) EmbalmerSarcophagusDoubleHash(opts *bind.
 
 }
 
-// EmbalmerSarcophagusDoubleHash is a free data retrieval call binding the contract method 0x420ab6c5.
+// EmbalmerSarcophagusIdentifier is a free data retrieval call binding the contract method 0x072dcee4.
 //
-// Solidity: function embalmerSarcophagusDoubleHash(address embalmer, uint256 index) view returns(bytes32)
-func (_Sarcophagus *SarcophagusSession) EmbalmerSarcophagusDoubleHash(embalmer common.Address, index *big.Int) ([32]byte, error) {
-	return _Sarcophagus.Contract.EmbalmerSarcophagusDoubleHash(&_Sarcophagus.CallOpts, embalmer, index)
+// Solidity: function embalmerSarcophagusIdentifier(address embalmer, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusSession) EmbalmerSarcophagusIdentifier(embalmer common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.EmbalmerSarcophagusIdentifier(&_Sarcophagus.CallOpts, embalmer, index)
 }
 
-// EmbalmerSarcophagusDoubleHash is a free data retrieval call binding the contract method 0x420ab6c5.
+// EmbalmerSarcophagusIdentifier is a free data retrieval call binding the contract method 0x072dcee4.
 //
-// Solidity: function embalmerSarcophagusDoubleHash(address embalmer, uint256 index) view returns(bytes32)
-func (_Sarcophagus *SarcophagusCallerSession) EmbalmerSarcophagusDoubleHash(embalmer common.Address, index *big.Int) ([32]byte, error) {
-	return _Sarcophagus.Contract.EmbalmerSarcophagusDoubleHash(&_Sarcophagus.CallOpts, embalmer, index)
+// Solidity: function embalmerSarcophagusIdentifier(address embalmer, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCallerSession) EmbalmerSarcophagusIdentifier(embalmer common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.EmbalmerSarcophagusIdentifier(&_Sarcophagus.CallOpts, embalmer, index)
 }
 
 // RecipientSarcophagusCount is a free data retrieval call binding the contract method 0x70965e59.
@@ -475,12 +451,12 @@ func (_Sarcophagus *SarcophagusCallerSession) RecipientSarcophagusCount(recipien
 	return _Sarcophagus.Contract.RecipientSarcophagusCount(&_Sarcophagus.CallOpts, recipient)
 }
 
-// RecipientSarcophagusDoubleHash is a free data retrieval call binding the contract method 0x1c76e7d3.
+// RecipientSarcophagusIdentifier is a free data retrieval call binding the contract method 0xe58def65.
 //
-// Solidity: function recipientSarcophagusDoubleHash(address recipient, uint256 index) view returns(bytes32)
-func (_Sarcophagus *SarcophagusCaller) RecipientSarcophagusDoubleHash(opts *bind.CallOpts, recipient common.Address, index *big.Int) ([32]byte, error) {
+// Solidity: function recipientSarcophagusIdentifier(address recipient, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCaller) RecipientSarcophagusIdentifier(opts *bind.CallOpts, recipient common.Address, index *big.Int) ([32]byte, error) {
 	var out []interface{}
-	err := _Sarcophagus.contract.Call(opts, &out, "recipientSarcophagusDoubleHash", recipient, index)
+	err := _Sarcophagus.contract.Call(opts, &out, "recipientSarcophagusIdentifier", recipient, index)
 
 	if err != nil {
 		return *new([32]byte), err
@@ -492,18 +468,18 @@ func (_Sarcophagus *SarcophagusCaller) RecipientSarcophagusDoubleHash(opts *bind
 
 }
 
-// RecipientSarcophagusDoubleHash is a free data retrieval call binding the contract method 0x1c76e7d3.
+// RecipientSarcophagusIdentifier is a free data retrieval call binding the contract method 0xe58def65.
 //
-// Solidity: function recipientSarcophagusDoubleHash(address recipient, uint256 index) view returns(bytes32)
-func (_Sarcophagus *SarcophagusSession) RecipientSarcophagusDoubleHash(recipient common.Address, index *big.Int) ([32]byte, error) {
-	return _Sarcophagus.Contract.RecipientSarcophagusDoubleHash(&_Sarcophagus.CallOpts, recipient, index)
+// Solidity: function recipientSarcophagusIdentifier(address recipient, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusSession) RecipientSarcophagusIdentifier(recipient common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.RecipientSarcophagusIdentifier(&_Sarcophagus.CallOpts, recipient, index)
 }
 
-// RecipientSarcophagusDoubleHash is a free data retrieval call binding the contract method 0x1c76e7d3.
+// RecipientSarcophagusIdentifier is a free data retrieval call binding the contract method 0xe58def65.
 //
-// Solidity: function recipientSarcophagusDoubleHash(address recipient, uint256 index) view returns(bytes32)
-func (_Sarcophagus *SarcophagusCallerSession) RecipientSarcophagusDoubleHash(recipient common.Address, index *big.Int) ([32]byte, error) {
-	return _Sarcophagus.Contract.RecipientSarcophagusDoubleHash(&_Sarcophagus.CallOpts, recipient, index)
+// Solidity: function recipientSarcophagusIdentifier(address recipient, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCallerSession) RecipientSarcophagusIdentifier(recipient common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.RecipientSarcophagusIdentifier(&_Sarcophagus.CallOpts, recipient, index)
 }
 
 // SarcoToken is a free data retrieval call binding the contract method 0x607e8f09.
@@ -539,79 +515,33 @@ func (_Sarcophagus *SarcophagusCallerSession) SarcoToken() (common.Address, erro
 
 // Sarcophagus is a free data retrieval call binding the contract method 0x972770ac.
 //
-// Solidity: function sarcophagus(bytes32 doubleHash) view returns(uint8 state, address archaeologist, address embalmer, bytes archaeologistPublicKey, uint256 resurrectionTime, uint256 resurrectionWindow, string name, string assetId, uint256 storageFee)
-func (_Sarcophagus *SarcophagusCaller) Sarcophagus(opts *bind.CallOpts, doubleHash [32]byte) (struct {
-	State                  uint8
-	Archaeologist          common.Address
-	Embalmer               common.Address
-	ArchaeologistPublicKey []byte
-	ResurrectionTime       *big.Int
-	ResurrectionWindow     *big.Int
-	Name                   string
-	AssetId                string
-	StorageFee             *big.Int
-}, error) {
+// Solidity: function sarcophagus(bytes32 identifier) view returns((uint8,address,bytes,address,string,uint256,uint256,string,bytes,uint256,uint256,uint256,uint256,bytes32))
+func (_Sarcophagus *SarcophagusCaller) Sarcophagus(opts *bind.CallOpts, identifier [32]byte) (TypesSarcophagus, error) {
 	var out []interface{}
-	err := _Sarcophagus.contract.Call(opts, &out, "sarcophagus", doubleHash)
+	err := _Sarcophagus.contract.Call(opts, &out, "sarcophagus", identifier)
 
-	outstruct := new(struct {
-		State                  uint8
-		Archaeologist          common.Address
-		Embalmer               common.Address
-		ArchaeologistPublicKey []byte
-		ResurrectionTime       *big.Int
-		ResurrectionWindow     *big.Int
-		Name                   string
-		AssetId                string
-		StorageFee             *big.Int
-	})
+	if err != nil {
+		return *new(TypesSarcophagus), err
+	}
 
-	outstruct.State = out[0].(uint8)
-	outstruct.Archaeologist = out[1].(common.Address)
-	outstruct.Embalmer = out[2].(common.Address)
-	outstruct.ArchaeologistPublicKey = out[3].([]byte)
-	outstruct.ResurrectionTime = out[4].(*big.Int)
-	outstruct.ResurrectionWindow = out[5].(*big.Int)
-	outstruct.Name = out[6].(string)
-	outstruct.AssetId = out[7].(string)
-	outstruct.StorageFee = out[8].(*big.Int)
+	out0 := *abi.ConvertType(out[0], new(TypesSarcophagus)).(*TypesSarcophagus)
 
-	return *outstruct, err
+	return out0, err
 
 }
 
 // Sarcophagus is a free data retrieval call binding the contract method 0x972770ac.
 //
-// Solidity: function sarcophagus(bytes32 doubleHash) view returns(uint8 state, address archaeologist, address embalmer, bytes archaeologistPublicKey, uint256 resurrectionTime, uint256 resurrectionWindow, string name, string assetId, uint256 storageFee)
-func (_Sarcophagus *SarcophagusSession) Sarcophagus(doubleHash [32]byte) (struct {
-	State                  uint8
-	Archaeologist          common.Address
-	Embalmer               common.Address
-	ArchaeologistPublicKey []byte
-	ResurrectionTime       *big.Int
-	ResurrectionWindow     *big.Int
-	Name                   string
-	AssetId                string
-	StorageFee             *big.Int
-}, error) {
-	return _Sarcophagus.Contract.Sarcophagus(&_Sarcophagus.CallOpts, doubleHash)
+// Solidity: function sarcophagus(bytes32 identifier) view returns((uint8,address,bytes,address,string,uint256,uint256,string,bytes,uint256,uint256,uint256,uint256,bytes32))
+func (_Sarcophagus *SarcophagusSession) Sarcophagus(identifier [32]byte) (TypesSarcophagus, error) {
+	return _Sarcophagus.Contract.Sarcophagus(&_Sarcophagus.CallOpts, identifier)
 }
 
 // Sarcophagus is a free data retrieval call binding the contract method 0x972770ac.
 //
-// Solidity: function sarcophagus(bytes32 doubleHash) view returns(uint8 state, address archaeologist, address embalmer, bytes archaeologistPublicKey, uint256 resurrectionTime, uint256 resurrectionWindow, string name, string assetId, uint256 storageFee)
-func (_Sarcophagus *SarcophagusCallerSession) Sarcophagus(doubleHash [32]byte) (struct {
-	State                  uint8
-	Archaeologist          common.Address
-	Embalmer               common.Address
-	ArchaeologistPublicKey []byte
-	ResurrectionTime       *big.Int
-	ResurrectionWindow     *big.Int
-	Name                   string
-	AssetId                string
-	StorageFee             *big.Int
-}, error) {
-	return _Sarcophagus.Contract.Sarcophagus(&_Sarcophagus.CallOpts, doubleHash)
+// Solidity: function sarcophagus(bytes32 identifier) view returns((uint8,address,bytes,address,string,uint256,uint256,string,bytes,uint256,uint256,uint256,uint256,bytes32))
+func (_Sarcophagus *SarcophagusCallerSession) Sarcophagus(identifier [32]byte) (TypesSarcophagus, error) {
+	return _Sarcophagus.Contract.Sarcophagus(&_Sarcophagus.CallOpts, identifier)
 }
 
 // SarcophagusCount is a free data retrieval call binding the contract method 0x555912b7.
@@ -645,12 +575,12 @@ func (_Sarcophagus *SarcophagusCallerSession) SarcophagusCount() (*big.Int, erro
 	return _Sarcophagus.Contract.SarcophagusCount(&_Sarcophagus.CallOpts)
 }
 
-// SarcophagusDoubleHash is a free data retrieval call binding the contract method 0x8917aa28.
+// SarcophagusIdentifier is a free data retrieval call binding the contract method 0x1a8800a1.
 //
-// Solidity: function sarcophagusDoubleHash(uint256 index) view returns(bytes32)
-func (_Sarcophagus *SarcophagusCaller) SarcophagusDoubleHash(opts *bind.CallOpts, index *big.Int) ([32]byte, error) {
+// Solidity: function sarcophagusIdentifier(uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCaller) SarcophagusIdentifier(opts *bind.CallOpts, index *big.Int) ([32]byte, error) {
 	var out []interface{}
-	err := _Sarcophagus.contract.Call(opts, &out, "sarcophagusDoubleHash", index)
+	err := _Sarcophagus.contract.Call(opts, &out, "sarcophagusIdentifier", index)
 
 	if err != nil {
 		return *new([32]byte), err
@@ -662,228 +592,228 @@ func (_Sarcophagus *SarcophagusCaller) SarcophagusDoubleHash(opts *bind.CallOpts
 
 }
 
-// SarcophagusDoubleHash is a free data retrieval call binding the contract method 0x8917aa28.
+// SarcophagusIdentifier is a free data retrieval call binding the contract method 0x1a8800a1.
 //
-// Solidity: function sarcophagusDoubleHash(uint256 index) view returns(bytes32)
-func (_Sarcophagus *SarcophagusSession) SarcophagusDoubleHash(index *big.Int) ([32]byte, error) {
-	return _Sarcophagus.Contract.SarcophagusDoubleHash(&_Sarcophagus.CallOpts, index)
+// Solidity: function sarcophagusIdentifier(uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusSession) SarcophagusIdentifier(index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.SarcophagusIdentifier(&_Sarcophagus.CallOpts, index)
 }
 
-// SarcophagusDoubleHash is a free data retrieval call binding the contract method 0x8917aa28.
+// SarcophagusIdentifier is a free data retrieval call binding the contract method 0x1a8800a1.
 //
-// Solidity: function sarcophagusDoubleHash(uint256 index) view returns(bytes32)
-func (_Sarcophagus *SarcophagusCallerSession) SarcophagusDoubleHash(index *big.Int) ([32]byte, error) {
-	return _Sarcophagus.Contract.SarcophagusDoubleHash(&_Sarcophagus.CallOpts, index)
-}
-
-// AccuseArchaeologist is a paid mutator transaction binding the contract method 0xf456f367.
-//
-// Solidity: function accuseArchaeologist(bytes32 assetDoubleHash, bytes singleHash, address paymentAddress) returns(bool)
-func (_Sarcophagus *SarcophagusTransactor) AccuseArchaeologist(opts *bind.TransactOpts, assetDoubleHash [32]byte, singleHash []byte, paymentAddress common.Address) (*types.Transaction, error) {
-	return _Sarcophagus.contract.Transact(opts, "accuseArchaeologist", assetDoubleHash, singleHash, paymentAddress)
+// Solidity: function sarcophagusIdentifier(uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCallerSession) SarcophagusIdentifier(index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.SarcophagusIdentifier(&_Sarcophagus.CallOpts, index)
 }
 
 // AccuseArchaeologist is a paid mutator transaction binding the contract method 0xf456f367.
 //
-// Solidity: function accuseArchaeologist(bytes32 assetDoubleHash, bytes singleHash, address paymentAddress) returns(bool)
-func (_Sarcophagus *SarcophagusSession) AccuseArchaeologist(assetDoubleHash [32]byte, singleHash []byte, paymentAddress common.Address) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.AccuseArchaeologist(&_Sarcophagus.TransactOpts, assetDoubleHash, singleHash, paymentAddress)
+// Solidity: function accuseArchaeologist(bytes32 identifier, bytes singleHash, address paymentAddress) returns(bool)
+func (_Sarcophagus *SarcophagusTransactor) AccuseArchaeologist(opts *bind.TransactOpts, identifier [32]byte, singleHash []byte, paymentAddress common.Address) (*types.Transaction, error) {
+	return _Sarcophagus.contract.Transact(opts, "accuseArchaeologist", identifier, singleHash, paymentAddress)
 }
 
 // AccuseArchaeologist is a paid mutator transaction binding the contract method 0xf456f367.
 //
-// Solidity: function accuseArchaeologist(bytes32 assetDoubleHash, bytes singleHash, address paymentAddress) returns(bool)
-func (_Sarcophagus *SarcophagusTransactorSession) AccuseArchaeologist(assetDoubleHash [32]byte, singleHash []byte, paymentAddress common.Address) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.AccuseArchaeologist(&_Sarcophagus.TransactOpts, assetDoubleHash, singleHash, paymentAddress)
+// Solidity: function accuseArchaeologist(bytes32 identifier, bytes singleHash, address paymentAddress) returns(bool)
+func (_Sarcophagus *SarcophagusSession) AccuseArchaeologist(identifier [32]byte, singleHash []byte, paymentAddress common.Address) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.AccuseArchaeologist(&_Sarcophagus.TransactOpts, identifier, singleHash, paymentAddress)
+}
+
+// AccuseArchaeologist is a paid mutator transaction binding the contract method 0xf456f367.
+//
+// Solidity: function accuseArchaeologist(bytes32 identifier, bytes singleHash, address paymentAddress) returns(bool)
+func (_Sarcophagus *SarcophagusTransactorSession) AccuseArchaeologist(identifier [32]byte, singleHash []byte, paymentAddress common.Address) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.AccuseArchaeologist(&_Sarcophagus.TransactOpts, identifier, singleHash, paymentAddress)
 }
 
 // BurySarcophagus is a paid mutator transaction binding the contract method 0x0511f2ec.
 //
-// Solidity: function burySarcophagus(bytes32 assetDoubleHash) returns(bool)
-func (_Sarcophagus *SarcophagusTransactor) BurySarcophagus(opts *bind.TransactOpts, assetDoubleHash [32]byte) (*types.Transaction, error) {
-	return _Sarcophagus.contract.Transact(opts, "burySarcophagus", assetDoubleHash)
+// Solidity: function burySarcophagus(bytes32 identifier) returns(bool)
+func (_Sarcophagus *SarcophagusTransactor) BurySarcophagus(opts *bind.TransactOpts, identifier [32]byte) (*types.Transaction, error) {
+	return _Sarcophagus.contract.Transact(opts, "burySarcophagus", identifier)
 }
 
 // BurySarcophagus is a paid mutator transaction binding the contract method 0x0511f2ec.
 //
-// Solidity: function burySarcophagus(bytes32 assetDoubleHash) returns(bool)
-func (_Sarcophagus *SarcophagusSession) BurySarcophagus(assetDoubleHash [32]byte) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.BurySarcophagus(&_Sarcophagus.TransactOpts, assetDoubleHash)
+// Solidity: function burySarcophagus(bytes32 identifier) returns(bool)
+func (_Sarcophagus *SarcophagusSession) BurySarcophagus(identifier [32]byte) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.BurySarcophagus(&_Sarcophagus.TransactOpts, identifier)
 }
 
 // BurySarcophagus is a paid mutator transaction binding the contract method 0x0511f2ec.
 //
-// Solidity: function burySarcophagus(bytes32 assetDoubleHash) returns(bool)
-func (_Sarcophagus *SarcophagusTransactorSession) BurySarcophagus(assetDoubleHash [32]byte) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.BurySarcophagus(&_Sarcophagus.TransactOpts, assetDoubleHash)
+// Solidity: function burySarcophagus(bytes32 identifier) returns(bool)
+func (_Sarcophagus *SarcophagusTransactorSession) BurySarcophagus(identifier [32]byte) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.BurySarcophagus(&_Sarcophagus.TransactOpts, identifier)
 }
 
 // CancelSarcophagus is a paid mutator transaction binding the contract method 0xa2b1fb3c.
 //
-// Solidity: function cancelSarcophagus(bytes32 assetDoubleHash) returns(bool)
-func (_Sarcophagus *SarcophagusTransactor) CancelSarcophagus(opts *bind.TransactOpts, assetDoubleHash [32]byte) (*types.Transaction, error) {
-	return _Sarcophagus.contract.Transact(opts, "cancelSarcophagus", assetDoubleHash)
+// Solidity: function cancelSarcophagus(bytes32 identifier) returns(bool)
+func (_Sarcophagus *SarcophagusTransactor) CancelSarcophagus(opts *bind.TransactOpts, identifier [32]byte) (*types.Transaction, error) {
+	return _Sarcophagus.contract.Transact(opts, "cancelSarcophagus", identifier)
 }
 
 // CancelSarcophagus is a paid mutator transaction binding the contract method 0xa2b1fb3c.
 //
-// Solidity: function cancelSarcophagus(bytes32 assetDoubleHash) returns(bool)
-func (_Sarcophagus *SarcophagusSession) CancelSarcophagus(assetDoubleHash [32]byte) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.CancelSarcophagus(&_Sarcophagus.TransactOpts, assetDoubleHash)
+// Solidity: function cancelSarcophagus(bytes32 identifier) returns(bool)
+func (_Sarcophagus *SarcophagusSession) CancelSarcophagus(identifier [32]byte) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.CancelSarcophagus(&_Sarcophagus.TransactOpts, identifier)
 }
 
 // CancelSarcophagus is a paid mutator transaction binding the contract method 0xa2b1fb3c.
 //
-// Solidity: function cancelSarcophagus(bytes32 assetDoubleHash) returns(bool)
-func (_Sarcophagus *SarcophagusTransactorSession) CancelSarcophagus(assetDoubleHash [32]byte) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.CancelSarcophagus(&_Sarcophagus.TransactOpts, assetDoubleHash)
+// Solidity: function cancelSarcophagus(bytes32 identifier) returns(bool)
+func (_Sarcophagus *SarcophagusTransactorSession) CancelSarcophagus(identifier [32]byte) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.CancelSarcophagus(&_Sarcophagus.TransactOpts, identifier)
 }
 
 // CleanUpSarcophagus is a paid mutator transaction binding the contract method 0x7d99cda1.
 //
-// Solidity: function cleanUpSarcophagus(bytes32 assetDoubleHash, address paymentAddress) returns(bool)
-func (_Sarcophagus *SarcophagusTransactor) CleanUpSarcophagus(opts *bind.TransactOpts, assetDoubleHash [32]byte, paymentAddress common.Address) (*types.Transaction, error) {
-	return _Sarcophagus.contract.Transact(opts, "cleanUpSarcophagus", assetDoubleHash, paymentAddress)
+// Solidity: function cleanUpSarcophagus(bytes32 identifier, address paymentAddress) returns(bool)
+func (_Sarcophagus *SarcophagusTransactor) CleanUpSarcophagus(opts *bind.TransactOpts, identifier [32]byte, paymentAddress common.Address) (*types.Transaction, error) {
+	return _Sarcophagus.contract.Transact(opts, "cleanUpSarcophagus", identifier, paymentAddress)
 }
 
 // CleanUpSarcophagus is a paid mutator transaction binding the contract method 0x7d99cda1.
 //
-// Solidity: function cleanUpSarcophagus(bytes32 assetDoubleHash, address paymentAddress) returns(bool)
-func (_Sarcophagus *SarcophagusSession) CleanUpSarcophagus(assetDoubleHash [32]byte, paymentAddress common.Address) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.CleanUpSarcophagus(&_Sarcophagus.TransactOpts, assetDoubleHash, paymentAddress)
+// Solidity: function cleanUpSarcophagus(bytes32 identifier, address paymentAddress) returns(bool)
+func (_Sarcophagus *SarcophagusSession) CleanUpSarcophagus(identifier [32]byte, paymentAddress common.Address) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.CleanUpSarcophagus(&_Sarcophagus.TransactOpts, identifier, paymentAddress)
 }
 
 // CleanUpSarcophagus is a paid mutator transaction binding the contract method 0x7d99cda1.
 //
-// Solidity: function cleanUpSarcophagus(bytes32 assetDoubleHash, address paymentAddress) returns(bool)
-func (_Sarcophagus *SarcophagusTransactorSession) CleanUpSarcophagus(assetDoubleHash [32]byte, paymentAddress common.Address) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.CleanUpSarcophagus(&_Sarcophagus.TransactOpts, assetDoubleHash, paymentAddress)
+// Solidity: function cleanUpSarcophagus(bytes32 identifier, address paymentAddress) returns(bool)
+func (_Sarcophagus *SarcophagusTransactorSession) CleanUpSarcophagus(identifier [32]byte, paymentAddress common.Address) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.CleanUpSarcophagus(&_Sarcophagus.TransactOpts, identifier, paymentAddress)
 }
 
 // CreateSarcophagus is a paid mutator transaction binding the contract method 0x7eb76a04.
 //
-// Solidity: function createSarcophagus(string name, address archaeologist, uint256 resurrectionTime, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes32 assetDoubleHash, bytes recipientPublicKey) returns(bool)
-func (_Sarcophagus *SarcophagusTransactor) CreateSarcophagus(opts *bind.TransactOpts, name string, archaeologist common.Address, resurrectionTime *big.Int, storageFee *big.Int, diggingFee *big.Int, bounty *big.Int, assetDoubleHash [32]byte, recipientPublicKey []byte) (*types.Transaction, error) {
-	return _Sarcophagus.contract.Transact(opts, "createSarcophagus", name, archaeologist, resurrectionTime, storageFee, diggingFee, bounty, assetDoubleHash, recipientPublicKey)
+// Solidity: function createSarcophagus(string name, address archaeologist, uint256 resurrectionTime, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes32 identifier, bytes recipientPublicKey) returns(uint256)
+func (_Sarcophagus *SarcophagusTransactor) CreateSarcophagus(opts *bind.TransactOpts, name string, archaeologist common.Address, resurrectionTime *big.Int, storageFee *big.Int, diggingFee *big.Int, bounty *big.Int, identifier [32]byte, recipientPublicKey []byte) (*types.Transaction, error) {
+	return _Sarcophagus.contract.Transact(opts, "createSarcophagus", name, archaeologist, resurrectionTime, storageFee, diggingFee, bounty, identifier, recipientPublicKey)
 }
 
 // CreateSarcophagus is a paid mutator transaction binding the contract method 0x7eb76a04.
 //
-// Solidity: function createSarcophagus(string name, address archaeologist, uint256 resurrectionTime, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes32 assetDoubleHash, bytes recipientPublicKey) returns(bool)
-func (_Sarcophagus *SarcophagusSession) CreateSarcophagus(name string, archaeologist common.Address, resurrectionTime *big.Int, storageFee *big.Int, diggingFee *big.Int, bounty *big.Int, assetDoubleHash [32]byte, recipientPublicKey []byte) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.CreateSarcophagus(&_Sarcophagus.TransactOpts, name, archaeologist, resurrectionTime, storageFee, diggingFee, bounty, assetDoubleHash, recipientPublicKey)
+// Solidity: function createSarcophagus(string name, address archaeologist, uint256 resurrectionTime, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes32 identifier, bytes recipientPublicKey) returns(uint256)
+func (_Sarcophagus *SarcophagusSession) CreateSarcophagus(name string, archaeologist common.Address, resurrectionTime *big.Int, storageFee *big.Int, diggingFee *big.Int, bounty *big.Int, identifier [32]byte, recipientPublicKey []byte) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.CreateSarcophagus(&_Sarcophagus.TransactOpts, name, archaeologist, resurrectionTime, storageFee, diggingFee, bounty, identifier, recipientPublicKey)
 }
 
 // CreateSarcophagus is a paid mutator transaction binding the contract method 0x7eb76a04.
 //
-// Solidity: function createSarcophagus(string name, address archaeologist, uint256 resurrectionTime, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes32 assetDoubleHash, bytes recipientPublicKey) returns(bool)
-func (_Sarcophagus *SarcophagusTransactorSession) CreateSarcophagus(name string, archaeologist common.Address, resurrectionTime *big.Int, storageFee *big.Int, diggingFee *big.Int, bounty *big.Int, assetDoubleHash [32]byte, recipientPublicKey []byte) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.CreateSarcophagus(&_Sarcophagus.TransactOpts, name, archaeologist, resurrectionTime, storageFee, diggingFee, bounty, assetDoubleHash, recipientPublicKey)
+// Solidity: function createSarcophagus(string name, address archaeologist, uint256 resurrectionTime, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes32 identifier, bytes recipientPublicKey) returns(uint256)
+func (_Sarcophagus *SarcophagusTransactorSession) CreateSarcophagus(name string, archaeologist common.Address, resurrectionTime *big.Int, storageFee *big.Int, diggingFee *big.Int, bounty *big.Int, identifier [32]byte, recipientPublicKey []byte) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.CreateSarcophagus(&_Sarcophagus.TransactOpts, name, archaeologist, resurrectionTime, storageFee, diggingFee, bounty, identifier, recipientPublicKey)
 }
 
 // RegisterArchaeologist is a paid mutator transaction binding the contract method 0x86d05d58.
 //
-// Solidity: function registerArchaeologist(bytes currentPublicKey, string endpoint, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond) returns(bool)
+// Solidity: function registerArchaeologist(bytes currentPublicKey, string endpoint, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond) returns(uint256)
 func (_Sarcophagus *SarcophagusTransactor) RegisterArchaeologist(opts *bind.TransactOpts, currentPublicKey []byte, endpoint string, paymentAddress common.Address, feePerByte *big.Int, minimumBounty *big.Int, minimumDiggingFee *big.Int, maximumResurrectionTime *big.Int, freeBond *big.Int) (*types.Transaction, error) {
 	return _Sarcophagus.contract.Transact(opts, "registerArchaeologist", currentPublicKey, endpoint, paymentAddress, feePerByte, minimumBounty, minimumDiggingFee, maximumResurrectionTime, freeBond)
 }
 
 // RegisterArchaeologist is a paid mutator transaction binding the contract method 0x86d05d58.
 //
-// Solidity: function registerArchaeologist(bytes currentPublicKey, string endpoint, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond) returns(bool)
+// Solidity: function registerArchaeologist(bytes currentPublicKey, string endpoint, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond) returns(uint256)
 func (_Sarcophagus *SarcophagusSession) RegisterArchaeologist(currentPublicKey []byte, endpoint string, paymentAddress common.Address, feePerByte *big.Int, minimumBounty *big.Int, minimumDiggingFee *big.Int, maximumResurrectionTime *big.Int, freeBond *big.Int) (*types.Transaction, error) {
 	return _Sarcophagus.Contract.RegisterArchaeologist(&_Sarcophagus.TransactOpts, currentPublicKey, endpoint, paymentAddress, feePerByte, minimumBounty, minimumDiggingFee, maximumResurrectionTime, freeBond)
 }
 
 // RegisterArchaeologist is a paid mutator transaction binding the contract method 0x86d05d58.
 //
-// Solidity: function registerArchaeologist(bytes currentPublicKey, string endpoint, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond) returns(bool)
+// Solidity: function registerArchaeologist(bytes currentPublicKey, string endpoint, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond) returns(uint256)
 func (_Sarcophagus *SarcophagusTransactorSession) RegisterArchaeologist(currentPublicKey []byte, endpoint string, paymentAddress common.Address, feePerByte *big.Int, minimumBounty *big.Int, minimumDiggingFee *big.Int, maximumResurrectionTime *big.Int, freeBond *big.Int) (*types.Transaction, error) {
 	return _Sarcophagus.Contract.RegisterArchaeologist(&_Sarcophagus.TransactOpts, currentPublicKey, endpoint, paymentAddress, feePerByte, minimumBounty, minimumDiggingFee, maximumResurrectionTime, freeBond)
 }
 
 // RewrapSarcophagus is a paid mutator transaction binding the contract method 0xbf1a9d77.
 //
-// Solidity: function rewrapSarcophagus(bytes32 assetDoubleHash, uint256 resurrectionTime, uint256 diggingFee, uint256 bounty) returns(bool)
-func (_Sarcophagus *SarcophagusTransactor) RewrapSarcophagus(opts *bind.TransactOpts, assetDoubleHash [32]byte, resurrectionTime *big.Int, diggingFee *big.Int, bounty *big.Int) (*types.Transaction, error) {
-	return _Sarcophagus.contract.Transact(opts, "rewrapSarcophagus", assetDoubleHash, resurrectionTime, diggingFee, bounty)
+// Solidity: function rewrapSarcophagus(bytes32 identifier, uint256 resurrectionTime, uint256 diggingFee, uint256 bounty) returns(bool)
+func (_Sarcophagus *SarcophagusTransactor) RewrapSarcophagus(opts *bind.TransactOpts, identifier [32]byte, resurrectionTime *big.Int, diggingFee *big.Int, bounty *big.Int) (*types.Transaction, error) {
+	return _Sarcophagus.contract.Transact(opts, "rewrapSarcophagus", identifier, resurrectionTime, diggingFee, bounty)
 }
 
 // RewrapSarcophagus is a paid mutator transaction binding the contract method 0xbf1a9d77.
 //
-// Solidity: function rewrapSarcophagus(bytes32 assetDoubleHash, uint256 resurrectionTime, uint256 diggingFee, uint256 bounty) returns(bool)
-func (_Sarcophagus *SarcophagusSession) RewrapSarcophagus(assetDoubleHash [32]byte, resurrectionTime *big.Int, diggingFee *big.Int, bounty *big.Int) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.RewrapSarcophagus(&_Sarcophagus.TransactOpts, assetDoubleHash, resurrectionTime, diggingFee, bounty)
+// Solidity: function rewrapSarcophagus(bytes32 identifier, uint256 resurrectionTime, uint256 diggingFee, uint256 bounty) returns(bool)
+func (_Sarcophagus *SarcophagusSession) RewrapSarcophagus(identifier [32]byte, resurrectionTime *big.Int, diggingFee *big.Int, bounty *big.Int) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.RewrapSarcophagus(&_Sarcophagus.TransactOpts, identifier, resurrectionTime, diggingFee, bounty)
 }
 
 // RewrapSarcophagus is a paid mutator transaction binding the contract method 0xbf1a9d77.
 //
-// Solidity: function rewrapSarcophagus(bytes32 assetDoubleHash, uint256 resurrectionTime, uint256 diggingFee, uint256 bounty) returns(bool)
-func (_Sarcophagus *SarcophagusTransactorSession) RewrapSarcophagus(assetDoubleHash [32]byte, resurrectionTime *big.Int, diggingFee *big.Int, bounty *big.Int) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.RewrapSarcophagus(&_Sarcophagus.TransactOpts, assetDoubleHash, resurrectionTime, diggingFee, bounty)
+// Solidity: function rewrapSarcophagus(bytes32 identifier, uint256 resurrectionTime, uint256 diggingFee, uint256 bounty) returns(bool)
+func (_Sarcophagus *SarcophagusTransactorSession) RewrapSarcophagus(identifier [32]byte, resurrectionTime *big.Int, diggingFee *big.Int, bounty *big.Int) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.RewrapSarcophagus(&_Sarcophagus.TransactOpts, identifier, resurrectionTime, diggingFee, bounty)
 }
 
-// UnwrapSarcophagus is a paid mutator transaction binding the contract method 0x49a5624f.
+// UnwrapSarcophagus is a paid mutator transaction binding the contract method 0xf4a5574b.
 //
-// Solidity: function unwrapSarcophagus(bytes32 assetDoubleHash, bytes singleHash, bytes32 privateKey) returns(bool)
-func (_Sarcophagus *SarcophagusTransactor) UnwrapSarcophagus(opts *bind.TransactOpts, assetDoubleHash [32]byte, singleHash []byte, privateKey [32]byte) (*types.Transaction, error) {
-	return _Sarcophagus.contract.Transact(opts, "unwrapSarcophagus", assetDoubleHash, singleHash, privateKey)
+// Solidity: function unwrapSarcophagus(bytes32 identifier, bytes32 privateKey) returns(bool)
+func (_Sarcophagus *SarcophagusTransactor) UnwrapSarcophagus(opts *bind.TransactOpts, identifier [32]byte, privateKey [32]byte) (*types.Transaction, error) {
+	return _Sarcophagus.contract.Transact(opts, "unwrapSarcophagus", identifier, privateKey)
 }
 
-// UnwrapSarcophagus is a paid mutator transaction binding the contract method 0x49a5624f.
+// UnwrapSarcophagus is a paid mutator transaction binding the contract method 0xf4a5574b.
 //
-// Solidity: function unwrapSarcophagus(bytes32 assetDoubleHash, bytes singleHash, bytes32 privateKey) returns(bool)
-func (_Sarcophagus *SarcophagusSession) UnwrapSarcophagus(assetDoubleHash [32]byte, singleHash []byte, privateKey [32]byte) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.UnwrapSarcophagus(&_Sarcophagus.TransactOpts, assetDoubleHash, singleHash, privateKey)
+// Solidity: function unwrapSarcophagus(bytes32 identifier, bytes32 privateKey) returns(bool)
+func (_Sarcophagus *SarcophagusSession) UnwrapSarcophagus(identifier [32]byte, privateKey [32]byte) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.UnwrapSarcophagus(&_Sarcophagus.TransactOpts, identifier, privateKey)
 }
 
-// UnwrapSarcophagus is a paid mutator transaction binding the contract method 0x49a5624f.
+// UnwrapSarcophagus is a paid mutator transaction binding the contract method 0xf4a5574b.
 //
-// Solidity: function unwrapSarcophagus(bytes32 assetDoubleHash, bytes singleHash, bytes32 privateKey) returns(bool)
-func (_Sarcophagus *SarcophagusTransactorSession) UnwrapSarcophagus(assetDoubleHash [32]byte, singleHash []byte, privateKey [32]byte) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.UnwrapSarcophagus(&_Sarcophagus.TransactOpts, assetDoubleHash, singleHash, privateKey)
-}
-
-// UpdateArchaeologist is a paid mutator transaction binding the contract method 0xb8c77c38.
-//
-// Solidity: function updateArchaeologist(string endpoint, bytes currentPublicKey, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond) returns(bool)
-func (_Sarcophagus *SarcophagusTransactor) UpdateArchaeologist(opts *bind.TransactOpts, endpoint string, currentPublicKey []byte, paymentAddress common.Address, feePerByte *big.Int, minimumBounty *big.Int, minimumDiggingFee *big.Int, maximumResurrectionTime *big.Int, freeBond *big.Int) (*types.Transaction, error) {
-	return _Sarcophagus.contract.Transact(opts, "updateArchaeologist", endpoint, currentPublicKey, paymentAddress, feePerByte, minimumBounty, minimumDiggingFee, maximumResurrectionTime, freeBond)
+// Solidity: function unwrapSarcophagus(bytes32 identifier, bytes32 privateKey) returns(bool)
+func (_Sarcophagus *SarcophagusTransactorSession) UnwrapSarcophagus(identifier [32]byte, privateKey [32]byte) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.UnwrapSarcophagus(&_Sarcophagus.TransactOpts, identifier, privateKey)
 }
 
 // UpdateArchaeologist is a paid mutator transaction binding the contract method 0xb8c77c38.
 //
-// Solidity: function updateArchaeologist(string endpoint, bytes currentPublicKey, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond) returns(bool)
-func (_Sarcophagus *SarcophagusSession) UpdateArchaeologist(endpoint string, currentPublicKey []byte, paymentAddress common.Address, feePerByte *big.Int, minimumBounty *big.Int, minimumDiggingFee *big.Int, maximumResurrectionTime *big.Int, freeBond *big.Int) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.UpdateArchaeologist(&_Sarcophagus.TransactOpts, endpoint, currentPublicKey, paymentAddress, feePerByte, minimumBounty, minimumDiggingFee, maximumResurrectionTime, freeBond)
+// Solidity: function updateArchaeologist(string endpoint, bytes newPublicKey, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond) returns(bool)
+func (_Sarcophagus *SarcophagusTransactor) UpdateArchaeologist(opts *bind.TransactOpts, endpoint string, newPublicKey []byte, paymentAddress common.Address, feePerByte *big.Int, minimumBounty *big.Int, minimumDiggingFee *big.Int, maximumResurrectionTime *big.Int, freeBond *big.Int) (*types.Transaction, error) {
+	return _Sarcophagus.contract.Transact(opts, "updateArchaeologist", endpoint, newPublicKey, paymentAddress, feePerByte, minimumBounty, minimumDiggingFee, maximumResurrectionTime, freeBond)
 }
 
 // UpdateArchaeologist is a paid mutator transaction binding the contract method 0xb8c77c38.
 //
-// Solidity: function updateArchaeologist(string endpoint, bytes currentPublicKey, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond) returns(bool)
-func (_Sarcophagus *SarcophagusTransactorSession) UpdateArchaeologist(endpoint string, currentPublicKey []byte, paymentAddress common.Address, feePerByte *big.Int, minimumBounty *big.Int, minimumDiggingFee *big.Int, maximumResurrectionTime *big.Int, freeBond *big.Int) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.UpdateArchaeologist(&_Sarcophagus.TransactOpts, endpoint, currentPublicKey, paymentAddress, feePerByte, minimumBounty, minimumDiggingFee, maximumResurrectionTime, freeBond)
+// Solidity: function updateArchaeologist(string endpoint, bytes newPublicKey, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond) returns(bool)
+func (_Sarcophagus *SarcophagusSession) UpdateArchaeologist(endpoint string, newPublicKey []byte, paymentAddress common.Address, feePerByte *big.Int, minimumBounty *big.Int, minimumDiggingFee *big.Int, maximumResurrectionTime *big.Int, freeBond *big.Int) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.UpdateArchaeologist(&_Sarcophagus.TransactOpts, endpoint, newPublicKey, paymentAddress, feePerByte, minimumBounty, minimumDiggingFee, maximumResurrectionTime, freeBond)
+}
+
+// UpdateArchaeologist is a paid mutator transaction binding the contract method 0xb8c77c38.
+//
+// Solidity: function updateArchaeologist(string endpoint, bytes newPublicKey, address paymentAddress, uint256 feePerByte, uint256 minimumBounty, uint256 minimumDiggingFee, uint256 maximumResurrectionTime, uint256 freeBond) returns(bool)
+func (_Sarcophagus *SarcophagusTransactorSession) UpdateArchaeologist(endpoint string, newPublicKey []byte, paymentAddress common.Address, feePerByte *big.Int, minimumBounty *big.Int, minimumDiggingFee *big.Int, maximumResurrectionTime *big.Int, freeBond *big.Int) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.UpdateArchaeologist(&_Sarcophagus.TransactOpts, endpoint, newPublicKey, paymentAddress, feePerByte, minimumBounty, minimumDiggingFee, maximumResurrectionTime, freeBond)
 }
 
 // UpdateSarcophagus is a paid mutator transaction binding the contract method 0xbfb62a78.
 //
-// Solidity: function updateSarcophagus(bytes newPublicKey, bytes32 assetDoubleHash, string assetId, uint8 v, bytes32 r, bytes32 s) returns(bool)
-func (_Sarcophagus *SarcophagusTransactor) UpdateSarcophagus(opts *bind.TransactOpts, newPublicKey []byte, assetDoubleHash [32]byte, assetId string, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _Sarcophagus.contract.Transact(opts, "updateSarcophagus", newPublicKey, assetDoubleHash, assetId, v, r, s)
+// Solidity: function updateSarcophagus(bytes newPublicKey, bytes32 identifier, string assetId, uint8 v, bytes32 r, bytes32 s) returns(bool)
+func (_Sarcophagus *SarcophagusTransactor) UpdateSarcophagus(opts *bind.TransactOpts, newPublicKey []byte, identifier [32]byte, assetId string, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _Sarcophagus.contract.Transact(opts, "updateSarcophagus", newPublicKey, identifier, assetId, v, r, s)
 }
 
 // UpdateSarcophagus is a paid mutator transaction binding the contract method 0xbfb62a78.
 //
-// Solidity: function updateSarcophagus(bytes newPublicKey, bytes32 assetDoubleHash, string assetId, uint8 v, bytes32 r, bytes32 s) returns(bool)
-func (_Sarcophagus *SarcophagusSession) UpdateSarcophagus(newPublicKey []byte, assetDoubleHash [32]byte, assetId string, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.UpdateSarcophagus(&_Sarcophagus.TransactOpts, newPublicKey, assetDoubleHash, assetId, v, r, s)
+// Solidity: function updateSarcophagus(bytes newPublicKey, bytes32 identifier, string assetId, uint8 v, bytes32 r, bytes32 s) returns(bool)
+func (_Sarcophagus *SarcophagusSession) UpdateSarcophagus(newPublicKey []byte, identifier [32]byte, assetId string, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.UpdateSarcophagus(&_Sarcophagus.TransactOpts, newPublicKey, identifier, assetId, v, r, s)
 }
 
 // UpdateSarcophagus is a paid mutator transaction binding the contract method 0xbfb62a78.
 //
-// Solidity: function updateSarcophagus(bytes newPublicKey, bytes32 assetDoubleHash, string assetId, uint8 v, bytes32 r, bytes32 s) returns(bool)
-func (_Sarcophagus *SarcophagusTransactorSession) UpdateSarcophagus(newPublicKey []byte, assetDoubleHash [32]byte, assetId string, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
-	return _Sarcophagus.Contract.UpdateSarcophagus(&_Sarcophagus.TransactOpts, newPublicKey, assetDoubleHash, assetId, v, r, s)
+// Solidity: function updateSarcophagus(bytes newPublicKey, bytes32 identifier, string assetId, uint8 v, bytes32 r, bytes32 s) returns(bool)
+func (_Sarcophagus *SarcophagusTransactorSession) UpdateSarcophagus(newPublicKey []byte, identifier [32]byte, assetId string, v uint8, r [32]byte, s [32]byte) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.UpdateSarcophagus(&_Sarcophagus.TransactOpts, newPublicKey, identifier, assetId, v, r, s)
 }
 
 // WithdrawBond is a paid mutator transaction binding the contract method 0xc3daab96.
