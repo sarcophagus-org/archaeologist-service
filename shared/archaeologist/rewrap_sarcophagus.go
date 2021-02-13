@@ -7,12 +7,12 @@ import (
 )
 
 func handleRewrapSarcophagus(event *contracts.EventsRewrapSarcophagus, arch *models.Archaeologist) {
-	log.Println("Rewrap Sarcophagus Event Sent:", event.AssetDoubleHash)
+	log.Println("Rewrap Sarcophagus Event Sent:", event.Identifier)
 
 	/* Update resurrection time for Sarcophagus in state */
-	if _, ok := arch.Sarcophaguses[event.AssetDoubleHash]; ok {
-		arch.Sarcophaguses[event.AssetDoubleHash] = event.ResurrectionTime
+	if _, ok := arch.Sarcophaguses[event.Identifier]; ok {
+		arch.Sarcophaguses[event.Identifier] = event.ResurrectionTime
 	} else {
-		log.Printf("We dont have a sarcophagus to update for the rewrapping: %v",  event.AssetDoubleHash)
+		log.Printf("We dont have a sarcophagus to update for the rewrapping: %v",  event.Identifier)
 	}
 }
