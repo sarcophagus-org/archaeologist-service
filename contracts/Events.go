@@ -27,7 +27,7 @@ var (
 )
 
 // EventsABI is the input ABI used to generate the binding from.
-const EventsABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"accuser\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"accuserBondReward\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"embalmerBondReward\",\"type\":\"uint256\"}],\"name\":\"AccuseArchaeologist\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"}],\"name\":\"BurySarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"}],\"name\":\"CancelSarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"cleaner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"cleanerBondReward\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"embalmerBondReward\",\"type\":\"uint256\"}],\"name\":\"CleanUpSarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"archaeologistPublicKey\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"resurrectionWindow\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"recipientPublicKey\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"cursedBond\",\"type\":\"uint256\"}],\"name\":\"CreateSarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sarcophagusContract\",\"type\":\"address\"}],\"name\":\"Creation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\"}],\"name\":\"RegisterArchaeologist\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"resurrectionWindow\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"cursedBond\",\"type\":\"uint256\"}],\"name\":\"RewrapSarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"singleHash\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"privatekey\",\"type\":\"bytes32\"}],\"name\":\"UnwrapSarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"addedBond\",\"type\":\"uint256\"}],\"name\":\"UpdateArchaeologist\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"}],\"name\":\"UpdateArchaeologistPublicKey\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"assetDoubleHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"}],\"name\":\"UpdateSarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"withdrawnBond\",\"type\":\"uint256\"}],\"name\":\"WithdrawalFreeBond\",\"type\":\"event\"}]"
+const EventsABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"accuser\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"accuserBondReward\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"embalmerBondReward\",\"type\":\"uint256\"}],\"name\":\"AccuseArchaeologist\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"}],\"name\":\"BurySarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"}],\"name\":\"CancelSarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"cleaner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"cleanerBondReward\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"embalmerBondReward\",\"type\":\"uint256\"}],\"name\":\"CleanUpSarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"archaeologistPublicKey\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"resurrectionWindow\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"recipientPublicKey\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"cursedBond\",\"type\":\"uint256\"}],\"name\":\"CreateSarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"sarcophagusContract\",\"type\":\"address\"}],\"name\":\"Creation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"bond\",\"type\":\"uint256\"}],\"name\":\"RegisterArchaeologist\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"resurrectionWindow\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"cursedBond\",\"type\":\"uint256\"}],\"name\":\"RewrapSarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"privatekey\",\"type\":\"bytes32\"}],\"name\":\"UnwrapSarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"addedBond\",\"type\":\"uint256\"}],\"name\":\"UpdateArchaeologist\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"}],\"name\":\"UpdateArchaeologistPublicKey\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"}],\"name\":\"UpdateSarcophagus\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"withdrawnBond\",\"type\":\"uint256\"}],\"name\":\"WithdrawalFreeBond\",\"type\":\"event\"}]"
 
 // Events is an auto generated Go binding around an Ethereum contract.
 type Events struct {
@@ -240,7 +240,7 @@ func (it *EventsAccuseArchaeologistIterator) Close() error {
 
 // EventsAccuseArchaeologist represents a AccuseArchaeologist event raised by the Events contract.
 type EventsAccuseArchaeologist struct {
-	AssetDoubleHash    [32]byte
+	Identifier         [32]byte
 	Accuser            common.Address
 	AccuserBondReward  *big.Int
 	EmbalmerBondReward *big.Int
@@ -249,19 +249,19 @@ type EventsAccuseArchaeologist struct {
 
 // FilterAccuseArchaeologist is a free log retrieval operation binding the contract event 0x6cee286923fc4de6af78ba8b06ff9f4236e5aad4282a5e13a3cea8446c803fd4.
 //
-// Solidity: event AccuseArchaeologist(bytes32 indexed assetDoubleHash, address indexed accuser, uint256 accuserBondReward, uint256 embalmerBondReward)
-func (_Events *EventsFilterer) FilterAccuseArchaeologist(opts *bind.FilterOpts, assetDoubleHash [][32]byte, accuser []common.Address) (*EventsAccuseArchaeologistIterator, error) {
+// Solidity: event AccuseArchaeologist(bytes32 indexed identifier, address indexed accuser, uint256 accuserBondReward, uint256 embalmerBondReward)
+func (_Events *EventsFilterer) FilterAccuseArchaeologist(opts *bind.FilterOpts, identifier [][32]byte, accuser []common.Address) (*EventsAccuseArchaeologistIterator, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 	var accuserRule []interface{}
 	for _, accuserItem := range accuser {
 		accuserRule = append(accuserRule, accuserItem)
 	}
 
-	logs, sub, err := _Events.contract.FilterLogs(opts, "AccuseArchaeologist", assetDoubleHashRule, accuserRule)
+	logs, sub, err := _Events.contract.FilterLogs(opts, "AccuseArchaeologist", identifierRule, accuserRule)
 	if err != nil {
 		return nil, err
 	}
@@ -270,19 +270,19 @@ func (_Events *EventsFilterer) FilterAccuseArchaeologist(opts *bind.FilterOpts, 
 
 // WatchAccuseArchaeologist is a free log subscription operation binding the contract event 0x6cee286923fc4de6af78ba8b06ff9f4236e5aad4282a5e13a3cea8446c803fd4.
 //
-// Solidity: event AccuseArchaeologist(bytes32 indexed assetDoubleHash, address indexed accuser, uint256 accuserBondReward, uint256 embalmerBondReward)
-func (_Events *EventsFilterer) WatchAccuseArchaeologist(opts *bind.WatchOpts, sink chan<- *EventsAccuseArchaeologist, assetDoubleHash [][32]byte, accuser []common.Address) (event.Subscription, error) {
+// Solidity: event AccuseArchaeologist(bytes32 indexed identifier, address indexed accuser, uint256 accuserBondReward, uint256 embalmerBondReward)
+func (_Events *EventsFilterer) WatchAccuseArchaeologist(opts *bind.WatchOpts, sink chan<- *EventsAccuseArchaeologist, identifier [][32]byte, accuser []common.Address) (event.Subscription, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 	var accuserRule []interface{}
 	for _, accuserItem := range accuser {
 		accuserRule = append(accuserRule, accuserItem)
 	}
 
-	logs, sub, err := _Events.contract.WatchLogs(opts, "AccuseArchaeologist", assetDoubleHashRule, accuserRule)
+	logs, sub, err := _Events.contract.WatchLogs(opts, "AccuseArchaeologist", identifierRule, accuserRule)
 	if err != nil {
 		return nil, err
 	}
@@ -316,7 +316,7 @@ func (_Events *EventsFilterer) WatchAccuseArchaeologist(opts *bind.WatchOpts, si
 
 // ParseAccuseArchaeologist is a log parse operation binding the contract event 0x6cee286923fc4de6af78ba8b06ff9f4236e5aad4282a5e13a3cea8446c803fd4.
 //
-// Solidity: event AccuseArchaeologist(bytes32 indexed assetDoubleHash, address indexed accuser, uint256 accuserBondReward, uint256 embalmerBondReward)
+// Solidity: event AccuseArchaeologist(bytes32 indexed identifier, address indexed accuser, uint256 accuserBondReward, uint256 embalmerBondReward)
 func (_Events *EventsFilterer) ParseAccuseArchaeologist(log types.Log) (*EventsAccuseArchaeologist, error) {
 	event := new(EventsAccuseArchaeologist)
 	if err := _Events.contract.UnpackLog(event, "AccuseArchaeologist", log); err != nil {
@@ -395,21 +395,21 @@ func (it *EventsBurySarcophagusIterator) Close() error {
 
 // EventsBurySarcophagus represents a BurySarcophagus event raised by the Events contract.
 type EventsBurySarcophagus struct {
-	AssetDoubleHash [32]byte
-	Raw             types.Log // Blockchain specific contextual infos
+	Identifier [32]byte
+	Raw        types.Log // Blockchain specific contextual infos
 }
 
 // FilterBurySarcophagus is a free log retrieval operation binding the contract event 0x3a0205aa93b1a96da7d6405b2967f91b441383623de2d1ee3b27bfd1642b167a.
 //
-// Solidity: event BurySarcophagus(bytes32 indexed assetDoubleHash)
-func (_Events *EventsFilterer) FilterBurySarcophagus(opts *bind.FilterOpts, assetDoubleHash [][32]byte) (*EventsBurySarcophagusIterator, error) {
+// Solidity: event BurySarcophagus(bytes32 indexed identifier)
+func (_Events *EventsFilterer) FilterBurySarcophagus(opts *bind.FilterOpts, identifier [][32]byte) (*EventsBurySarcophagusIterator, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 
-	logs, sub, err := _Events.contract.FilterLogs(opts, "BurySarcophagus", assetDoubleHashRule)
+	logs, sub, err := _Events.contract.FilterLogs(opts, "BurySarcophagus", identifierRule)
 	if err != nil {
 		return nil, err
 	}
@@ -418,15 +418,15 @@ func (_Events *EventsFilterer) FilterBurySarcophagus(opts *bind.FilterOpts, asse
 
 // WatchBurySarcophagus is a free log subscription operation binding the contract event 0x3a0205aa93b1a96da7d6405b2967f91b441383623de2d1ee3b27bfd1642b167a.
 //
-// Solidity: event BurySarcophagus(bytes32 indexed assetDoubleHash)
-func (_Events *EventsFilterer) WatchBurySarcophagus(opts *bind.WatchOpts, sink chan<- *EventsBurySarcophagus, assetDoubleHash [][32]byte) (event.Subscription, error) {
+// Solidity: event BurySarcophagus(bytes32 indexed identifier)
+func (_Events *EventsFilterer) WatchBurySarcophagus(opts *bind.WatchOpts, sink chan<- *EventsBurySarcophagus, identifier [][32]byte) (event.Subscription, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 
-	logs, sub, err := _Events.contract.WatchLogs(opts, "BurySarcophagus", assetDoubleHashRule)
+	logs, sub, err := _Events.contract.WatchLogs(opts, "BurySarcophagus", identifierRule)
 	if err != nil {
 		return nil, err
 	}
@@ -460,7 +460,7 @@ func (_Events *EventsFilterer) WatchBurySarcophagus(opts *bind.WatchOpts, sink c
 
 // ParseBurySarcophagus is a log parse operation binding the contract event 0x3a0205aa93b1a96da7d6405b2967f91b441383623de2d1ee3b27bfd1642b167a.
 //
-// Solidity: event BurySarcophagus(bytes32 indexed assetDoubleHash)
+// Solidity: event BurySarcophagus(bytes32 indexed identifier)
 func (_Events *EventsFilterer) ParseBurySarcophagus(log types.Log) (*EventsBurySarcophagus, error) {
 	event := new(EventsBurySarcophagus)
 	if err := _Events.contract.UnpackLog(event, "BurySarcophagus", log); err != nil {
@@ -539,21 +539,21 @@ func (it *EventsCancelSarcophagusIterator) Close() error {
 
 // EventsCancelSarcophagus represents a CancelSarcophagus event raised by the Events contract.
 type EventsCancelSarcophagus struct {
-	AssetDoubleHash [32]byte
-	Raw             types.Log // Blockchain specific contextual infos
+	Identifier [32]byte
+	Raw        types.Log // Blockchain specific contextual infos
 }
 
 // FilterCancelSarcophagus is a free log retrieval operation binding the contract event 0x829e85bd7eda128d8f00c1b0b36d28a9357d6c88d69a552de0d3be7b766e7750.
 //
-// Solidity: event CancelSarcophagus(bytes32 indexed assetDoubleHash)
-func (_Events *EventsFilterer) FilterCancelSarcophagus(opts *bind.FilterOpts, assetDoubleHash [][32]byte) (*EventsCancelSarcophagusIterator, error) {
+// Solidity: event CancelSarcophagus(bytes32 indexed identifier)
+func (_Events *EventsFilterer) FilterCancelSarcophagus(opts *bind.FilterOpts, identifier [][32]byte) (*EventsCancelSarcophagusIterator, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 
-	logs, sub, err := _Events.contract.FilterLogs(opts, "CancelSarcophagus", assetDoubleHashRule)
+	logs, sub, err := _Events.contract.FilterLogs(opts, "CancelSarcophagus", identifierRule)
 	if err != nil {
 		return nil, err
 	}
@@ -562,15 +562,15 @@ func (_Events *EventsFilterer) FilterCancelSarcophagus(opts *bind.FilterOpts, as
 
 // WatchCancelSarcophagus is a free log subscription operation binding the contract event 0x829e85bd7eda128d8f00c1b0b36d28a9357d6c88d69a552de0d3be7b766e7750.
 //
-// Solidity: event CancelSarcophagus(bytes32 indexed assetDoubleHash)
-func (_Events *EventsFilterer) WatchCancelSarcophagus(opts *bind.WatchOpts, sink chan<- *EventsCancelSarcophagus, assetDoubleHash [][32]byte) (event.Subscription, error) {
+// Solidity: event CancelSarcophagus(bytes32 indexed identifier)
+func (_Events *EventsFilterer) WatchCancelSarcophagus(opts *bind.WatchOpts, sink chan<- *EventsCancelSarcophagus, identifier [][32]byte) (event.Subscription, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 
-	logs, sub, err := _Events.contract.WatchLogs(opts, "CancelSarcophagus", assetDoubleHashRule)
+	logs, sub, err := _Events.contract.WatchLogs(opts, "CancelSarcophagus", identifierRule)
 	if err != nil {
 		return nil, err
 	}
@@ -604,7 +604,7 @@ func (_Events *EventsFilterer) WatchCancelSarcophagus(opts *bind.WatchOpts, sink
 
 // ParseCancelSarcophagus is a log parse operation binding the contract event 0x829e85bd7eda128d8f00c1b0b36d28a9357d6c88d69a552de0d3be7b766e7750.
 //
-// Solidity: event CancelSarcophagus(bytes32 indexed assetDoubleHash)
+// Solidity: event CancelSarcophagus(bytes32 indexed identifier)
 func (_Events *EventsFilterer) ParseCancelSarcophagus(log types.Log) (*EventsCancelSarcophagus, error) {
 	event := new(EventsCancelSarcophagus)
 	if err := _Events.contract.UnpackLog(event, "CancelSarcophagus", log); err != nil {
@@ -683,7 +683,7 @@ func (it *EventsCleanUpSarcophagusIterator) Close() error {
 
 // EventsCleanUpSarcophagus represents a CleanUpSarcophagus event raised by the Events contract.
 type EventsCleanUpSarcophagus struct {
-	AssetDoubleHash    [32]byte
+	Identifier         [32]byte
 	Cleaner            common.Address
 	CleanerBondReward  *big.Int
 	EmbalmerBondReward *big.Int
@@ -692,19 +692,19 @@ type EventsCleanUpSarcophagus struct {
 
 // FilterCleanUpSarcophagus is a free log retrieval operation binding the contract event 0x106e723534f3d39516c80d5e49eb5ac7788139c661267137c40382659d409fb9.
 //
-// Solidity: event CleanUpSarcophagus(bytes32 indexed assetDoubleHash, address indexed cleaner, uint256 cleanerBondReward, uint256 embalmerBondReward)
-func (_Events *EventsFilterer) FilterCleanUpSarcophagus(opts *bind.FilterOpts, assetDoubleHash [][32]byte, cleaner []common.Address) (*EventsCleanUpSarcophagusIterator, error) {
+// Solidity: event CleanUpSarcophagus(bytes32 indexed identifier, address indexed cleaner, uint256 cleanerBondReward, uint256 embalmerBondReward)
+func (_Events *EventsFilterer) FilterCleanUpSarcophagus(opts *bind.FilterOpts, identifier [][32]byte, cleaner []common.Address) (*EventsCleanUpSarcophagusIterator, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 	var cleanerRule []interface{}
 	for _, cleanerItem := range cleaner {
 		cleanerRule = append(cleanerRule, cleanerItem)
 	}
 
-	logs, sub, err := _Events.contract.FilterLogs(opts, "CleanUpSarcophagus", assetDoubleHashRule, cleanerRule)
+	logs, sub, err := _Events.contract.FilterLogs(opts, "CleanUpSarcophagus", identifierRule, cleanerRule)
 	if err != nil {
 		return nil, err
 	}
@@ -713,19 +713,19 @@ func (_Events *EventsFilterer) FilterCleanUpSarcophagus(opts *bind.FilterOpts, a
 
 // WatchCleanUpSarcophagus is a free log subscription operation binding the contract event 0x106e723534f3d39516c80d5e49eb5ac7788139c661267137c40382659d409fb9.
 //
-// Solidity: event CleanUpSarcophagus(bytes32 indexed assetDoubleHash, address indexed cleaner, uint256 cleanerBondReward, uint256 embalmerBondReward)
-func (_Events *EventsFilterer) WatchCleanUpSarcophagus(opts *bind.WatchOpts, sink chan<- *EventsCleanUpSarcophagus, assetDoubleHash [][32]byte, cleaner []common.Address) (event.Subscription, error) {
+// Solidity: event CleanUpSarcophagus(bytes32 indexed identifier, address indexed cleaner, uint256 cleanerBondReward, uint256 embalmerBondReward)
+func (_Events *EventsFilterer) WatchCleanUpSarcophagus(opts *bind.WatchOpts, sink chan<- *EventsCleanUpSarcophagus, identifier [][32]byte, cleaner []common.Address) (event.Subscription, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 	var cleanerRule []interface{}
 	for _, cleanerItem := range cleaner {
 		cleanerRule = append(cleanerRule, cleanerItem)
 	}
 
-	logs, sub, err := _Events.contract.WatchLogs(opts, "CleanUpSarcophagus", assetDoubleHashRule, cleanerRule)
+	logs, sub, err := _Events.contract.WatchLogs(opts, "CleanUpSarcophagus", identifierRule, cleanerRule)
 	if err != nil {
 		return nil, err
 	}
@@ -759,7 +759,7 @@ func (_Events *EventsFilterer) WatchCleanUpSarcophagus(opts *bind.WatchOpts, sin
 
 // ParseCleanUpSarcophagus is a log parse operation binding the contract event 0x106e723534f3d39516c80d5e49eb5ac7788139c661267137c40382659d409fb9.
 //
-// Solidity: event CleanUpSarcophagus(bytes32 indexed assetDoubleHash, address indexed cleaner, uint256 cleanerBondReward, uint256 embalmerBondReward)
+// Solidity: event CleanUpSarcophagus(bytes32 indexed identifier, address indexed cleaner, uint256 cleanerBondReward, uint256 embalmerBondReward)
 func (_Events *EventsFilterer) ParseCleanUpSarcophagus(log types.Log) (*EventsCleanUpSarcophagus, error) {
 	event := new(EventsCleanUpSarcophagus)
 	if err := _Events.contract.UnpackLog(event, "CleanUpSarcophagus", log); err != nil {
@@ -838,7 +838,7 @@ func (it *EventsCreateSarcophagusIterator) Close() error {
 
 // EventsCreateSarcophagus represents a CreateSarcophagus event raised by the Events contract.
 type EventsCreateSarcophagus struct {
-	AssetDoubleHash        [32]byte
+	Identifier             [32]byte
 	Archaeologist          common.Address
 	ArchaeologistPublicKey []byte
 	Embalmer               common.Address
@@ -855,19 +855,19 @@ type EventsCreateSarcophagus struct {
 
 // FilterCreateSarcophagus is a free log retrieval operation binding the contract event 0x61377d9cca1a0627203c24e7200ac291d185768dd96a7278cbc7a2db6d81f850.
 //
-// Solidity: event CreateSarcophagus(bytes32 indexed assetDoubleHash, address indexed archaeologist, bytes archaeologistPublicKey, address embalmer, string name, uint256 resurrectionTime, uint256 resurrectionWindow, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes recipientPublicKey, uint256 cursedBond)
-func (_Events *EventsFilterer) FilterCreateSarcophagus(opts *bind.FilterOpts, assetDoubleHash [][32]byte, archaeologist []common.Address) (*EventsCreateSarcophagusIterator, error) {
+// Solidity: event CreateSarcophagus(bytes32 indexed identifier, address indexed archaeologist, bytes archaeologistPublicKey, address embalmer, string name, uint256 resurrectionTime, uint256 resurrectionWindow, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes recipientPublicKey, uint256 cursedBond)
+func (_Events *EventsFilterer) FilterCreateSarcophagus(opts *bind.FilterOpts, identifier [][32]byte, archaeologist []common.Address) (*EventsCreateSarcophagusIterator, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 	var archaeologistRule []interface{}
 	for _, archaeologistItem := range archaeologist {
 		archaeologistRule = append(archaeologistRule, archaeologistItem)
 	}
 
-	logs, sub, err := _Events.contract.FilterLogs(opts, "CreateSarcophagus", assetDoubleHashRule, archaeologistRule)
+	logs, sub, err := _Events.contract.FilterLogs(opts, "CreateSarcophagus", identifierRule, archaeologistRule)
 	if err != nil {
 		return nil, err
 	}
@@ -876,19 +876,19 @@ func (_Events *EventsFilterer) FilterCreateSarcophagus(opts *bind.FilterOpts, as
 
 // WatchCreateSarcophagus is a free log subscription operation binding the contract event 0x61377d9cca1a0627203c24e7200ac291d185768dd96a7278cbc7a2db6d81f850.
 //
-// Solidity: event CreateSarcophagus(bytes32 indexed assetDoubleHash, address indexed archaeologist, bytes archaeologistPublicKey, address embalmer, string name, uint256 resurrectionTime, uint256 resurrectionWindow, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes recipientPublicKey, uint256 cursedBond)
-func (_Events *EventsFilterer) WatchCreateSarcophagus(opts *bind.WatchOpts, sink chan<- *EventsCreateSarcophagus, assetDoubleHash [][32]byte, archaeologist []common.Address) (event.Subscription, error) {
+// Solidity: event CreateSarcophagus(bytes32 indexed identifier, address indexed archaeologist, bytes archaeologistPublicKey, address embalmer, string name, uint256 resurrectionTime, uint256 resurrectionWindow, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes recipientPublicKey, uint256 cursedBond)
+func (_Events *EventsFilterer) WatchCreateSarcophagus(opts *bind.WatchOpts, sink chan<- *EventsCreateSarcophagus, identifier [][32]byte, archaeologist []common.Address) (event.Subscription, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 	var archaeologistRule []interface{}
 	for _, archaeologistItem := range archaeologist {
 		archaeologistRule = append(archaeologistRule, archaeologistItem)
 	}
 
-	logs, sub, err := _Events.contract.WatchLogs(opts, "CreateSarcophagus", assetDoubleHashRule, archaeologistRule)
+	logs, sub, err := _Events.contract.WatchLogs(opts, "CreateSarcophagus", identifierRule, archaeologistRule)
 	if err != nil {
 		return nil, err
 	}
@@ -922,7 +922,7 @@ func (_Events *EventsFilterer) WatchCreateSarcophagus(opts *bind.WatchOpts, sink
 
 // ParseCreateSarcophagus is a log parse operation binding the contract event 0x61377d9cca1a0627203c24e7200ac291d185768dd96a7278cbc7a2db6d81f850.
 //
-// Solidity: event CreateSarcophagus(bytes32 indexed assetDoubleHash, address indexed archaeologist, bytes archaeologistPublicKey, address embalmer, string name, uint256 resurrectionTime, uint256 resurrectionWindow, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes recipientPublicKey, uint256 cursedBond)
+// Solidity: event CreateSarcophagus(bytes32 indexed identifier, address indexed archaeologist, bytes archaeologistPublicKey, address embalmer, string name, uint256 resurrectionTime, uint256 resurrectionWindow, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes recipientPublicKey, uint256 cursedBond)
 func (_Events *EventsFilterer) ParseCreateSarcophagus(log types.Log) (*EventsCreateSarcophagus, error) {
 	event := new(EventsCreateSarcophagus)
 	if err := _Events.contract.UnpackLog(event, "CreateSarcophagus", log); err != nil {
@@ -1288,7 +1288,7 @@ func (it *EventsRewrapSarcophagusIterator) Close() error {
 // EventsRewrapSarcophagus represents a RewrapSarcophagus event raised by the Events contract.
 type EventsRewrapSarcophagus struct {
 	AssetId            string
-	AssetDoubleHash    [32]byte
+	Identifier         [32]byte
 	ResurrectionTime   *big.Int
 	ResurrectionWindow *big.Int
 	DiggingFee         *big.Int
@@ -1299,15 +1299,15 @@ type EventsRewrapSarcophagus struct {
 
 // FilterRewrapSarcophagus is a free log retrieval operation binding the contract event 0x17f5acaa1fbabbe2ec2373f9adb3a1b2f191bac493461e9f64b1db1e0a3f5e46.
 //
-// Solidity: event RewrapSarcophagus(string assetId, bytes32 indexed assetDoubleHash, uint256 resurrectionTime, uint256 resurrectionWindow, uint256 diggingFee, uint256 bounty, uint256 cursedBond)
-func (_Events *EventsFilterer) FilterRewrapSarcophagus(opts *bind.FilterOpts, assetDoubleHash [][32]byte) (*EventsRewrapSarcophagusIterator, error) {
+// Solidity: event RewrapSarcophagus(string assetId, bytes32 indexed identifier, uint256 resurrectionTime, uint256 resurrectionWindow, uint256 diggingFee, uint256 bounty, uint256 cursedBond)
+func (_Events *EventsFilterer) FilterRewrapSarcophagus(opts *bind.FilterOpts, identifier [][32]byte) (*EventsRewrapSarcophagusIterator, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 
-	logs, sub, err := _Events.contract.FilterLogs(opts, "RewrapSarcophagus", assetDoubleHashRule)
+	logs, sub, err := _Events.contract.FilterLogs(opts, "RewrapSarcophagus", identifierRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1316,15 +1316,15 @@ func (_Events *EventsFilterer) FilterRewrapSarcophagus(opts *bind.FilterOpts, as
 
 // WatchRewrapSarcophagus is a free log subscription operation binding the contract event 0x17f5acaa1fbabbe2ec2373f9adb3a1b2f191bac493461e9f64b1db1e0a3f5e46.
 //
-// Solidity: event RewrapSarcophagus(string assetId, bytes32 indexed assetDoubleHash, uint256 resurrectionTime, uint256 resurrectionWindow, uint256 diggingFee, uint256 bounty, uint256 cursedBond)
-func (_Events *EventsFilterer) WatchRewrapSarcophagus(opts *bind.WatchOpts, sink chan<- *EventsRewrapSarcophagus, assetDoubleHash [][32]byte) (event.Subscription, error) {
+// Solidity: event RewrapSarcophagus(string assetId, bytes32 indexed identifier, uint256 resurrectionTime, uint256 resurrectionWindow, uint256 diggingFee, uint256 bounty, uint256 cursedBond)
+func (_Events *EventsFilterer) WatchRewrapSarcophagus(opts *bind.WatchOpts, sink chan<- *EventsRewrapSarcophagus, identifier [][32]byte) (event.Subscription, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 
-	logs, sub, err := _Events.contract.WatchLogs(opts, "RewrapSarcophagus", assetDoubleHashRule)
+	logs, sub, err := _Events.contract.WatchLogs(opts, "RewrapSarcophagus", identifierRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1358,7 +1358,7 @@ func (_Events *EventsFilterer) WatchRewrapSarcophagus(opts *bind.WatchOpts, sink
 
 // ParseRewrapSarcophagus is a log parse operation binding the contract event 0x17f5acaa1fbabbe2ec2373f9adb3a1b2f191bac493461e9f64b1db1e0a3f5e46.
 //
-// Solidity: event RewrapSarcophagus(string assetId, bytes32 indexed assetDoubleHash, uint256 resurrectionTime, uint256 resurrectionWindow, uint256 diggingFee, uint256 bounty, uint256 cursedBond)
+// Solidity: event RewrapSarcophagus(string assetId, bytes32 indexed identifier, uint256 resurrectionTime, uint256 resurrectionWindow, uint256 diggingFee, uint256 bounty, uint256 cursedBond)
 func (_Events *EventsFilterer) ParseRewrapSarcophagus(log types.Log) (*EventsRewrapSarcophagus, error) {
 	event := new(EventsRewrapSarcophagus)
 	if err := _Events.contract.UnpackLog(event, "RewrapSarcophagus", log); err != nil {
@@ -1437,41 +1437,40 @@ func (it *EventsUnwrapSarcophagusIterator) Close() error {
 
 // EventsUnwrapSarcophagus represents a UnwrapSarcophagus event raised by the Events contract.
 type EventsUnwrapSarcophagus struct {
-	AssetId         string
-	AssetDoubleHash [32]byte
-	SingleHash      []byte
-	Privatekey      [32]byte
-	Raw             types.Log // Blockchain specific contextual infos
+	AssetId    string
+	Identifier [32]byte
+	Privatekey [32]byte
+	Raw        types.Log // Blockchain specific contextual infos
 }
 
-// FilterUnwrapSarcophagus is a free log retrieval operation binding the contract event 0x8d31f85522fabfbd8bdc64e740a84ac72cd810e0bb788f4454c17f5fc392c788.
+// FilterUnwrapSarcophagus is a free log retrieval operation binding the contract event 0xdbfd6b591f76eb006711f244b9a0cd9fbfb55a1abafc346a174792cdd86bd791.
 //
-// Solidity: event UnwrapSarcophagus(string assetId, bytes32 indexed assetDoubleHash, bytes singleHash, bytes32 privatekey)
-func (_Events *EventsFilterer) FilterUnwrapSarcophagus(opts *bind.FilterOpts, assetDoubleHash [][32]byte) (*EventsUnwrapSarcophagusIterator, error) {
+// Solidity: event UnwrapSarcophagus(string assetId, bytes32 indexed identifier, bytes32 privatekey)
+func (_Events *EventsFilterer) FilterUnwrapSarcophagus(opts *bind.FilterOpts, identifier [][32]byte) (*EventsUnwrapSarcophagusIterator, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 
-	logs, sub, err := _Events.contract.FilterLogs(opts, "UnwrapSarcophagus", assetDoubleHashRule)
+	logs, sub, err := _Events.contract.FilterLogs(opts, "UnwrapSarcophagus", identifierRule)
 	if err != nil {
 		return nil, err
 	}
 	return &EventsUnwrapSarcophagusIterator{contract: _Events.contract, event: "UnwrapSarcophagus", logs: logs, sub: sub}, nil
 }
 
-// WatchUnwrapSarcophagus is a free log subscription operation binding the contract event 0x8d31f85522fabfbd8bdc64e740a84ac72cd810e0bb788f4454c17f5fc392c788.
+// WatchUnwrapSarcophagus is a free log subscription operation binding the contract event 0xdbfd6b591f76eb006711f244b9a0cd9fbfb55a1abafc346a174792cdd86bd791.
 //
-// Solidity: event UnwrapSarcophagus(string assetId, bytes32 indexed assetDoubleHash, bytes singleHash, bytes32 privatekey)
-func (_Events *EventsFilterer) WatchUnwrapSarcophagus(opts *bind.WatchOpts, sink chan<- *EventsUnwrapSarcophagus, assetDoubleHash [][32]byte) (event.Subscription, error) {
+// Solidity: event UnwrapSarcophagus(string assetId, bytes32 indexed identifier, bytes32 privatekey)
+func (_Events *EventsFilterer) WatchUnwrapSarcophagus(opts *bind.WatchOpts, sink chan<- *EventsUnwrapSarcophagus, identifier [][32]byte) (event.Subscription, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 
-	logs, sub, err := _Events.contract.WatchLogs(opts, "UnwrapSarcophagus", assetDoubleHashRule)
+	logs, sub, err := _Events.contract.WatchLogs(opts, "UnwrapSarcophagus", identifierRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1503,9 +1502,9 @@ func (_Events *EventsFilterer) WatchUnwrapSarcophagus(opts *bind.WatchOpts, sink
 	}), nil
 }
 
-// ParseUnwrapSarcophagus is a log parse operation binding the contract event 0x8d31f85522fabfbd8bdc64e740a84ac72cd810e0bb788f4454c17f5fc392c788.
+// ParseUnwrapSarcophagus is a log parse operation binding the contract event 0xdbfd6b591f76eb006711f244b9a0cd9fbfb55a1abafc346a174792cdd86bd791.
 //
-// Solidity: event UnwrapSarcophagus(string assetId, bytes32 indexed assetDoubleHash, bytes singleHash, bytes32 privatekey)
+// Solidity: event UnwrapSarcophagus(string assetId, bytes32 indexed identifier, bytes32 privatekey)
 func (_Events *EventsFilterer) ParseUnwrapSarcophagus(log types.Log) (*EventsUnwrapSarcophagus, error) {
 	event := new(EventsUnwrapSarcophagus)
 	if err := _Events.contract.UnpackLog(event, "UnwrapSarcophagus", log); err != nil {
@@ -1880,22 +1879,22 @@ func (it *EventsUpdateSarcophagusIterator) Close() error {
 
 // EventsUpdateSarcophagus represents a UpdateSarcophagus event raised by the Events contract.
 type EventsUpdateSarcophagus struct {
-	AssetDoubleHash [32]byte
-	AssetId         string
-	Raw             types.Log // Blockchain specific contextual infos
+	Identifier [32]byte
+	AssetId    string
+	Raw        types.Log // Blockchain specific contextual infos
 }
 
 // FilterUpdateSarcophagus is a free log retrieval operation binding the contract event 0x2a08f73a04c4a1376d4405159d2bdeb189df1ae580eb3ec566844dc3330d1212.
 //
-// Solidity: event UpdateSarcophagus(bytes32 indexed assetDoubleHash, string assetId)
-func (_Events *EventsFilterer) FilterUpdateSarcophagus(opts *bind.FilterOpts, assetDoubleHash [][32]byte) (*EventsUpdateSarcophagusIterator, error) {
+// Solidity: event UpdateSarcophagus(bytes32 indexed identifier, string assetId)
+func (_Events *EventsFilterer) FilterUpdateSarcophagus(opts *bind.FilterOpts, identifier [][32]byte) (*EventsUpdateSarcophagusIterator, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 
-	logs, sub, err := _Events.contract.FilterLogs(opts, "UpdateSarcophagus", assetDoubleHashRule)
+	logs, sub, err := _Events.contract.FilterLogs(opts, "UpdateSarcophagus", identifierRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1904,15 +1903,15 @@ func (_Events *EventsFilterer) FilterUpdateSarcophagus(opts *bind.FilterOpts, as
 
 // WatchUpdateSarcophagus is a free log subscription operation binding the contract event 0x2a08f73a04c4a1376d4405159d2bdeb189df1ae580eb3ec566844dc3330d1212.
 //
-// Solidity: event UpdateSarcophagus(bytes32 indexed assetDoubleHash, string assetId)
-func (_Events *EventsFilterer) WatchUpdateSarcophagus(opts *bind.WatchOpts, sink chan<- *EventsUpdateSarcophagus, assetDoubleHash [][32]byte) (event.Subscription, error) {
+// Solidity: event UpdateSarcophagus(bytes32 indexed identifier, string assetId)
+func (_Events *EventsFilterer) WatchUpdateSarcophagus(opts *bind.WatchOpts, sink chan<- *EventsUpdateSarcophagus, identifier [][32]byte) (event.Subscription, error) {
 
-	var assetDoubleHashRule []interface{}
-	for _, assetDoubleHashItem := range assetDoubleHash {
-		assetDoubleHashRule = append(assetDoubleHashRule, assetDoubleHashItem)
+	var identifierRule []interface{}
+	for _, identifierItem := range identifier {
+		identifierRule = append(identifierRule, identifierItem)
 	}
 
-	logs, sub, err := _Events.contract.WatchLogs(opts, "UpdateSarcophagus", assetDoubleHashRule)
+	logs, sub, err := _Events.contract.WatchLogs(opts, "UpdateSarcophagus", identifierRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1946,7 +1945,7 @@ func (_Events *EventsFilterer) WatchUpdateSarcophagus(opts *bind.WatchOpts, sink
 
 // ParseUpdateSarcophagus is a log parse operation binding the contract event 0x2a08f73a04c4a1376d4405159d2bdeb189df1ae580eb3ec566844dc3330d1212.
 //
-// Solidity: event UpdateSarcophagus(bytes32 indexed assetDoubleHash, string assetId)
+// Solidity: event UpdateSarcophagus(bytes32 indexed identifier, string assetId)
 func (_Events *EventsFilterer) ParseUpdateSarcophagus(log types.Log) (*EventsUpdateSarcophagus, error) {
 	event := new(EventsUpdateSarcophagus)
 	if err := _Events.contract.UnpackLog(event, "UpdateSarcophagus", log); err != nil {

@@ -9,7 +9,7 @@ import (
 
 func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *models.Archaeologist) {
 	log.Println("Event Name:", event.Name)
-	log.Println("Asset Double Hash:", event.AssetDoubleHash)
+	log.Println("Asset Double Hash:", event.Identifier)
 	log.Println("Archaeologist:", event.Archaeologist)
 	log.Println("Embalmer:", event.Embalmer)
 	log.Println("Resurrection Time:", event.ResurrectionTime)
@@ -25,13 +25,13 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 		return
 	}
 
-	if arch.IsArchSarcophagus(event.AssetDoubleHash) {
+	if arch.IsArchSarcophagus(event.Identifier) {
 		/* The sarco already exists in state but should not */
-		log.Printf("The sarcophagus for this double hash already exists: %v", event.AssetDoubleHash)
+		log.Printf("The sarcophagus for this double hash already exists: %v", event.Identifier)
 		return
 	}
 
-	arch.Sarcophaguses[event.AssetDoubleHash] = event.ResurrectionTime
-	arch.FileHandlers[event.AssetDoubleHash] = event.StorageFee
+	arch.Sarcophaguses[event.Identifier] = event.ResurrectionTime
+	arch.FileHandlers[event.Identifier] = event.StorageFee
 	go arch.ListenForFile()
 }

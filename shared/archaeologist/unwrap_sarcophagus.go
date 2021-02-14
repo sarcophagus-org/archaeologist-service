@@ -38,7 +38,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 	time.AfterFunc(timeToUnwrap, func() {
 		if resTime, ok := arch.Sarcophaguses[assetDoubleHash]; ok {
 			if resTime.Cmp(resurrectionTime) == 0 {
-				singleHash, err := generateSingleHash(arweaveClient, assetId, privateKey)
+				_, err := generateSingleHash(arweaveClient, assetId, privateKey)
 				if err != nil {
 					log.Printf("Error generating single hash during unwrapping process. Unwrapping cancelled: %v", err)
 				} else {
@@ -59,7 +59,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 					/*
 						Estimate Gas is used to check if the unwrap will succeed
 					*/
-					err := estimateGasForUnwrap(arch, assetDoubleHash, singleHash, privateKeyBytes)
+					err := estimateGasForUnwrap(arch, assetDoubleHash, privateKeyBytes)
 
 					if err != nil {
 						log.Printf("Unwrapping aborted, transaction will fail: %v", err)
@@ -68,7 +68,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 							scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 						}
 					} else {
-						txn, err := session.UnwrapSarcophagus(assetDoubleHash, singleHash, privateKeyBytes)
+						txn, err := session.UnwrapSarcophagus(assetDoubleHash, privateKeyBytes)
 						if err != nil {
 							log.Printf("Transaction reverted. There was an error unwrapping the sarcophagus: %v", err)
 							if attempts <= UNWRAP_RETRY_LIMIT {
@@ -137,13 +137,13 @@ func generateSingleHash(arweaveClient *api.Client, assetId string, privateKey *e
 	return crypto.Keccak256(decryptedDataBytes), nil
 }
 
-func estimateGasForUnwrap(arch *models.Archaeologist, assetDoubleHash [32]byte, singleHash []byte, privateKeyBytes [32]byte) error {
+func estimateGasForUnwrap(arch *models.Archaeologist, assetDoubleHash [32]byte, privateKeyBytes [32]byte) error {
 	parsed, err := abi.JSON(strings.NewReader(contracts.SarcophagusABI))
 	if err != nil {
 		return err
 	}
 
-	input, err := parsed.Pack("unwrapSarcophagus", assetDoubleHash, singleHash, privateKeyBytes)
+	input, err := parsed.Pack("unwrapSarcophagus", assetDoubleHash, privateKeyBytes)
 	if err != nil {
 		return err
 	}

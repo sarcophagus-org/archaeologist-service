@@ -88,14 +88,6 @@ func TimeWithWindowInFuture(unixTimestamp *big.Int, window *big.Int) bool {
 	return TimeInFuture(timePlusWindow)
 }
 
-func ValidateTimeInFuture(unixTimestamp *big.Int, timeField string) (*big.Int, error) {
-	if !TimeInFuture(unixTimestamp) {
-		return nil, fmt.Errorf("%s must be in the future. Please check the value in the config file", timeField)
-	}
-
-	return unixTimestamp, nil
-}
-
 func FileToBytes(file *os.File) ([]byte, error) {
 	buf := bytes.NewBuffer(nil)
 	_, err := io.Copy(buf, file)

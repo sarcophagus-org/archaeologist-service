@@ -179,7 +179,7 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, fileBytes 
 		FileBytes: base64.StdEncoding.EncodeToString(encryptedBytes),
 	}
 
-	url := "http://174.129.152.160/file"
+	url := "http://127.0.0.1:8080/file"
 	response, err := embalmer.SendFile(url, body)
 	if err != nil {
 		log.Fatalf("Error sending file: %v", err)
