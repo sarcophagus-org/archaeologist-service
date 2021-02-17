@@ -30,32 +30,33 @@ import (
 )
 
 type Archaeologist struct {
-	Client                *ethclient.Client
-	ArweaveWallet         *wallet.Wallet
-	ArweaveTransactor     *transactor.Transactor
-	PrivateKey            *ecdsa.PrivateKey
-	CurrentPublicKeyBytes []byte
-	CurrentPrivateKey     *ecdsa.PrivateKey
-	ArchAddress           common.Address
-	PaymentAddress        common.Address
-	SarcoAddress          common.Address
-	SarcoSession          contracts.SarcophagusSession
-	SarcoTokenAddress     common.Address
-	TokenSession          contracts.TokenSession
-	FreeBond              *big.Int
-	FeePerByte            *big.Int
-	MinBounty             *big.Int
-	MinDiggingFee         *big.Int
-	MaxResurectionTime    *big.Int
-	Endpoint              string
-	FilePort              string
-	Mnemonic              string
-	Wallet                *hdwallet.Wallet
-	AccountIndex          int
-	Server                *http.Server
-	Sarcophaguses         map[[32]byte]*big.Int
-	FileHandlers          map[[32]byte]*big.Int
-	UnwrapAttempts        map[[32]byte]int
+	Client                    *ethclient.Client
+	ArweaveWallet             *wallet.Wallet
+	ArweaveTransactor         *transactor.Transactor
+	PrivateKey                *ecdsa.PrivateKey
+	CurrentPublicKeyBytes     []byte
+	CurrentPrivateKey         *ecdsa.PrivateKey
+	ArchAddress               common.Address
+	PaymentAddress            common.Address
+	SarcoAddress              common.Address
+	SarcoSession              contracts.SarcophagusSession
+	SarcoTokenAddress         common.Address
+	TokenSession              contracts.TokenSession
+	FreeBond                  *big.Int
+	FeePerByte                *big.Int
+	MinBounty                 *big.Int
+	MinDiggingFee             *big.Int
+	MaxResurectionTime        *big.Int
+	Endpoint                  string
+	FilePort                  string
+	Mnemonic                  string
+	Wallet                    *hdwallet.Wallet
+	AccountIndex              int
+	Server                    *http.Server
+	Sarcophaguses             map[[32]byte]*big.Int
+	SarcophagusesAccountIndex map[[32]byte]int
+	FileHandlers              map[[32]byte]*big.Int
+	UnwrapAttempts            map[[32]byte]int
 }
 
 const (
@@ -470,7 +471,12 @@ func (arch *Archaeologist) IsArchSarcophagus(doubleHash [32]byte) bool {
 func (arch *Archaeologist) RemoveArchSarcophagus(doubleHash [32]byte) {
 	if arch.IsArchSarcophagus(doubleHash) {
 		delete(arch.Sarcophaguses, doubleHash)
-		_, ok := arch.FileHandlers[doubleHash]
+		_, ok := arch.SarcophagusesAccountIndex[doubleHash]
+		if ok {
+			delete(arch.SarcophagusesAccountIndex, doubleHash)
+		}
+
+		_, ok = arch.FileHandlers[doubleHash]
 		if ok {
 			arch.fileHandlerCheck()
 			delete(arch.FileHandlers, doubleHash)

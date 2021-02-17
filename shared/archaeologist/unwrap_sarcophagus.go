@@ -27,7 +27,40 @@ const (
 )
 var mutex = &sync.Mutex{}
 
-// TODO: handle rewrapped sarc
+// scheduleUnwrap is responsible for scheduling and
+// unwrapping a sarcophagus the unwrapping will be
+// executed at the resurrectionTime passed into the function.
+//
+// Before unwrapping, it will check if the resurrection time in
+// state for the sarcophagus matches the resurrectionTime param
+// If they don't match, then the sarcophagus has been rewrapped,
+// and scheduleUnwrap will return without unwrapping.
+//
+// If the sarcophagus does not exist in state, then scheduleUnwrap
+// will return without unwrapping.
+//
+// To complete a successful unwrapping the function must:
+//   1. Generate the Single Hash (Single Encrypted File Bytes -
+//      Encrypted with Recipients public key only)
+//   2. Call the UnwrapSarcophagus function on the smart contract.
+//
+// Before calling unwrapSarcphagus, scheduleUnwrap will attempt
+// to estimate the gas for the contract call
+// This allows us to know if the contract call will fail
+// without actually calling it.
+//
+// If estimateGas or UnwrapSarcophagus fails, scheduleUnwrap will
+// keep track of how many times the unwrapping has failed for this sarcophagus.
+// In the event of a failure (either of estimateGas or UnwrapSarcophagus),
+// it will reschedule the unwrap UNWRAP_RETRY_LIMIT number of times.
+// The retry will be scheduled at a random interval
+// between UNWRAP_RETRY_INTERVAL_LB and UNWRAP_RETRY_INTERVAL_UB seconds.
+//
+// The random interval is put in place in case multiple unwraps
+// are scheduled at the same exact time.
+//   - In this case, there may be a nonce issue when creating the
+//     unwrapSarcophagus transaction, so this avoids rescheduling
+//     unwraps at the same time
 func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Client, resurrectionTime *big.Int, arch *models.Archaeologist, assetDoubleHash [32]byte, privateKey *ecdsa.PrivateKey, assetId string) {
 	timeToUnwrap := time.Until(time.Unix(resurrectionTime.Int64(), 0))
 
@@ -98,8 +131,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 				}
 			} else {
 				// Resurrection time is different in state for this sarc, meaning sarc has been rewrapped
-				log.Printf("Sarco has been rewrapped, rescheduling!")
-				scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
+				log.Printf("Sarco has been rewrapped, do not need to unwrap!")
 			}
 		} else {
 			// Sarcophagus does not exist in state

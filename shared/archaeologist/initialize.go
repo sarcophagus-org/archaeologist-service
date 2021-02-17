@@ -104,7 +104,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 
 	arch.FilePort = config.FILE_PORT
 
-	arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
+	arch.Sarcophaguses, arch.SarcophagusesAccountIndex, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
 
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
@@ -113,11 +113,13 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	return errStrings
 }
 
-func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int, map[[32]byte]*big.Int, int) {
+// TODO: IMPORTANT: Build mapping of SarcophagusIdentifier -> Account Index for rewrapping purposes
+func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int, map[[32]byte]int, map[[32]byte]*big.Int, int) {
 	var sarcophaguses = map[[32]byte]*big.Int{}
+	var sarcophagusesAccountIndex = map[[32]byte]int{}
 	var fileHandlers = map[[32]byte]*big.Int{}
 
-	/* Create a slice of sarcos (double hashes) indexed by public keys */
+	// Create a slice of sarcos (double hashes) indexed by public keys
 	var pubKeyMap = map[[64]byte][][32]byte{}
 
 	var accountIndex = 0
@@ -147,32 +149,43 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 		*/
 
 		switch state := sarco.State; state {
+		// Sarco Exists
 		case 1:
 			if utility.TimeWithWindowInFuture(sarco.ResurrectionTime, sarco.ResurrectionWindow) {
-				/* Check if the current account index public key matches the one on the current sarco */
+
+				// Track if the archaeologist public key on the sarcophagus matches
+				// our current account index public key
+				// If it does, no other sarcophagus has used this public key yet
 				currentPublicKey := hdw.PublicKeyBytesFromIndex(arch.Wallet, accountIndex)
 				pubKeyMatches := bytes.Equal(sarco.ArchaeologistPublicKey, currentPublicKey)
 
+				// Update the public key mapping
 				var currentPublicKeyIndex [64]byte
 				copy(currentPublicKeyIndex[:], currentPublicKey)
 				doubleHashList := append(pubKeyMap[currentPublicKeyIndex], doubleHash)
 				pubKeyMap[currentPublicKeyIndex] = doubleHashList
 
 				if sarco.AssetId == "" {
-					/* This is a created sarc that is not updated */
-					/* If our current pub key matches the sarc's, this means no sarc has used our current public key yet */
+					// This is a created sarc that is not updated
+					// If our current pub key matches the one on the sarcophagus,
+					// this means no sarc has used our current public key yet
+					// and we need to create a file handler for this sarc
+					// as a file could potentially be sent for this sarcophagus
 					if pubKeyMatches {
 						fileHandlers[doubleHash] = sarco.StorageFee
 					}
 				} else {
-					/* This an updated sarc that is not unwrapped yet */
-					/* Schedule an unwrap using the current account index private key */
+					// We have an updated sarc that is updated but not unwrapped
+					// Schedule an unwrap using the current account index private key
+					// and increment the account index as this key pair has been used.
 					privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
+					sarcophagusesAccountIndex[doubleHash] = accountIndex
 					scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
 					fileHandlers = map[[32]byte]*big.Int{}
 					accountIndex += 1
+
+					// Remove any other sarcos from state that used this public key
 					for i := range pubKeyMap[currentPublicKeyIndex] {
-						/* Remove any previous sarcos from state that used this public key */
 						if !bytes.Equal(pubKeyMap[currentPublicKeyIndex][i][:], doubleHash[:]) {
 							delete(sarcophaguses, pubKeyMap[currentPublicKeyIndex][i])
 						}
@@ -180,7 +193,6 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 				}
 
 				if pubKeyMatches {
-					/* Add the sarcophagus to state */
 					sarcophaguses[doubleHash] = sarco.ResurrectionTime
 				}
 			} else {
@@ -201,8 +213,8 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 				log.Printf("Cleanup Sarcophagus Tx Submitted. Transaction ID: %s", tx.Hash().Hex())
 				log.Printf("Gas Used: %v", tx.Gas())
 			}
+		// Sarco is Done
 		case 2:
-			// Sarco is 'done'
 			if sarco.AssetId != "" {
 				// Sarco has been updated, increment account index as this sarco uses one of our key pairs.
 				// Clear file handlers b/c we only want file handlers for our current account index
@@ -216,7 +228,7 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 	log.Printf("Sarcophaguses waiting for a file: %v", fileHandlers)
 	log.Printf("Current Account Index: %v", accountIndex)
 
-	return sarcophaguses, fileHandlers, accountIndex
+	return sarcophaguses, sarcophagusesAccountIndex, fileHandlers, accountIndex
 }
 
 func calculateFreeBond(addFreeBond *big.Int, removeFreeBond *big.Int) (*big.Int, error) {
