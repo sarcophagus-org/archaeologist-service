@@ -355,7 +355,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	/* Validate Storage Fee is sufficient */
 	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), arch.FeePerByte)
 	if storageExpectation.Cmp(storageFee) == 1 {
-		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", storageExpectation, storageFee)
+		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", utility.ToDecimal(storageExpectation, 18), utility.ToDecimal(storageFee, 18))
 		arch.fileUploadError(errMsg, errMsg, http.StatusBadRequest, w)
 		return
 	}

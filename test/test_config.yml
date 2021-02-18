@@ -1,15 +1,15 @@
-add_to_free_bond: 1000.000000000000000000
-arweave_key_file: arweave.json
+add_to_free_bond: "1000.000000000000000000"
+arweave_key_file: "/Users/sethhrbek/dev/sarco_service/test/arweave.json"
 arweave_node: http://localhost:8000/arweave
-contract_address: 0x65411a12F5Ddc37b6f1f7355cd3fCe77499961aB
+contract_address: 0xb35787D9cB5158dc6be138cAdA3F26EC2fA36cf3
 endpoint: 200.200.200.100
-eth_node: ws://localhost:8545
-eth_private_key: 0x89ee060717762819b0dfa501d1f3c246f059fd70a1b54c7231e617b32594e555
-fee_per_byte: 1.000000000000000000
+eth_node: ws://localhost:9545
+eth_private_key: 0xa39a5e2acb86c748f6a23f1b8b3dcf7e6b46c1039a52b1064dca6f29e3735d9f
+fee_per_byte: "0.000100000000000000"
 file_port: 8080
-max_resurrection_time: 1641859200
-min_bounty: 5.000000000000000000
-min_digging_fee: 5.000000000000000000
+max_resurrection_time: 1991859200
+min_bounty: "1.000000000000000000"
+min_digging_fee: "1.000000000000000000"
 mnemonic: index cupboard city neither axis spot thumb pet rabbit stuff culture project top fault wisdom
 remove_from_free_bond: 0
-token_address: 0xa92BdfF0B44CcacFb2027c1292627a272AB7d87E
+token_address: 0x786f5720F850C7710B57D1d74073edaf35945012
