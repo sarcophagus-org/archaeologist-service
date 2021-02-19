@@ -1,3 +1,6 @@
+// Used to calculate arweave fees
+// Will output estimated cost for creating the transaction
+// As well as estimated fee per byte
 package main
 
 import (
