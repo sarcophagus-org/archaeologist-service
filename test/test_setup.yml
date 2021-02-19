@@ -1,7 +1,7 @@
 # Relative link to where the sarcophagus smart-contracts code lives
-CONTRACT_DIR: "../../sarco_contracts"
+CONTRACT_DIR: "../../sarcophagus-contracts"
 
-# Port that ganache will run on (8545 by default)
+# Port that ganache will run on
 CONTRACT_PORT: 9545
 
 # Port used to deploy arweave

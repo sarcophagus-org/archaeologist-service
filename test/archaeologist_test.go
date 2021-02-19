@@ -40,49 +40,12 @@ func TestRunArchTestSuite(t *testing.T) {
 	suite.Run(t, new(ArchTestSuite))
 }
 
-func (s *ArchTestSuite) exitContract() {
-	s.T().Logf("Exiting Sarco contract on port: %v", s.contractPort)
-	args := []string{"./exit_contract.sh", s.contractPort}
-	cmd := exec.Command("/bin/sh", args...)
-	cmd.Start()
-	cmd.Wait()
-	time.Sleep(1 * time.Second)
-}
-
 func (s *ArchTestSuite) exitArweave() {
 	args := []string{"./exit_arweave.sh", s.arweavePort}
 	cmd := exec.Command("/bin/sh", args...)
 	cmd.Start()
 	cmd.Wait()
 	time.Sleep(1 * time.Second)
-}
-
-func (s *ArchTestSuite) deployContract() {
-	args := []string{"./deploy_contract.sh", s.contractDir}
-	cmd := exec.Command("/bin/sh", args...)
-	cmdReader, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Fatal(err)
-	}
-	readerLog := make(chan string)
-	scanner := bufio.NewScanner(cmdReader)
-	go func() {
-		for scanner.Scan() {
-			readerLog <- scanner.Text()
-		}
-	}()
-	cmd.Start()
-	s.T().Log("Deploying Sarcophagus Contract...")
-	/* Wait for contract to be deployed */
-	for {
-		select {
-		case logLine := <-readerLog:
-			log.Print(logLine)
-			if logLine == "name:    Sarcophagus" {
-				return
-			}
-		}
-	}
 }
 
 func (s *ArchTestSuite) deployArweave() {
@@ -155,16 +118,12 @@ func (s *ArchTestSuite) SetupTest() {
 
 	s.arch = new(models.Archaeologist)
 	s.initEnv()
-	// s.exitContract()
 	s.exitArweave()
-	// s.deployContract()
 	s.deployArweave()
 }
 
 func (s *ArchTestSuite) TeardownSuite() {
 	s.T().Log("*** Stopping blockchains ***")
-
-	// s.exitContract()
 	s.exitArweave()
 }
 
@@ -193,44 +152,44 @@ func (s *ArchTestSuite) TransferSarcoToEmbalmer(amount *big.Int) {
 	}
 }
 
-//func (s *ArchTestSuite) TestTwoSarcosOneUnwrapTime() {
-//	errStrings := archaeologist.InitializeArchaeologist(s.arch, s.config, ".")
-//	if len(errStrings) > 0 {
-//		fmt.Println(fmt.Errorf(strings.Join(errStrings, "\n")))
-//	}
-//	s.Equal(0, len(errStrings))
-//
-//	archaeologist.RegisterOrUpdateArchaeologist(s.arch)
-//
-//	go archaeologist.EventsSubscribe(s.arch)
-//
-//	s.InitEmbalmer()
-//	timeUntilUnwrap := time.Until(time.Unix(s.embalmer.ResurrectionTime.Int64(), 0))
-//
-//	/* Sarco One Scheduled */
-//	fileSeed := 200
-//	fileBytes, assetDoubleHashBytes := embalmer.DoubleHashBytesFromSeed(int64(fileSeed), FILE_BYTE_COUNT)
-//	s.embalmer.CreateSarcophagus(s.embalmerConfig.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytes, "Test Sarco")
-//	s.embalmer.UpdateSarcophagus(assetDoubleHashBytes, fileBytes)
-//	time.Sleep(3000 * time.Millisecond)
-//
-//	/* Sarco Two Scheduled */
-//	fileSeed = 201
-//	fileBytesTwo, assetDoubleHashBytesTwo := embalmer.DoubleHashBytesFromSeed(int64(fileSeed), FILE_BYTE_COUNT)
-//	s.embalmer.CreateSarcophagus(s.embalmerConfig.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytesTwo, "Test Sarco Two")
-//	s.embalmer.UpdateSarcophagus(assetDoubleHashBytesTwo, fileBytesTwo)
-//
-//	/* Wait for both sarcs to be unwrapped */
-//	time.Sleep(timeUntilUnwrap)
-//	time.Sleep(3000 * time.Millisecond)
-//
-//	/* Both sarcs should have a state of done */
-//	sarcoOne, _ := s.arch.SarcoSession.Sarcophagus(assetDoubleHashBytes)
-//	s.Equal(uint8(2), sarcoOne.State)
-//
-//	sarcoTwo, _ := s.arch.SarcoSession.Sarcophagus(assetDoubleHashBytes)
-//	s.Equal(uint8(2), sarcoTwo.State)
-//}
+func (s *ArchTestSuite) TestTwoSarcosOneUnwrapTime() {
+	errStrings := archaeologist.InitializeArchaeologist(s.arch, s.config)
+	if len(errStrings) > 0 {
+		fmt.Println(fmt.Errorf(strings.Join(errStrings, "\n")))
+	}
+	s.Equal(0, len(errStrings))
+
+	archaeologist.RegisterOrUpdateArchaeologist(s.arch)
+
+	go archaeologist.EventsSubscribe(s.arch)
+
+	s.InitEmbalmer()
+	timeUntilUnwrap := time.Until(time.Unix(s.embalmer.ResurrectionTime.Int64(), 0))
+
+	/* Sarco One Scheduled */
+	fileSeed := 200
+	fileBytes, assetDoubleHashBytes := embalmer.DoubleHashBytesFromSeed(int64(fileSeed), FILE_BYTE_COUNT)
+	s.embalmer.CreateSarcophagus(s.embalmerConfig.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytes, "Test Sarco")
+	s.embalmer.UpdateSarcophagus(assetDoubleHashBytes, fileBytes)
+	time.Sleep(3000 * time.Millisecond)
+
+	/* Sarco Two Scheduled */
+	fileSeed = 201
+	fileBytesTwo, assetDoubleHashBytesTwo := embalmer.DoubleHashBytesFromSeed(int64(fileSeed), FILE_BYTE_COUNT)
+	s.embalmer.CreateSarcophagus(s.embalmerConfig.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytesTwo, "Test Sarco Two")
+	s.embalmer.UpdateSarcophagus(assetDoubleHashBytesTwo, fileBytesTwo)
+
+	/* Wait for both sarcs to be unwrapped */
+	time.Sleep(timeUntilUnwrap)
+	time.Sleep(3000 * time.Millisecond)
+
+	/* Both sarcs should have a state of done */
+	sarcoOne, _ := s.arch.SarcoSession.Sarcophagus(assetDoubleHashBytes)
+	s.Equal(uint8(2), sarcoOne.State)
+
+	sarcoTwo, _ := s.arch.SarcoSession.Sarcophagus(assetDoubleHashBytes)
+	s.Equal(uint8(2), sarcoTwo.State)
+}
 
 func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	/* Archaeologist Initializes Without Errors */

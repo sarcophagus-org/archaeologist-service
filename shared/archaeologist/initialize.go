@@ -123,7 +123,6 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	return errStrings
 }
 
-// TODO: IMPORTANT: Build mapping of SarcophagusIdentifier -> Account Index for rewrapping purposes
 func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int, map[[32]byte]int, map[[32]byte]*big.Int, int) {
 	var sarcophaguses = map[[32]byte]*big.Int{}
 	var sarcophagusesAccountIndex = map[[32]byte]int{}
