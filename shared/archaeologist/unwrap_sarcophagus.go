@@ -92,6 +92,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 					/*
 						Estimate Gas is used to check if the unwrap will succeed
 					*/
+					log.Printf("current time: %v", time.Now().Unix())
 					err := estimateGasForUnwrap(arch, assetDoubleHash, privateKeyBytes)
 
 					if err != nil {

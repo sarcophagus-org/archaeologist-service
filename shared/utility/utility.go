@@ -63,11 +63,6 @@ func PrivateKeyToAddress(privateKey *ecdsa.PrivateKey) common.Address {
 	return crypto.PubkeyToAddress(*pubKey)
 }
 
-func PrivateToPublicKeyBytes(privateKey *ecdsa.PrivateKey) []byte {
-	pubKey := PrivateToPublicKeyECDSA(privateKey)
-	return crypto.FromECDSAPub(pubKey)
-}
-
 func ValidatePositiveNumber(num *big.Int, numField string) (*big.Int, error) {
 	if num.Cmp(big.NewInt(0)) != 1 {
 		return nil, fmt.Errorf("%s must be greater than 0. Please check the value in the config file", numField)

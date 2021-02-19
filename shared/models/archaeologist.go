@@ -20,6 +20,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
+	"github.com/shopspring/decimal"
 	"log"
 	"math/big"
 	"net"
@@ -33,6 +34,7 @@ type Archaeologist struct {
 	Client                    *ethclient.Client
 	ArweaveWallet             *wallet.Wallet
 	ArweaveTransactor         *transactor.Transactor
+	ArweaveMultiplier		  decimal.Decimal
 	PrivateKey                *ecdsa.PrivateKey
 	CurrentPublicKeyBytes     []byte
 	CurrentPrivateKey         *ecdsa.PrivateKey
@@ -201,6 +203,14 @@ func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arwea
 		return nil, err
 	}
 
+	// Apply fee multiplier
+	priceDecimal, err := decimal.NewFromString(price)
+	if err != nil {
+		return nil, err
+	}
+
+	priceMultiplied := priceDecimal.Mul(arch.ArweaveMultiplier).Round(0).String()
+
 	// Non encoded transaction fields
 	txn := tx.NewTransaction(
 		lastTx,
@@ -208,7 +218,7 @@ func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arwea
 		amount,
 		target,
 		data,
-		price,
+		priceMultiplied,
 	)
 
 	return txn, nil

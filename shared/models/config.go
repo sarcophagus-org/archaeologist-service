@@ -9,6 +9,7 @@ type Config struct {
 	ETH_NODE              string
 	ETH_PRIVATE_KEY       string
 	ARWEAVE_KEY_FILE      string
+	ARWEAVE_MULTIPLIER    string
 	ARWEAVE_NODE          string
 	FILE_PORT             string
 	ENDPOINT              string

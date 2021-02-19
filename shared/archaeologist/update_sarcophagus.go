@@ -21,6 +21,7 @@ func handleUpdateSarcophagus(event *contracts.EventsUpdateSarcophagus, arch *mod
 		arch.SarcophagusesAccountIndex[event.Identifier] = arch.AccountIndex
 
 		arweaveClient := arch.ArweaveTransactor.Client.(*api.Client)
+		log.Printf("Scheduling Unwrap for: %v", resurrectionTime)
 		scheduleUnwrap(&arch.SarcoSession, arweaveClient, resurrectionTime, arch, event.Identifier, privateKey, event.AssetId)
 
 		arch.AccountIndex += 1
