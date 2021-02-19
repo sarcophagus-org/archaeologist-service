@@ -20,6 +20,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
+	"github.com/shopspring/decimal"
 	"log"
 	"math/big"
 	"net"
@@ -30,32 +31,34 @@ import (
 )
 
 type Archaeologist struct {
-	Client                *ethclient.Client
-	ArweaveWallet         *wallet.Wallet
-	ArweaveTransactor     *transactor.Transactor
-	PrivateKey            *ecdsa.PrivateKey
-	CurrentPublicKeyBytes []byte
-	CurrentPrivateKey     *ecdsa.PrivateKey
-	ArchAddress           common.Address
-	PaymentAddress        common.Address
-	SarcoAddress          common.Address
-	SarcoSession          contracts.SarcophagusSession
-	SarcoTokenAddress     common.Address
-	TokenSession          contracts.TokenSession
-	FreeBond              *big.Int
-	FeePerByte            *big.Int
-	MinBounty             *big.Int
-	MinDiggingFee         *big.Int
-	MaxResurectionTime    *big.Int
-	Endpoint              string
-	FilePort              string
-	Mnemonic              string
-	Wallet                *hdwallet.Wallet
-	AccountIndex          int
-	Server                *http.Server
-	Sarcophaguses         map[[32]byte]*big.Int
-	FileHandlers          map[[32]byte]*big.Int
-	UnwrapAttempts        map[[32]byte]int
+	Client                    *ethclient.Client
+	ArweaveWallet             *wallet.Wallet
+	ArweaveTransactor         *transactor.Transactor
+	ArweaveMultiplier		  decimal.Decimal
+	PrivateKey                *ecdsa.PrivateKey
+	CurrentPublicKeyBytes     []byte
+	CurrentPrivateKey         *ecdsa.PrivateKey
+	ArchAddress               common.Address
+	PaymentAddress            common.Address
+	SarcoAddress              common.Address
+	SarcoSession              contracts.SarcophagusSession
+	SarcoTokenAddress         common.Address
+	TokenSession              contracts.TokenSession
+	FreeBond                  *big.Int
+	FeePerByte                *big.Int
+	MinBounty                 *big.Int
+	MinDiggingFee             *big.Int
+	MaxResurectionTime        *big.Int
+	Endpoint                  string
+	FilePort                  string
+	Mnemonic                  string
+	Wallet                    *hdwallet.Wallet
+	AccountIndex              int
+	Server                    *http.Server
+	Sarcophaguses             map[[32]byte]*big.Int
+	SarcophagusesAccountIndex map[[32]byte]int
+	FileHandlers              map[[32]byte]*big.Int
+	UnwrapAttempts            map[[32]byte]int
 }
 
 const (
@@ -200,6 +203,14 @@ func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arwea
 		return nil, err
 	}
 
+	// Apply fee multiplier
+	priceDecimal, err := decimal.NewFromString(price)
+	if err != nil {
+		return nil, err
+	}
+
+	priceMultiplied := priceDecimal.Mul(arch.ArweaveMultiplier).Round(0).String()
+
 	// Non encoded transaction fields
 	txn := tx.NewTransaction(
 		lastTx,
@@ -207,7 +218,7 @@ func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arwea
 		amount,
 		target,
 		data,
-		price,
+		priceMultiplied,
 	)
 
 	return txn, nil
@@ -354,7 +365,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	/* Validate Storage Fee is sufficient */
 	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), arch.FeePerByte)
 	if storageExpectation.Cmp(storageFee) == 1 {
-		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", storageExpectation, storageFee)
+		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", utility.ToDecimal(storageExpectation, 18), utility.ToDecimal(storageFee, 18))
 		arch.fileUploadError(errMsg, errMsg, http.StatusBadRequest, w)
 		return
 	}
@@ -470,7 +481,12 @@ func (arch *Archaeologist) IsArchSarcophagus(doubleHash [32]byte) bool {
 func (arch *Archaeologist) RemoveArchSarcophagus(doubleHash [32]byte) {
 	if arch.IsArchSarcophagus(doubleHash) {
 		delete(arch.Sarcophaguses, doubleHash)
-		_, ok := arch.FileHandlers[doubleHash]
+		_, ok := arch.SarcophagusesAccountIndex[doubleHash]
+		if ok {
+			delete(arch.SarcophagusesAccountIndex, doubleHash)
+		}
+
+		_, ok = arch.FileHandlers[doubleHash]
 		if ok {
 			arch.fileHandlerCheck()
 			delete(arch.FileHandlers, doubleHash)

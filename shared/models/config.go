@@ -9,6 +9,7 @@ type Config struct {
 	ETH_NODE              string
 	ETH_PRIVATE_KEY       string
 	ARWEAVE_KEY_FILE      string
+	ARWEAVE_MULTIPLIER    string
 	ARWEAVE_NODE          string
 	FILE_PORT             string
 	ENDPOINT              string
@@ -49,6 +50,6 @@ func (config *Config) LoadConfig(name string, path string, writeConfig bool) {
 	if writeConfig {
 		viper.Set("ADD_TO_FREE_BOND", 0)
 		viper.Set("REMOVE_FROM_FREE_BOND", 0)
-		viper.WriteConfig()
+		// viper.WriteConfig()
 	}
 }

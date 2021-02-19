@@ -17,9 +17,11 @@ import (
 func main(){
 	log.Printf("%v", loadArt())
 
-	/* Add curve used by pub/priv keys in hdwallet to the accepted curves for ecies */
+	// Add curve used by pub/priv keys in hdwallet to the accepted curves for ecies
+	// This is the curve used by the Web App to encrypt the file bytes
 	ecies.AddParamsForCurve(btcec.S256(), ecies.ECIES_AES128_SHA256)
 
+	// Load the config file values. Flag with config location is optional
 	var configFile = flag.String("config", "config", "Location of the config file.")
 	configDir := "./"
 	flag.Parse()
