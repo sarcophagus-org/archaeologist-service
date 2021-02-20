@@ -1,3 +1,10 @@
+// Archaeologist model is responsible for:
+// 1 .Registering and Updating the Archaeologist on the Sarcophagus contract
+// 2. Handling Free Bond deposits and withdrawal to the contract
+// 3. Handling the file sent from the embalmer, uploading it to Arweave,
+//    and responding to the embalmer with the values needed to update a created Sarcophagus
+// 4. Stopping and Starting the server that is used to receive the file from embalmer
+
 package models
 
 import (
@@ -61,10 +68,13 @@ type Archaeologist struct {
 	UnwrapAttempts            map[[32]byte]int
 }
 
+// MB used for validating file size
 const (
 	MB = 1 << 20
 )
 
+// SarcoBalance returns archaeologists Sarco Balance at the address
+// derived from the config value: eth_private_key
 func (arch *Archaeologist) SarcoBalance() *big.Int {
 	balance, err := arch.TokenSession.BalanceOf(arch.ArchAddress)
 
@@ -75,6 +85,8 @@ func (arch *Archaeologist) SarcoBalance() *big.Int {
 	return balance
 }
 
+// SarcoBalance returns archaeologists Eth Balance at the address
+// derived from the config value: eth_private_key
 func (arch *Archaeologist) EthBalance() *big.Int {
 	balance, err := arch.Client.BalanceAt(context.Background(), arch.ArchAddress, nil)
 
@@ -85,6 +97,36 @@ func (arch *Archaeologist) EthBalance() *big.Int {
 	return balance
 }
 
+// ApproveFreeBondTransfer approves the value set in the config value: add_to_free_bond
+func (arch *Archaeologist) ApproveFreeBondTransfer() {
+	archSarcoBalance := arch.SarcoBalance()
+
+	// Check if archSarcoBalance < freeBond
+	// Throw error if current balance is less than what is attempting to be withdrawn
+	if archSarcoBalance.Cmp(arch.FreeBond) == -1 {
+		log.Fatalf("Your balance is too low to cover the free bond transfer. \n Balance Needed: %v \n Current Balance: %v", arch.FreeBond, archSarcoBalance)
+	}
+
+	txn, err := arch.TokenSession.Approve(
+		arch.SarcoAddress,
+		arch.FreeBond,
+	)
+
+	if err != nil {
+		log.Fatalf("Transaction reverted. Error Approving Transaction: %v \n Config value ADD_TO_FREE_BOND has been reset to 0. You will need to reset this.", err)
+	}
+
+	log.Printf("Approval Transaction for %v Sarco Tokens Submitted. Transaction ID: %v", utility.ToDecimal(arch.FreeBond, 18), txn.Hash().Hex())
+	log.Printf("Gas Used for Approval: %v", txn.Gas())
+
+	err = ethereum.WaitMined(arch.Client, txn.Hash(), "Approval of Free Bond")
+
+	if err != nil {
+		log.Fatalf("There was an error mining the approval of free bond transaction: %v", err)
+	}
+}
+
+// WithdrawBond withdraws Sarco tokens from the archaeologist's Free Bond balance
 func (arch *Archaeologist) WithdrawBond(bondToWithdraw *big.Int) {
 	txn, err := arch.SarcoSession.WithdrawBond(bondToWithdraw)
 
@@ -104,6 +146,8 @@ func (arch *Archaeologist) WithdrawBond(bondToWithdraw *big.Int) {
 	}
 }
 
+// RegisterArchaeologist - registers the archaeologist on the contract
+// If the free bond value is > 0 then the arch can accept new jobs
 func (arch *Archaeologist) RegisterArchaeologist() {
 	log.Println("***REGISTERING ARCHAEOLOGIST***")
 	txn, err := arch.SarcoSession.RegisterArchaeologist(
@@ -134,6 +178,7 @@ func (arch *Archaeologist) RegisterArchaeologist() {
 	}
 }
 
+// UpdateArchaeologist .
 func (arch *Archaeologist) UpdateArchaeologist() {
 	log.Println("***UPDATING ARCHAEOLOGIST***")
 	txn, err := arch.SarcoSession.UpdateArchaeologist(
@@ -164,33 +209,12 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 	}
 }
 
-func (arch *Archaeologist) ApproveFreeBondTransfer() {
-	archSarcoBalance := arch.SarcoBalance()
-
-	// Check if archSarcoBalance < freeBond
-	if archSarcoBalance.Cmp(arch.FreeBond) == -1 {
-		log.Fatalf("Your balance is too low to cover the free bond transfer. \n Balance Needed: %v \n Current Balance: %v", arch.FreeBond, archSarcoBalance)
-	}
-
-	txn, err := arch.TokenSession.Approve(
-		arch.SarcoAddress,
-		arch.FreeBond,
-	)
-
-	if err != nil {
-		log.Fatalf("Transaction reverted. Error Approving Transaction: %v \n Config value ADD_TO_FREE_BOND has been reset to 0. You will need to reset this.", err)
-	}
-
-	log.Printf("Approval Transaction for %v Sarco Tokens Submitted. Transaction ID: %v", utility.ToDecimal(arch.FreeBond, 18), txn.Hash().Hex())
-	log.Printf("Gas Used for Approval: %v", txn.Gas())
-
-	err = ethereum.WaitMined(arch.Client, txn.Hash(), "Approval of Free Bond")
-
-	if err != nil {
-		log.Fatalf("There was an error mining the approval of free bond transaction: %v", err)
-	}
-}
-
+// CreateArweaveTransaction
+// Emulates CreateTransaction in the arweave-go library's tx package
+// There are 2 differences:
+// 1. Multiplier set in config can increase the estimated fee
+// 2. Uses tr.Client.LastTransaction instead of tr.Client.TxAnchor(ctx)
+//    LastTransaction was failing when testing locally.
 func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arweave.WalletSigner, amount string, data []byte, target string) (*tx.Transaction, error) {
 	tr := arch.ArweaveTransactor
 	lastTx, err := tr.Client.LastTransaction(ctx, w.Address())
@@ -224,16 +248,16 @@ func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arwea
 	return txn, nil
 }
 
+// UploadFileToArweave uploads the double encrypted file bytes to arweave
+// Creates and returns an arweave tx
+// The content type of the unencrypted file is stored as a tag
 func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte, contentType string) (*tx.Transaction, error) {
 	// create a transaction
 	arTrans := arch.ArweaveTransactor
 	w := arch.ArweaveWallet
 
-	/*
-		Arweave Transaction:
-		Amount and Target are blank, as we aren't sending arweave tokens to anyone
-	*/
-	log.Printf("uploading file bytes to arweave: %v", fileBytes)
+	// amount and Target are blank, b/c arweave tokens are not being sent
+	log.Printf("Uploading file bytes to arweave: %v", fileBytes)
 	txBuilder, err := arch.CreateArweaveTransaction(context.TODO(), w, "0", fileBytes, "")
 	if err != nil {
 		log.Printf("Error creating transaction: %v", err)
@@ -267,6 +291,7 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte, contentType str
 	return txn, nil
 }
 
+// fileHandlerCheck closes the server if there are no file handlers in the mapping
 func (arch *Archaeologist) fileHandlerCheck() {
 	fileHandlerLen := len(arch.FileHandlers)
 	if fileHandlerLen <= 1 {
@@ -275,6 +300,7 @@ func (arch *Archaeologist) fileHandlerCheck() {
 	}
 }
 
+// fileUploadError .
 func (arch *Archaeologist) fileUploadError(logMsg string, httpErrMsg string, httpErrType int, w http.ResponseWriter) {
 	log.Printf("Error uploading file: %v", logMsg)
 	http.Error(w, httpErrMsg, httpErrType)
@@ -282,6 +308,9 @@ func (arch *Archaeologist) fileUploadError(logMsg string, httpErrMsg string, htt
 	arch.fileHandlerCheck()
 }
 
+// validateArweaveBalance returns false if user's balance is not enough to cover
+// not currently being used
+// TODO: Add arweave_multiplier to the validated amount
 func (arch *Archaeologist) validateArweaveBalance(fileBytes []byte) bool {
 	txFeeInt := new(big.Int)
 	balanceInt := new(big.Int)
@@ -298,6 +327,10 @@ func (arch *Archaeologist) pingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "true")
 }
 
+// fileUploadHandler validates the file sent by the embalmer for:
+// 1. Size (< 3MB)
+// 2. Can be Decrypted using private key a the current account index from the hd wallet
+// 3. Storage Fee sent by embalmer is adequate
 func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -306,12 +339,9 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	/*
-		Double Encrypted file bytes are sent as encoded json
-		Decode the file bytes into a struct
-		File Type is sent as a separate field. Create a "Content-Type" tag on the arweave tx with this value.
-	*/
-
+	// Double Encrypted file bytes are sent as encoded json
+	// Decode the file bytes into a struct
+	// File Type is sent as a separate field. Create a "Content-Type" tag on the arweave tx with this value.
 	var sarcoFile SarcoFile
 
 	if r.Body == nil {
@@ -335,13 +365,13 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 
 	fileByteLen := len(fileBytes)
 
-	/* Validate Size. */
+	// validate Size
 	if fileByteLen > (3 * MB) {
 		arch.fileUploadError("File was too large to receive. Size:"+string(fileByteLen), "The file sent is larger than the limit of 3MB.", http.StatusBadRequest, w)
 		return
 	}
 
-	/* Decrypt the outer layer of file */
+	// validate outer layer of file encryption can be decrypted
 	log.Print("Decrypting file...")
 	currentPrivateKey := hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	decryptedFileBytes, err := utility.DecryptFile(fileBytes, currentPrivateKey)
@@ -351,10 +381,12 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	// calculate the sarcophagus identifier from the file bytes
 	assetDoubleHash := utility.FileBytesToDoubleHashBytes(decryptedFileBytes)
 	log.Printf("asset double hash: %v", assetDoubleHash)
 
-	/* Validate the inner layer double hash matches a double hash */
+	// validate the sarcophagus identifier matches a sarcophagus identifier the archaeologist is expecting to receive a file for
+	// this would be an edge case where the embalmer sends a correctly encrypted file for the wrong sarcophagus
 	storageFee, ok := arch.FileHandlers[assetDoubleHash]
 	if !ok {
 		errMsg := "The double hash of the file does not match any open double hashes."
@@ -362,7 +394,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	/* Validate Storage Fee is sufficient */
+	// validate storage fee is sufficient
 	storageExpectation := new(big.Int).Mul(big.NewInt(int64(fileByteLen)), arch.FeePerByte)
 	if storageExpectation.Cmp(storageFee) == 1 {
 		errMsg := fmt.Sprintf("The storage fee is not enough. Expected storage fee of at least: %v, storage fee was: %v", utility.ToDecimal(storageExpectation, 18), utility.ToDecimal(storageFee, 18))
@@ -370,8 +402,10 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	// all validations have passed
 	log.Printf("File was validated successfully")
 
+	// create arweave tx
 	arweaveTx, err := arch.UploadFileToArweave(fileBytes, contentType)
 	if err != nil {
 		errMsg := fmt.Sprintf("There was an error with the file. Error: %v", err)
@@ -381,11 +415,11 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 
 	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
 
-	/* Respond to embalmer with:
-		New Public Key
-	   	Arweave Tx Hash
-		Signature of New Public Key + Tx Hash
-	*/
+	// respond to embalmer with:
+	// 1. Public key from the hd wallet at the next index
+	// 2. Sarcophagus identifier
+	// 3. Arweave Tx Hash
+	// 4. Signature of New Public Key + Tx Hash (concatenated)
 	arweaveTxHash := arweaveTx.Hash()
 	newPublicKey := hdw.PublicKeyFromIndex(arch.Wallet, arch.AccountIndex+1)
 	pubKeyConcatTxHash := append(crypto.FromECDSAPub(newPublicKey)[1:], []byte(arweaveTxHash)...)
@@ -412,6 +446,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	arch.ShutdownServer()
 }
 
+// ListenForFile .
 func (arch *Archaeologist) ListenForFile() {
 	if !arch.IsServerRunning() {
 		arch.InitServer()
@@ -419,12 +454,14 @@ func (arch *Archaeologist) ListenForFile() {
 	}
 }
 
+// IsServerRunning .
 func (arch *Archaeologist) IsServerRunning() bool {
 	timeout := 1 * time.Second
 	_, err := net.DialTimeout("tcp", net.JoinHostPort("localhost", arch.FilePort), timeout)
 	return err == nil
 }
 
+// InitAndTestServer .
 func (arch *Archaeologist) InitAndTestServer() {
 	arch.InitServer()
 	log.Printf("Testing Server...")
@@ -437,6 +474,7 @@ func (arch *Archaeologist) InitAndTestServer() {
 	arch.Server.Shutdown(context.Background())
 }
 
+// InitServer .
 func (arch *Archaeologist) InitServer() {
 	sm := http.NewServeMux()
 	sm.Handle("/ping", http.HandlerFunc(arch.pingHandler))
@@ -444,6 +482,7 @@ func (arch *Archaeologist) InitServer() {
 	arch.Server = &http.Server{Addr: "localhost:" + arch.FilePort, Handler: utility.LimitMiddleware(sm)}
 }
 
+// Start Server .
 func (arch *Archaeologist) StartServer() {
 	go func() {
 		log.Printf("Listening for file on %s:", arch.Server.Addr)
@@ -461,6 +500,7 @@ func (arch *Archaeologist) StartServer() {
 	arch.ShutdownServer()
 }
 
+// ShutdownServer .
 func (arch *Archaeologist) ShutdownServer() {
 	if arch.IsServerRunning() {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -473,11 +513,14 @@ func (arch *Archaeologist) ShutdownServer() {
 	}
 }
 
+// IsArchSarcophagus returns true if the sarcophagus is in state
 func (arch *Archaeologist) IsArchSarcophagus(doubleHash [32]byte) bool {
 	_, ok := arch.Sarcophaguses[doubleHash]
 	return ok
 }
 
+// RemoveArchSarcophagus deletes the sarcophagus from state if it exists
+// also removes the corresponding account index and file handler
 func (arch *Archaeologist) RemoveArchSarcophagus(doubleHash [32]byte) {
 	if arch.IsArchSarcophagus(doubleHash) {
 		delete(arch.Sarcophaguses, doubleHash)

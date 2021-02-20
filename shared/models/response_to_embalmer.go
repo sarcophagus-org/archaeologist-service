@@ -1,3 +1,6 @@
+// ResponseToEmbalmer model is used to store the data returned to the embalmer
+// after successful completion of the arweave file uploading process
+
 package models
 
 type ResponseToEmbalmer struct {

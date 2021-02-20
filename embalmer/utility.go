@@ -1,20 +1,10 @@
+// Not used by the service, for testing purposes only
 package embalmer
 
 import (
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"math/rand"
 )
-
-func FileBytesToDoubleHashBytes(fileBytes []byte) [32]byte {
-	assetSingleHash := crypto.Keccak256(fileBytes)
-	assetDoubleHash := crypto.Keccak256(assetSingleHash)
-
-	/* Convert Double Hash to 32 byte slice */
-	var assetDoubleHashBytes [32]byte
-	copy(assetDoubleHashBytes[:], assetDoubleHash)
-
-	return assetDoubleHashBytes
-}
 
 func DoubleHashBytesFromSeed(seed int64, size int) ([]byte, [32]byte) {
 	/* Generate random bytes to use as payload for each sarco */
@@ -22,5 +12,5 @@ func DoubleHashBytesFromSeed(seed int64, size int) ([]byte, [32]byte) {
 
 	rand.Seed(seed)
 	rand.Read(fileBytes)
-	return fileBytes, FileBytesToDoubleHashBytes(fileBytes)
+	return fileBytes, utility.FileBytesToDoubleHashBytes(fileBytes)
 }

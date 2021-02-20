@@ -1,3 +1,5 @@
+// Various utility functions used for creating and interating with ethereum client
+
 package ethereum
 
 import (
@@ -10,6 +12,7 @@ import (
 	"time"
 )
 
+// InitEthClient connects to and returns eth client supplied in the config file
 func InitEthClient(ethNode string) (*ethclient.Client, error) {
 	cli, err := ethclient.Dial(ethNode)
 	if err != nil {
@@ -19,6 +22,8 @@ func InitEthClient(ethNode string) (*ethclient.Client, error) {
 	return cli, nil
 }
 
+// SarcoAddress validates and returns the address of the Sarcophagus address
+// using the contract address supplied in the config file
 func SarcoAddress(contractAddress string, client *ethclient.Client) (common.Address, error) {
 	address := common.HexToAddress(contractAddress)
 	if isContract := utility.IsContract(address, client); !isContract {
@@ -28,6 +33,8 @@ func SarcoAddress(contractAddress string, client *ethclient.Client) (common.Addr
 	return address, nil
 }
 
+// WaitMined waits for an ethereum transaction to be confirmed (or fail)
+// Returns an error if there was an error confirming the transaction
 func WaitMined(client *ethclient.Client, txHash common.Hash, label string) error {
 	var miningErr error = nil
 

@@ -1,3 +1,7 @@
+// Config model loads values from the config file into a Config struct
+// All values in the config struct are strings
+// Each value is converted to the necessary type during initialization of archaeologist
+
 package models
 
 import (
@@ -26,6 +30,7 @@ type Config struct {
 	MNEMONIC              string
 }
 
+// LoadConfig .
 func (config *Config) LoadConfig(name string, path string, writeConfig bool) {
 	viper.SetConfigName(name)
 	viper.AddConfigPath(path)
@@ -45,11 +50,11 @@ func (config *Config) LoadConfig(name string, path string, writeConfig bool) {
 		log.Fatalf("Could not load config file. Please check it is configured correctly. Error: %v \n", err)
 	}
 
-	// Write Free Bond Values to 0 in the config file.
-	// They have already been loaded into the config struct.
+	// Write Free Bond Values to 0 in the config file so the user does not replay transactions if the service restarts.
+	// Writing the config will remove any comments in the config
 	if writeConfig {
 		viper.Set("ADD_TO_FREE_BOND", 0)
 		viper.Set("REMOVE_FROM_FREE_BOND", 0)
-		// viper.WriteConfig()
+		viper.WriteConfig()
 	}
 }

@@ -1,7 +1,8 @@
+// Various utility functions used throughout the service
+
 package utility
 
 import (
-	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"fmt"
@@ -10,25 +11,26 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/shopspring/decimal"
-	"io"
 	"log"
 	"math/big"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
+// IsHex .
 func IsHex(str string) bool {
 	return strings.HasPrefix(str, "0x")
 }
 
+// IsValidAddress .
 func IsValidAddress(ethAddress string) bool {
 	re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
 	return re.MatchString(ethAddress)
 }
 
+// IsContract validates that provided address is a contract
 func IsContract(address common.Address, client *ethclient.Client) bool {
 	bytecode, err := client.CodeAt(context.Background(), address, nil)
 	if err != nil {
@@ -39,6 +41,7 @@ func IsContract(address common.Address, client *ethclient.Client) bool {
 	return isContract
 }
 
+// PrivateKeyHexToECDSA .
 func PrivateKeyHexToECDSA(privateKey string) (*ecdsa.PrivateKey, error) {
 	if IsHex(privateKey) {
 		privateKey = privateKey[2:]
@@ -48,6 +51,7 @@ func PrivateKeyHexToECDSA(privateKey string) (*ecdsa.PrivateKey, error) {
 	return ethPrivateKey, err
 }
 
+// PrivateToPublicKeyECDSA .
 func PrivateToPublicKeyECDSA(privateKey *ecdsa.PrivateKey) *ecdsa.PublicKey {
 	pKey := privateKey.Public()
 	publicKey, ok := pKey.(*ecdsa.PublicKey)
@@ -58,11 +62,13 @@ func PrivateToPublicKeyECDSA(privateKey *ecdsa.PrivateKey) *ecdsa.PublicKey {
 	return publicKey
 }
 
+// PrivateKeyToAddress derives address from private key
 func PrivateKeyToAddress(privateKey *ecdsa.PrivateKey) common.Address {
 	pubKey := PrivateToPublicKeyECDSA(privateKey)
 	return crypto.PubkeyToAddress(*pubKey)
 }
 
+// ValidatePositiveNumber returns the first argument if positive, otherwise returns error
 func ValidatePositiveNumber(num *big.Int, numField string) (*big.Int, error) {
 	if num.Cmp(big.NewInt(0)) != 1 {
 		return nil, fmt.Errorf("%s must be greater than 0. Please check the value in the config file", numField)
@@ -71,6 +77,7 @@ func ValidatePositiveNumber(num *big.Int, numField string) (*big.Int, error) {
 	return num, nil
 }
 
+// TimeInFuture .
 func TimeInFuture(unixTimestamp *big.Int) bool {
 	timestamp := unixTimestamp.Int64()
 	now := time.Now()
@@ -78,18 +85,13 @@ func TimeInFuture(unixTimestamp *big.Int) bool {
 	return timestamp >= unixNow
 }
 
+// TimeWithWindowInFuture returns whether (resurrection time + resurrection window) is in the future
 func TimeWithWindowInFuture(unixTimestamp *big.Int, window *big.Int) bool {
 	timePlusWindow := big.NewInt(0).Add(unixTimestamp, window)
 	return TimeInFuture(timePlusWindow)
 }
 
-func FileToBytes(file *os.File) ([]byte, error) {
-	buf := bytes.NewBuffer(nil)
-	_, err := io.Copy(buf, file)
-
-	return buf.Bytes(), err
-}
-
+// ToDecimal converts string or big.Int to decimal
 func ToDecimal(ivalue interface{}, decimals int) decimal.Decimal {
 	value := new(big.Int)
 	switch v := ivalue.(type) {
