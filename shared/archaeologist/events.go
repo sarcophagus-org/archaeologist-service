@@ -1,3 +1,6 @@
+// Responsible for subscribing to all relevant events that get emitted from the contract
+// and acting on those events
+
 package archaeologist
 
 import (
@@ -9,11 +12,7 @@ import (
 	"log"
 )
 
-/*
-	This file is responsible for watching all relevant events that get emitted from the contract,
-	And then acting on those events.
- */
-
+// watchCreateSarcophagus .
 func watchCreateSarcophagus(sarcoEvents *contracts.Events, archAddress []common.Address) (chan *contracts.EventsCreateSarcophagus, event.Subscription) {
 	sink := make(chan *contracts.EventsCreateSarcophagus)
 	sub, err := sarcoEvents.WatchCreateSarcophagus(&bind.WatchOpts{}, sink, nil, archAddress)
@@ -24,6 +23,7 @@ func watchCreateSarcophagus(sarcoEvents *contracts.Events, archAddress []common.
 	return sink, sub
 }
 
+// watchUpdateSarcophagus .
 func watchUpdateSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.EventsUpdateSarcophagus, event.Subscription) {
 	sink := make(chan *contracts.EventsUpdateSarcophagus)
 	sub, err := sarcoEvents.WatchUpdateSarcophagus(&bind.WatchOpts{}, sink, nil)
@@ -34,6 +34,7 @@ func watchUpdateSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.Even
 	return sink, sub
 }
 
+// watchRewrapSarcophagus .
 func watchRewrapSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.EventsRewrapSarcophagus, event.Subscription) {
 	sink := make(chan *contracts.EventsRewrapSarcophagus)
 	sub, err := sarcoEvents.WatchRewrapSarcophagus(&bind.WatchOpts{}, sink, nil)
@@ -44,6 +45,7 @@ func watchRewrapSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.Even
 	return sink, sub
 }
 
+// watchCleanUpSarcophagus .
 func watchCleanUpSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.EventsCleanUpSarcophagus, event.Subscription) {
 	sink := make(chan *contracts.EventsCleanUpSarcophagus)
 	sub, err := sarcoEvents.WatchCleanUpSarcophagus(&bind.WatchOpts{}, sink, nil, nil)
@@ -54,6 +56,7 @@ func watchCleanUpSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.Eve
 	return sink, sub
 }
 
+// watchBurySarcophagus .
 func watchBurySarcophagus(sarcoEvents *contracts.Events) (chan *contracts.EventsBurySarcophagus, event.Subscription) {
 	sink := make(chan *contracts.EventsBurySarcophagus)
 	sub, err := sarcoEvents.WatchBurySarcophagus(&bind.WatchOpts{}, sink, nil)
@@ -64,6 +67,7 @@ func watchBurySarcophagus(sarcoEvents *contracts.Events) (chan *contracts.Events
 	return sink, sub
 }
 
+// watchCancelSarcophagus .
 func watchCancelSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.EventsCancelSarcophagus, event.Subscription) {
 	sink := make(chan *contracts.EventsCancelSarcophagus)
 	sub, err := sarcoEvents.WatchCancelSarcophagus(&bind.WatchOpts{}, sink, nil)
@@ -74,6 +78,7 @@ func watchCancelSarcophagus(sarcoEvents *contracts.Events) (chan *contracts.Even
 	return sink, sub
 }
 
+// watchAccuseArchaeologist .
 func watchAccuseArchaeologist(sarcoEvents *contracts.Events) (chan *contracts.EventsAccuseArchaeologist, event.Subscription) {
 	sink := make(chan *contracts.EventsAccuseArchaeologist)
 	sub, err := sarcoEvents.WatchAccuseArchaeologist(&bind.WatchOpts{}, sink, nil, nil)
@@ -84,6 +89,7 @@ func watchAccuseArchaeologist(sarcoEvents *contracts.Events) (chan *contracts.Ev
 	return sink, sub
 }
 
+// EventsSubscribe subscribes to the events and handles them
 func EventsSubscribe(arch *models.Archaeologist) {
 	sarcoEvents, err := contracts.NewEvents(arch.SarcoAddress, arch.Client)
 	if err != nil {
@@ -134,6 +140,8 @@ func EventsSubscribe(arch *models.Archaeologist) {
 				log.Println("Error with Accuse Archaeologist Subscription:", err)
 			}
 		case event := <-createSink:
+			// the createSink only returns sarcophagi related to this archaeologist
+			// updateSink and rewrapSink do not, so those have manual filtering before handling the event
 			go handleCreateSarcophagus(event, arch)
 		case event := <-updateSink:
 			if arch.IsArchSarcophagus(event.Identifier) {
@@ -143,6 +151,8 @@ func EventsSubscribe(arch *models.Archaeologist) {
 			if arch.IsArchSarcophagus(event.Identifier) {
 				go handleRewrapSarcophagus(event, arch)
 			}
+		// these events indicate a sarcophagus is 'done'
+		// and can be removed from state
 		case event := <-cleanSink:
 			arch.RemoveArchSarcophagus(event.Identifier)
 		case event := <-burySink:

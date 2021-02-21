@@ -1,3 +1,4 @@
+// unwrap_sarcophagus is responsible for unwrapping a sarcophagus
 package archaeologist
 
 import (
@@ -28,11 +29,11 @@ const (
 var mutex = &sync.Mutex{}
 
 // scheduleUnwrap is responsible for scheduling and
-// unwrapping a sarcophagus the unwrapping will be
+// unwrapping a sarcophagus. The unwrapping will be
 // executed at the resurrectionTime passed into the function.
 //
-// Before unwrapping, it will check if the resurrection time in
-// state for the sarcophagus matches the resurrectionTime param
+// Before unwrapping, it will check if the sarcophagus's resurrection time in
+// state matches the resurrectionTime param
 // If they don't match, then the sarcophagus has been rewrapped,
 // and scheduleUnwrap will return without unwrapping.
 //
@@ -69,13 +70,19 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 	log.Printf("Current Private Key BYTES: %v", privateKeyBytes)
 
 	time.AfterFunc(timeToUnwrap, func() {
+
+		// Confirm the sarcophagus is in state
 		if resTime, ok := arch.Sarcophaguses[assetDoubleHash]; ok {
+
+			// Confirm resurrection time passed at the time of the function call matches the
+			// resurrection time in state for this sarcophagus
 			if resTime.Cmp(resurrectionTime) == 0 {
+
+				// Validate that we can generate the single hash
 				_, err := generateSingleHash(arweaveClient, assetId, privateKey)
 				if err != nil {
 					log.Printf("Error generating single hash during unwrapping process. Unwrapping cancelled: %v", err)
 				} else {
-					// TODO: Do we need to remove the sarco from state if the unwrap fails?
 					mutex.Lock()
 					attempts, ok := arch.UnwrapAttempts[assetDoubleHash]
 					mutex.Unlock()
@@ -89,10 +96,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 					arch.UnwrapAttempts[assetDoubleHash] = attempts
 					mutex.Unlock()
 
-					/*
-						Estimate Gas is used to check if the unwrap will succeed
-					*/
-					log.Printf("current time: %v", time.Now().Unix())
+					// estimate gas is used to check if the unwrap will succeed
 					err := estimateGasForUnwrap(arch, assetDoubleHash, privateKeyBytes)
 
 					if err != nil {
@@ -109,6 +113,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 								time.Sleep(randomRetryInterval() * time.Millisecond)
 								scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 							}
+							// TODO: Do we need to remove the sarco from state if the unwrap fails more than the allowed times?
 						} else {
 							log.Printf("Unwrap Sarcophagus Transaction Submitted. Transaction ID: %s", txn.Hash().Hex())
 							log.Printf("Gas Used: %v", txn.Gas())
@@ -123,10 +128,10 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 								}
 							} else {
 								log.Printf("Unwrap Sarcophagus Transaction Successful. Transaction ID: %s", txn.Hash().Hex())
-							}
 
-							/* Remove from state */
-							arch.RemoveArchSarcophagus(assetDoubleHash)
+								// Remove from state
+								arch.RemoveArchSarcophagus(assetDoubleHash)
+							}
 						}
 					}
 				}
@@ -136,7 +141,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 			}
 		} else {
 			// Sarcophagus does not exist in state
-			// It has either been cleaned / buried / cancelled
+			// It has either been cleaned / buried / cancelled / accused
 			// Do nothing
 			log.Printf("Unwrapping cancelled. Sarcophagus was cancelled, buried, or cleaned, or archaeologist was successfully accused.")
 		}
@@ -145,11 +150,14 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 	log.Println("Unwrap scheduled in:", timeToUnwrap)
 }
 
+// randomRetryInterval - used to schedule the unwrap time randomly between 2 values in the future
+// in the event that the unwrap fails
 func randomRetryInterval() time.Duration {
 	rand.Seed(time.Now().UnixNano())
 	return time.Duration((rand.Intn(UNWRAP_RETRY_INTERVAL_UB - UNWRAP_RETRY_INTERVAL_LB) + UNWRAP_RETRY_INTERVAL_LB) * 10)
 }
 
+// generateSingleHash - returns a hash of the arweave file bytes decrypted with the private key
 func generateSingleHash(arweaveClient *api.Client, assetId string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	log.Printf("Getting arweave data for assetID: %v", assetId)
 	dataString, err := arweaveClient.GetData(context.Background(), assetId)
@@ -170,6 +178,7 @@ func generateSingleHash(arweaveClient *api.Client, assetId string, privateKey *e
 	return crypto.Keccak256(decryptedDataBytes), nil
 }
 
+// estimateGasForUnwrap - used to confirm that the unwrapSarcophagus call will succeed
 func estimateGasForUnwrap(arch *models.Archaeologist, assetDoubleHash [32]byte, privateKeyBytes [32]byte) error {
 	parsed, err := abi.JSON(strings.NewReader(contracts.SarcophagusABI))
 	if err != nil {

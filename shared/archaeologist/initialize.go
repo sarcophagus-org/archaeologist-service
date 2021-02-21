@@ -1,3 +1,7 @@
+// initialize is responsible for:
+// 1. Parsing the values in the config file and storing them to the archaeologist struct
+// 2. Building the state of sarcophagi to store on the archaeologist struct
+
 package archaeologist
 
 import (
@@ -20,15 +24,11 @@ import (
 	"math/big"
 )
 
+// InitializeArchaeologist Sets archaeologist struct fields.
+// Keeps a running list of errors. If any exist, outputs them to the console log and exits the service.
 func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) []string {
 	var err error
 	var errStrings []string
-
-	/*
-		Sets archaeologist struct fields.
-		Keeps a running list of errors. If any exist, outputs them to the console log and exits the service.
-		UX may be better without the running list, as some of these settings piggy back on each other.
-	 */
 
 	arch.FreeBond, err = calculateFreeBond(utility.ToWei(config.ADD_TO_FREE_BOND, 18), utility.ToWei(config.REMOVE_FROM_FREE_BOND, 18))
 	if err != nil {
@@ -138,13 +138,11 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 		log.Fatalf("Call to ArchaeologistSarcophagusCount in Contract failed. Please check CONTRACT_ADDRESS is correct in the config file: %v", err)
 	}
 
-	/*
-		Iterate through all sarcos
-		For any sarcos where we are the arch, determine state of sarco and build service state
-		Schedule rewraps if Sarco is updated and resurrection time + window is in future
-
-		// TODO: We only cleanup our own sarcos. We could be checking if *any* sarcos need cleanup.
-	*/
+	// iterate through all sarcos for the archaeologist
+	// build service state
+	// schedule rewraps if sarcophagus is updated and resurrection time + window is in future
+	// clean the sarco if the resurrection time + window is in the future
+	// TODO: We only cleanup our own sarcos. We could be checking if *any* sarcos need cleanup to collect sarco tokens.
 
 	for i := big.NewInt(0); i.Cmp(sarcoCount) == -1; i = big.NewInt(0).Add(i, big.NewInt(1)) {
 		doubleHash, _ := arch.SarcoSession.ArchaeologistSarcophagusIdentifier(arch.ArchAddress, i)
@@ -164,7 +162,7 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 
 				// Track if the archaeologist public key on the sarcophagus matches
 				// our current account index public key
-				// If it does, no other sarcophagus has used this public key yet
+				// If it does, no other updated sarcophagus has used this public key yet and so the sarcophagus should be added to state
 				currentPublicKey := hdw.PublicKeyBytesFromIndex(arch.Wallet, accountIndex)
 				pubKeyMatches := bytes.Equal(sarco.ArchaeologistPublicKey, currentPublicKey)
 
@@ -177,16 +175,16 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 				if sarco.AssetId == "" {
 					// This is a created sarc that is not updated
 					// If our current pub key matches the one on the sarcophagus,
-					// this means no sarc has used our current public key yet
-					// and we need to create a file handler for this sarc
+					// this means no updated sarcophagus has used our current public key yet
+					// and we need to create a file handler for this sarcophagus
 					// as a file could potentially be sent for this sarcophagus
 					if pubKeyMatches {
 						fileHandlers[doubleHash] = sarco.StorageFee
 					}
 				} else {
-					// We have an updated sarc that is updated but not unwrapped
+					// We have a sarcophagus that is updated but not unwrapped
 					// Schedule an unwrap using the current account index private key
-					// and increment the account index as this key pair has been used.
+					// and increment the account index as this key pair has been used
 					privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
 					sarcophagusesAccountIndex[doubleHash] = accountIndex
 					scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
@@ -240,6 +238,8 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 	return sarcophaguses, sarcophagusesAccountIndex, fileHandlers, accountIndex
 }
 
+// calculateFreeBond returns a negative big.Int if free bond should be withdrawn
+// and positive big.Int if free bond should be added
 func calculateFreeBond(addFreeBond *big.Int, removeFreeBond *big.Int) (*big.Int, error) {
 	var zero = big.NewInt(0)
 	var archFreeBond = zero
@@ -256,6 +256,8 @@ func calculateFreeBond(addFreeBond *big.Int, removeFreeBond *big.Int) (*big.Int,
 	return archFreeBond, nil
 }
 
+// setPaymentAddress defaults to the eth address derived from eth_private_key
+// if no payment_address is provided in the config file
 func setPaymentAddress(archAddress common.Address, paymentAddress string, client *ethclient.Client) (common.Address, error) {
 	var addy common.Address
 
@@ -272,6 +274,7 @@ func setPaymentAddress(archAddress common.Address, paymentAddress string, client
 	return addy, nil
 }
 
+// initSarcophagusSession .
 func initSarcophagusSession(contractAddress common.Address, client *ethclient.Client, privateKey *ecdsa.PrivateKey) (contracts.SarcophagusSession, error) {
 	sarcoContract, err := contracts.NewSarcophagus(contractAddress, client)
 	if err != nil {
@@ -283,6 +286,7 @@ func initSarcophagusSession(contractAddress common.Address, client *ethclient.Cl
 	return session, nil
 }
 
+// initTokenSession .
 func initTokenSession(tokenAddress string, client *ethclient.Client, privateKey *ecdsa.PrivateKey) (contracts.TokenSession, error) {
 	address := common.HexToAddress(tokenAddress)
 	tokenContract, err := contracts.NewToken(address, client)
@@ -295,6 +299,7 @@ func initTokenSession(tokenAddress string, client *ethclient.Client, privateKey 
 	return session, nil
 }
 
+// stringToBigInt .
 func stringToBigInt(val string) *big.Int {
 	intVal, ok := new(big.Int).SetString(val, 10)
 
