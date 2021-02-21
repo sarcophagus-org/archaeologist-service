@@ -1,3 +1,14 @@
+// **ROUGH** End-to-end testing
+// Attempted to use a simulated client, but it was too buggy -- https://goethereumbook.org/en/client-simulated/
+// Dependent on:
+// 1. Ethereum client & Sarcophagus Contracts being run locally - https://github.com/sarcophagus-org/sarcophagus-contracts
+// 2. Embalmer package being configured to use local client & contracts
+// 3. test_config.yml & test_setup.yml configured to use local client & contracts
+// 4. Docker & Arweave Docker image - https://github.com/rootmos/loom
+// 5.
+//
+// Runs a bash script on startup to start (or restart) local arweave client
+
 package test
 
 import (
@@ -36,10 +47,12 @@ type ArchTestSuite struct {
 	contractDir    string
 }
 
+// TestRunArchTestSuite .
 func TestRunArchTestSuite(t *testing.T) {
 	suite.Run(t, new(ArchTestSuite))
 }
 
+// exitArweave runs bash script to shut down local arweave client
 func (s *ArchTestSuite) exitArweave() {
 	args := []string{"./exit_arweave.sh", s.arweavePort}
 	cmd := exec.Command("/bin/sh", args...)
@@ -48,6 +61,7 @@ func (s *ArchTestSuite) exitArweave() {
 	time.Sleep(1 * time.Second)
 }
 
+// deployArweave inits the arweave wallet and deploys arweave client locally using bash script
 func (s *ArchTestSuite) deployArweave() {
 	arweaveWallet, err := ar.InitArweaveWallet(s.config.ARWEAVE_KEY_FILE)
 	if err != nil {
@@ -88,6 +102,7 @@ func (s *ArchTestSuite) deployArweave() {
 	}
 }
 
+// initEvn .
 func (s *ArchTestSuite) initEnv() {
 	viper.SetConfigName("test_setup")
 	viper.AddConfigPath("./")
@@ -105,6 +120,8 @@ func (s *ArchTestSuite) initEnv() {
 	s.contractDir = viper.GetString("CONTRACT_DIR")
 }
 
+// SetupSuite adds the necessary encryption/decryption curve
+// Loads test config into config struct for use throughout test suite
 func (s *ArchTestSuite) SetupSuite() {
 	ecies.AddParamsForCurve(btcec.S256(), ecies.ECIES_AES128_SHA256)
 	config := new(models.Config)
@@ -112,6 +129,7 @@ func (s *ArchTestSuite) SetupSuite() {
 	s.config = config
 }
 
+// SetupTest - runs before every test
 func (s *ArchTestSuite) SetupTest() {
 	/* Start each test with a blank archaeologist and re-deployed contract */
 	s.T().Log("*** Setting up Test ***")
@@ -122,11 +140,13 @@ func (s *ArchTestSuite) SetupTest() {
 	s.deployArweave()
 }
 
+// TeardownSuite .
 func (s *ArchTestSuite) TeardownSuite() {
 	s.T().Log("*** Stopping blockchains ***")
 	s.exitArweave()
 }
 
+// InitEmbalmer .
 func (s *ArchTestSuite) InitEmbalmer() {
 	config := new(embalmer.EmbalmerConfig)
 	config.LoadEmbalmerConfig("embalmer_config", "../embalmer")
@@ -138,6 +158,7 @@ func (s *ArchTestSuite) InitEmbalmer() {
 	s.TransferSarcoToEmbalmer(transferAmount)
 }
 
+// simulateServiceRestart reinitializes the archaeologist to simulate a restart of the service
 func (s *ArchTestSuite) simulateServiceRestart() {
 	s.T().Log("Simulating Service Restart...")
 	s.arch.FileHandlers = map[[32]byte]*big.Int{}
@@ -145,6 +166,8 @@ func (s *ArchTestSuite) simulateServiceRestart() {
 	_ = archaeologist.InitializeArchaeologist(s.arch, s.config)
 }
 
+// TransferSarcoToEmbalmer - transfers sarco tokens from the archaeologist to the embalmer
+// So that the embalmer has funds for its actions
 func (s *ArchTestSuite) TransferSarcoToEmbalmer(amount *big.Int) {
 	_, err := s.arch.TokenSession.Transfer(s.embalmer.EmbalmerAddress, amount)
 	if err != nil {
@@ -152,6 +175,7 @@ func (s *ArchTestSuite) TransferSarcoToEmbalmer(amount *big.Int) {
 	}
 }
 
+// TestTwoSarcosOneUnwrapTime - tests the case where two sarcophagi are scheduled to be unwrapped at the same resurrection time
 func (s *ArchTestSuite) TestTwoSarcosOneUnwrapTime() {
 	errStrings := archaeologist.InitializeArchaeologist(s.arch, s.config)
 	if len(errStrings) > 0 {
@@ -191,6 +215,13 @@ func (s *ArchTestSuite) TestTwoSarcosOneUnwrapTime() {
 	s.Equal(uint8(2), sarcoTwo.State)
 }
 
+// TestArchaeologistHappyPathWorkflow tests the following:
+// 1. Archaeologist is successfully registered
+// 2. Archaeologist is successfully updated
+// 3. Multiple Sarcophagi are created, updated and unwrapped correctly
+// 4. Rewrap where rewrap time is < current resurrection time
+// 5. Rewrap where rewrap time is > current resurrection time
+// 6. Service is restarted (simulates this by clearing archaeologist state)
 func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	/* Archaeologist Initializes Without Errors */
 	errStrings := archaeologist.InitializeArchaeologist(s.arch, s.config)

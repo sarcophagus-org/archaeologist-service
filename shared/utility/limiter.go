@@ -1,3 +1,5 @@
+// Limits rate of connections to server
+// Mitigates DDOS attacks
 package utility
 
 import (

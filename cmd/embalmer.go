@@ -1,3 +1,6 @@
+// Not used by the service, for testing purposes only
+// Used in conjunction with the embalmer package to test embalmer actions
+
 package main
 
 import (

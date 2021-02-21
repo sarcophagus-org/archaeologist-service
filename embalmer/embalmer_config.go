@@ -1,3 +1,5 @@
+// Not used by the service, for testing purposes only
+
 package embalmer
 
 import (

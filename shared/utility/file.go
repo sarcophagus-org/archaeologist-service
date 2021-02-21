@@ -2,38 +2,13 @@ package utility
 
 import (
 	"crypto/ecdsa"
-	"encoding/hex"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/ecies"
 	"log"
 )
 
-func SignatureValid(signature string, signedMsg []byte, msgSenderAddress common.Address) bool {
-	signatureBytes, err := hex.DecodeString(signature)
-	if err != nil {
-		log.Printf("Could not decode signature: %v", err)
-		return false
-	}
-
-	// if using [32]byte, postfix the signedMsg with [:]
-	hopefullySignerPubKey, err := crypto.SigToPub(signedMsg, signatureBytes)
-	if err != nil {
-		log.Printf("Could not derive public key from hash and signature: %v", err)
-		return false
-	}
-
-	hopefullySignerAddress := crypto.PubkeyToAddress(*hopefullySignerPubKey)
-	if hopefullySignerAddress != msgSenderAddress {
-		log.Printf("Address derived from the provided signature does not match the address sender")
-		return false
-	}
-
-	log.Printf("Signature is valid!")
-
-	return true
-}
-
+// DecryptFile uses ecies library to decrypt file bytes
+// Used to validate correct public key was used on the sarcophagus payload when handling file upload to arweave
 func DecryptFile(fileBytes []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	log.Printf("priv key: %v", privateKey)
 	log.Printf("fileBytes: %v", fileBytes)
@@ -42,6 +17,8 @@ func DecryptFile(fileBytes []byte, privateKey *ecdsa.PrivateKey) ([]byte, error)
 	return eciesPrivateKey.Decrypt(fileBytes, nil, nil)
 }
 
+// FileBytesToDoubleHashBytes is used to generate a sarcophagus identifier
+// File bytes passed as an argument here are expected to be encrypted by the recipient's public key
 func FileBytesToDoubleHashBytes(fileBytes []byte) [32]byte {
 	assetSingleHash := crypto.Keccak256(fileBytes)
 	assetDoubleHash := crypto.Keccak256(assetSingleHash)

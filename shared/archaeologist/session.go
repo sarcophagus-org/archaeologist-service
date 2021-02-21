@@ -1,3 +1,6 @@
+// Collection of functions for initializing sessions
+// that are used for the archaeologist to interact with the contract
+
 package archaeologist
 
 import (
@@ -8,6 +11,7 @@ import (
 	"math/big"
 )
 
+// initAuth .
 func initAuth (privateKey *ecdsa.PrivateKey) *bind.TransactOpts {
 	auth := bind.NewKeyedTransactor(privateKey)
 	auth.Nonce = nil // uses nonce of pending state
@@ -18,6 +22,7 @@ func initAuth (privateKey *ecdsa.PrivateKey) *bind.TransactOpts {
 	return auth
 }
 
+// NewSarcophagusSession .
 func NewSarcophagusSession(ctx context.Context, sarcophagusContract *contracts.Sarcophagus, privateKey *ecdsa.PrivateKey) contracts.SarcophagusSession {
 	auth := initAuth(privateKey)
 
@@ -31,6 +36,7 @@ func NewSarcophagusSession(ctx context.Context, sarcophagusContract *contracts.S
 	}
 }
 
+// NewTokenSession .
 func NewTokenSession(ctx context.Context, tokenContract *contracts.Token, privateKey *ecdsa.PrivateKey)  contracts.TokenSession {
 	auth := initAuth(privateKey)
 

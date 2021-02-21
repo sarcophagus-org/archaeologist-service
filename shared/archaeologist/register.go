@@ -8,6 +8,9 @@ import (
 	"math/big"
 )
 
+// RegisterOrUpdateArchaeologist first approves the free bond amount or withdrawal
+// then determines if it should register or update the archaeologist
+// if no relevant values in the config file have changed, it will skip the update call
 func RegisterOrUpdateArchaeologist(arch *models.Archaeologist) {
 	contractArch, err := arch.SarcoSession.Archaeologists(arch.ArchAddress)
 	if err != nil {
