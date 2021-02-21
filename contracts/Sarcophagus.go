@@ -59,7 +59,7 @@ type TypesSarcophagus struct {
 }
 
 // SarcophagusABI is the input ABI used to generate the binding from.
-const SarcophagusABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sarcoToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"singleHash\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"}],\"name\":\"accuseArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"archaeologistCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"}],\"name\":\"archaeologistSarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistSarcophagusIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"archaeologists\",\"outputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"exists\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"cursedBond\",\"type\":\"uint256\"}],\"internalType\":\"structTypes.Archaeologist\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"}],\"name\":\"burySarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"}],\"name\":\"cancelSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"}],\"name\":\"cleanUpSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"recipientPublicKey\",\"type\":\"bytes\"}],\"name\":\"createSarcophagus\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"}],\"name\":\"embalmerSarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"embalmerSarcophagusIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"}],\"name\":\"recipientSarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"recipientSarcophagusIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"}],\"name\":\"registerArchaeologist\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"}],\"name\":\"rewrapSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sarcoToken\",\"outputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"}],\"name\":\"sarcophagus\",\"outputs\":[{\"components\":[{\"internalType\":\"enumTypes.SarcophagusStates\",\"name\":\"state\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"archaeologistPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionWindow\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"recipientPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"currentCursedBond\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"privateKey\",\"type\":\"bytes32\"}],\"internalType\":\"structTypes.Sarcophagus\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"sarcophagusIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"privateKey\",\"type\":\"bytes32\"}],\"name\":\"unwrapSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"newPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"}],\"name\":\"updateArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"newPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"updateSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdrawBond\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const SarcophagusABI = "[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"singleHash\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"}],\"name\":\"accuseArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"}],\"name\":\"archaeologistAccusalsCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistAccusalsIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"}],\"name\":\"archaeologistCancelsCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistCancelsIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"}],\"name\":\"archaeologistCleanupsCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistCleanupsIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"archaeologistCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"}],\"name\":\"archaeologistSarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistSarcophagusIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"}],\"name\":\"archaeologistSuccessesCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"archaeologistSuccessesIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"archaeologists\",\"outputs\":[{\"components\":[{\"internalType\":\"bool\",\"name\":\"exists\",\"type\":\"bool\"},{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"cursedBond\",\"type\":\"uint256\"}],\"internalType\":\"structTypes.Archaeologist\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"}],\"name\":\"burySarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"}],\"name\":\"cancelSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"}],\"name\":\"cleanUpSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"recipientPublicKey\",\"type\":\"bytes\"}],\"name\":\"createSarcophagus\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"}],\"name\":\"embalmerSarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"embalmerSarcophagusIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sarcoToken\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"}],\"name\":\"recipientSarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"recipientSarcophagusIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"currentPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"}],\"name\":\"registerArchaeologist\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"}],\"name\":\"rewrapSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sarcoToken\",\"outputs\":[{\"internalType\":\"contractIERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"}],\"name\":\"sarcophagus\",\"outputs\":[{\"components\":[{\"internalType\":\"enumTypes.SarcophagusStates\",\"name\":\"state\",\"type\":\"uint8\"},{\"internalType\":\"address\",\"name\":\"archaeologist\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"archaeologistPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"embalmer\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"resurrectionWindow\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"recipientPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"storageFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"diggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"bounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"currentCursedBond\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"privateKey\",\"type\":\"bytes32\"}],\"internalType\":\"structTypes.Sarcophagus\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sarcophagusCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"sarcophagusIdentifier\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"privateKey\",\"type\":\"bytes32\"}],\"name\":\"unwrapSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"newPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"address\",\"name\":\"paymentAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"feePerByte\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumBounty\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minimumDiggingFee\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maximumResurrectionTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"freeBond\",\"type\":\"uint256\"}],\"name\":\"updateArchaeologist\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"newPublicKey\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"identifier\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"assetId\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"}],\"name\":\"updateSarcophagus\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdrawBond\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // Sarcophagus is an auto generated Go binding around an Ethereum contract.
 type Sarcophagus struct {
@@ -203,6 +203,68 @@ func (_Sarcophagus *SarcophagusTransactorRaw) Transact(opts *bind.TransactOpts, 
 	return _Sarcophagus.Contract.contract.Transact(opts, method, params...)
 }
 
+// ArchaeologistAccusalsCount is a free data retrieval call binding the contract method 0x0178a06a.
+//
+// Solidity: function archaeologistAccusalsCount(address archaeologist) view returns(uint256)
+func (_Sarcophagus *SarcophagusCaller) ArchaeologistAccusalsCount(opts *bind.CallOpts, archaeologist common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologistAccusalsCount", archaeologist)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// ArchaeologistAccusalsCount is a free data retrieval call binding the contract method 0x0178a06a.
+//
+// Solidity: function archaeologistAccusalsCount(address archaeologist) view returns(uint256)
+func (_Sarcophagus *SarcophagusSession) ArchaeologistAccusalsCount(archaeologist common.Address) (*big.Int, error) {
+	return _Sarcophagus.Contract.ArchaeologistAccusalsCount(&_Sarcophagus.CallOpts, archaeologist)
+}
+
+// ArchaeologistAccusalsCount is a free data retrieval call binding the contract method 0x0178a06a.
+//
+// Solidity: function archaeologistAccusalsCount(address archaeologist) view returns(uint256)
+func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistAccusalsCount(archaeologist common.Address) (*big.Int, error) {
+	return _Sarcophagus.Contract.ArchaeologistAccusalsCount(&_Sarcophagus.CallOpts, archaeologist)
+}
+
+// ArchaeologistAccusalsIdentifier is a free data retrieval call binding the contract method 0x6c99bedc.
+//
+// Solidity: function archaeologistAccusalsIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCaller) ArchaeologistAccusalsIdentifier(opts *bind.CallOpts, archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologistAccusalsIdentifier", archaeologist, index)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// ArchaeologistAccusalsIdentifier is a free data retrieval call binding the contract method 0x6c99bedc.
+//
+// Solidity: function archaeologistAccusalsIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusSession) ArchaeologistAccusalsIdentifier(archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.ArchaeologistAccusalsIdentifier(&_Sarcophagus.CallOpts, archaeologist, index)
+}
+
+// ArchaeologistAccusalsIdentifier is a free data retrieval call binding the contract method 0x6c99bedc.
+//
+// Solidity: function archaeologistAccusalsIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistAccusalsIdentifier(archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.ArchaeologistAccusalsIdentifier(&_Sarcophagus.CallOpts, archaeologist, index)
+}
+
 // ArchaeologistAddresses is a free data retrieval call binding the contract method 0x66086784.
 //
 // Solidity: function archaeologistAddresses(uint256 index) view returns(address)
@@ -232,6 +294,130 @@ func (_Sarcophagus *SarcophagusSession) ArchaeologistAddresses(index *big.Int) (
 // Solidity: function archaeologistAddresses(uint256 index) view returns(address)
 func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistAddresses(index *big.Int) (common.Address, error) {
 	return _Sarcophagus.Contract.ArchaeologistAddresses(&_Sarcophagus.CallOpts, index)
+}
+
+// ArchaeologistCancelsCount is a free data retrieval call binding the contract method 0x5bb38160.
+//
+// Solidity: function archaeologistCancelsCount(address archaeologist) view returns(uint256)
+func (_Sarcophagus *SarcophagusCaller) ArchaeologistCancelsCount(opts *bind.CallOpts, archaeologist common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologistCancelsCount", archaeologist)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// ArchaeologistCancelsCount is a free data retrieval call binding the contract method 0x5bb38160.
+//
+// Solidity: function archaeologistCancelsCount(address archaeologist) view returns(uint256)
+func (_Sarcophagus *SarcophagusSession) ArchaeologistCancelsCount(archaeologist common.Address) (*big.Int, error) {
+	return _Sarcophagus.Contract.ArchaeologistCancelsCount(&_Sarcophagus.CallOpts, archaeologist)
+}
+
+// ArchaeologistCancelsCount is a free data retrieval call binding the contract method 0x5bb38160.
+//
+// Solidity: function archaeologistCancelsCount(address archaeologist) view returns(uint256)
+func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistCancelsCount(archaeologist common.Address) (*big.Int, error) {
+	return _Sarcophagus.Contract.ArchaeologistCancelsCount(&_Sarcophagus.CallOpts, archaeologist)
+}
+
+// ArchaeologistCancelsIdentifier is a free data retrieval call binding the contract method 0x99959230.
+//
+// Solidity: function archaeologistCancelsIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCaller) ArchaeologistCancelsIdentifier(opts *bind.CallOpts, archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologistCancelsIdentifier", archaeologist, index)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// ArchaeologistCancelsIdentifier is a free data retrieval call binding the contract method 0x99959230.
+//
+// Solidity: function archaeologistCancelsIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusSession) ArchaeologistCancelsIdentifier(archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.ArchaeologistCancelsIdentifier(&_Sarcophagus.CallOpts, archaeologist, index)
+}
+
+// ArchaeologistCancelsIdentifier is a free data retrieval call binding the contract method 0x99959230.
+//
+// Solidity: function archaeologistCancelsIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistCancelsIdentifier(archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.ArchaeologistCancelsIdentifier(&_Sarcophagus.CallOpts, archaeologist, index)
+}
+
+// ArchaeologistCleanupsCount is a free data retrieval call binding the contract method 0x64bd0ce9.
+//
+// Solidity: function archaeologistCleanupsCount(address archaeologist) view returns(uint256)
+func (_Sarcophagus *SarcophagusCaller) ArchaeologistCleanupsCount(opts *bind.CallOpts, archaeologist common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologistCleanupsCount", archaeologist)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// ArchaeologistCleanupsCount is a free data retrieval call binding the contract method 0x64bd0ce9.
+//
+// Solidity: function archaeologistCleanupsCount(address archaeologist) view returns(uint256)
+func (_Sarcophagus *SarcophagusSession) ArchaeologistCleanupsCount(archaeologist common.Address) (*big.Int, error) {
+	return _Sarcophagus.Contract.ArchaeologistCleanupsCount(&_Sarcophagus.CallOpts, archaeologist)
+}
+
+// ArchaeologistCleanupsCount is a free data retrieval call binding the contract method 0x64bd0ce9.
+//
+// Solidity: function archaeologistCleanupsCount(address archaeologist) view returns(uint256)
+func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistCleanupsCount(archaeologist common.Address) (*big.Int, error) {
+	return _Sarcophagus.Contract.ArchaeologistCleanupsCount(&_Sarcophagus.CallOpts, archaeologist)
+}
+
+// ArchaeologistCleanupsIdentifier is a free data retrieval call binding the contract method 0xfb6fffb5.
+//
+// Solidity: function archaeologistCleanupsIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCaller) ArchaeologistCleanupsIdentifier(opts *bind.CallOpts, archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologistCleanupsIdentifier", archaeologist, index)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// ArchaeologistCleanupsIdentifier is a free data retrieval call binding the contract method 0xfb6fffb5.
+//
+// Solidity: function archaeologistCleanupsIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusSession) ArchaeologistCleanupsIdentifier(archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.ArchaeologistCleanupsIdentifier(&_Sarcophagus.CallOpts, archaeologist, index)
+}
+
+// ArchaeologistCleanupsIdentifier is a free data retrieval call binding the contract method 0xfb6fffb5.
+//
+// Solidity: function archaeologistCleanupsIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistCleanupsIdentifier(archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.ArchaeologistCleanupsIdentifier(&_Sarcophagus.CallOpts, archaeologist, index)
 }
 
 // ArchaeologistCount is a free data retrieval call binding the contract method 0x1a7ac550.
@@ -325,6 +511,68 @@ func (_Sarcophagus *SarcophagusSession) ArchaeologistSarcophagusIdentifier(archa
 // Solidity: function archaeologistSarcophagusIdentifier(address archaeologist, uint256 index) view returns(bytes32)
 func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistSarcophagusIdentifier(archaeologist common.Address, index *big.Int) ([32]byte, error) {
 	return _Sarcophagus.Contract.ArchaeologistSarcophagusIdentifier(&_Sarcophagus.CallOpts, archaeologist, index)
+}
+
+// ArchaeologistSuccessesCount is a free data retrieval call binding the contract method 0xf1840ab2.
+//
+// Solidity: function archaeologistSuccessesCount(address archaeologist) view returns(uint256)
+func (_Sarcophagus *SarcophagusCaller) ArchaeologistSuccessesCount(opts *bind.CallOpts, archaeologist common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologistSuccessesCount", archaeologist)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// ArchaeologistSuccessesCount is a free data retrieval call binding the contract method 0xf1840ab2.
+//
+// Solidity: function archaeologistSuccessesCount(address archaeologist) view returns(uint256)
+func (_Sarcophagus *SarcophagusSession) ArchaeologistSuccessesCount(archaeologist common.Address) (*big.Int, error) {
+	return _Sarcophagus.Contract.ArchaeologistSuccessesCount(&_Sarcophagus.CallOpts, archaeologist)
+}
+
+// ArchaeologistSuccessesCount is a free data retrieval call binding the contract method 0xf1840ab2.
+//
+// Solidity: function archaeologistSuccessesCount(address archaeologist) view returns(uint256)
+func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistSuccessesCount(archaeologist common.Address) (*big.Int, error) {
+	return _Sarcophagus.Contract.ArchaeologistSuccessesCount(&_Sarcophagus.CallOpts, archaeologist)
+}
+
+// ArchaeologistSuccessesIdentifier is a free data retrieval call binding the contract method 0x284f34de.
+//
+// Solidity: function archaeologistSuccessesIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCaller) ArchaeologistSuccessesIdentifier(opts *bind.CallOpts, archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	var out []interface{}
+	err := _Sarcophagus.contract.Call(opts, &out, "archaeologistSuccessesIdentifier", archaeologist, index)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// ArchaeologistSuccessesIdentifier is a free data retrieval call binding the contract method 0x284f34de.
+//
+// Solidity: function archaeologistSuccessesIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusSession) ArchaeologistSuccessesIdentifier(archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.ArchaeologistSuccessesIdentifier(&_Sarcophagus.CallOpts, archaeologist, index)
+}
+
+// ArchaeologistSuccessesIdentifier is a free data retrieval call binding the contract method 0x284f34de.
+//
+// Solidity: function archaeologistSuccessesIdentifier(address archaeologist, uint256 index) view returns(bytes32)
+func (_Sarcophagus *SarcophagusCallerSession) ArchaeologistSuccessesIdentifier(archaeologist common.Address, index *big.Int) ([32]byte, error) {
+	return _Sarcophagus.Contract.ArchaeologistSuccessesIdentifier(&_Sarcophagus.CallOpts, archaeologist, index)
 }
 
 // Archaeologists is a free data retrieval call binding the contract method 0xf8fc6f7b.
@@ -709,6 +957,27 @@ func (_Sarcophagus *SarcophagusSession) CreateSarcophagus(name string, archaeolo
 // Solidity: function createSarcophagus(string name, address archaeologist, uint256 resurrectionTime, uint256 storageFee, uint256 diggingFee, uint256 bounty, bytes32 identifier, bytes recipientPublicKey) returns(uint256)
 func (_Sarcophagus *SarcophagusTransactorSession) CreateSarcophagus(name string, archaeologist common.Address, resurrectionTime *big.Int, storageFee *big.Int, diggingFee *big.Int, bounty *big.Int, identifier [32]byte, recipientPublicKey []byte) (*types.Transaction, error) {
 	return _Sarcophagus.Contract.CreateSarcophagus(&_Sarcophagus.TransactOpts, name, archaeologist, resurrectionTime, storageFee, diggingFee, bounty, identifier, recipientPublicKey)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address _sarcoToken) returns()
+func (_Sarcophagus *SarcophagusTransactor) Initialize(opts *bind.TransactOpts, _sarcoToken common.Address) (*types.Transaction, error) {
+	return _Sarcophagus.contract.Transact(opts, "initialize", _sarcoToken)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address _sarcoToken) returns()
+func (_Sarcophagus *SarcophagusSession) Initialize(_sarcoToken common.Address) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.Initialize(&_Sarcophagus.TransactOpts, _sarcoToken)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0xc4d66de8.
+//
+// Solidity: function initialize(address _sarcoToken) returns()
+func (_Sarcophagus *SarcophagusTransactorSession) Initialize(_sarcoToken common.Address) (*types.Transaction, error) {
+	return _Sarcophagus.Contract.Initialize(&_Sarcophagus.TransactOpts, _sarcoToken)
 }
 
 // RegisterArchaeologist is a paid mutator transaction binding the contract method 0x86d05d58.

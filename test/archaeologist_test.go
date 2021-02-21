@@ -267,6 +267,7 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	go archaeologist.EventsSubscribe(s.arch)
 
 	/* Embalmer Creates First Sarco */
+	log.Print("Creating Sarco 1")
 	/* Embalmer inits with balance of 4000 Sarco Tokens */
 	s.InitEmbalmer()
 	fileSeed := 200
@@ -280,6 +281,7 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	s.Equal(sarco.ResurrectionTime, s.arch.Sarcophaguses[assetDoubleHashBytes])
 
 	/* Embalmer Creates Second Sarco */
+	log.Print("Creating Sarco 2")
 	fileSeed += 1
 	_, assetDoubleHashBytesTwo := embalmer.DoubleHashBytesFromSeed(int64(fileSeed), FILE_BYTE_COUNT)
 	s.embalmer.CreateSarcophagus(s.embalmerConfig.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytesTwo, "Test Sarco Two")
@@ -313,12 +315,14 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	s.Equal(0, len(s.arch.FileHandlers))
 
 	/* Embalmer Creates Third Sarco */
+	log.Print("Creating Sarco 3")
 	s.embalmer.ResurrectionTime = big.NewInt(time.Now().Unix() + RESURRECTION_TIME)
 	fileSeed += 1
 	_, assetDoubleHashBytesThree := embalmer.DoubleHashBytesFromSeed(int64(fileSeed), FILE_BYTE_COUNT)
 	s.embalmer.CreateSarcophagus(s.embalmerConfig.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytesThree, "Test Sarco Three")
 
 	/* Embalmer Creates Fourth Sarco */
+	log.Print("Creating Sarco 4")
 	fileSeed += 1
 	fileBytesFour, assetDoubleHashBytesFour := embalmer.DoubleHashBytesFromSeed(int64(fileSeed), FILE_BYTE_COUNT)
 	s.embalmer.CreateSarcophagus(s.embalmerConfig.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytesFour, "Test Sarco Four")
@@ -359,6 +363,7 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	time.Sleep(5000 * time.Millisecond)
 
 	/* Embalmer Creates Fifth Sarco */
+	log.Print("Creating Sarco 5")
 	s.embalmer.ResurrectionTime = big.NewInt(time.Now().Unix() + RESURRECTION_TIME)
 	fileSeed += 1
 	fileBytesFive, assetDoubleHashBytesFive := embalmer.DoubleHashBytesFromSeed(int64(fileSeed), FILE_BYTE_COUNT)
