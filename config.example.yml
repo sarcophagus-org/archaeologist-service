@@ -27,10 +27,10 @@ arweave_key_file: "$GOPATH/bin/arweave.json"
 arweave_node: https://arweave.net:443
 
 # Arweave fee multiplier
-# Type: Decimal (must have 1 decimal)
+# Type: String (must have 1 decimal and quotes)
 # The node you are connected to will estimate arweave winston fee to use when sending the file to arweave
 # However, you can increase this fee by using the multiplier (e.g. fee = 10, multiplier = 1.5, final fee = 15)
-arweave_multiplier: 1.0
+arweave_multiplier: "1.0"
 
 # Sarcophagus Contract Address
 # Type: String

@@ -250,8 +250,7 @@ func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arwea
 
 // UploadFileToArweave uploads the double encrypted file bytes to arweave
 // Creates and returns an arweave tx
-// The content type of the unencrypted file is stored as a tag
-func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte, contentType string) (*tx.Transaction, error) {
+func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transaction, error) {
 	// create a transaction
 	arTrans := arch.ArweaveTransactor
 	w := arch.ArweaveWallet
@@ -261,12 +260,6 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte, contentType str
 	txBuilder, err := arch.CreateArweaveTransaction(context.TODO(), w, "0", fileBytes, "")
 	if err != nil {
 		log.Printf("Error creating transaction: %v", err)
-		return &tx.Transaction{}, err
-	}
-
-	err = txBuilder.AddTag("Content-Type", contentType)
-	if err != nil {
-		log.Printf("Error adding content type tag: %v", err)
 		return &tx.Transaction{}, err
 	}
 
@@ -280,7 +273,6 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte, contentType str
 	// send the transaction
 	log.Printf("Sending transaction: %v", txn.Hash())
 	resp, err := arTrans.SendTransaction(context.TODO(), txn)
-
 	if err != nil {
 		log.Printf("Error sending transaction: %v", err)
 		return &tx.Transaction{}, err
@@ -341,7 +333,6 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 
 	// Double Encrypted file bytes are sent as encoded json
 	// Decode the file bytes into a struct
-	// File Type is sent as a separate field. Create a "Content-Type" tag on the arweave tx with this value.
 	var sarcoFile SarcoFile
 
 	if r.Body == nil {
@@ -355,8 +346,6 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		http.Error(w, err.Error(), 400)
 		return
 	}
-
-	contentType := sarcoFile.FileType
 
 	fileBytes, err := base64.StdEncoding.DecodeString(sarcoFile.FileBytes)
 	if err != nil {
@@ -406,7 +395,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	log.Printf("File was validated successfully")
 
 	// create arweave tx
-	arweaveTx, err := arch.UploadFileToArweave(fileBytes, contentType)
+	arweaveTx, err := arch.UploadFileToArweave(fileBytes)
 	if err != nil {
 		errMsg := fmt.Sprintf("There was an error with the file. Error: %v", err)
 		arch.fileUploadError(errMsg, errMsg, http.StatusBadRequest, w)
