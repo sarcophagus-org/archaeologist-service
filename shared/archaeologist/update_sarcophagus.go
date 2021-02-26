@@ -16,19 +16,21 @@ func handleUpdateSarcophagus(event *contracts.EventsUpdateSarcophagus, arch *mod
 	// Delete open file handler for the double hash
 	delete(arch.FileHandlers, event.Identifier)
 
-	if resurrectionTime, ok := arch.Sarcophaguses[event.Identifier]; ok {
-		privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
+	if sarcophagus, ok := arch.Sarcophaguses[event.Identifier]; ok {
+		// Only schedule unwrap if sarcophagus has not been updated yet (in case of replayed events)
+		if !sarcophagus.Updated {
+			sarcophagus.Updated = true
+			privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
+			resurrectionTime := sarcophagus.ResurrectionTime
 
-		// Save the account index in state mapping to be used by rewrapping
-		arch.SarcophagusesAccountIndex[event.Identifier] = arch.AccountIndex
+			arweaveClient := arch.ArweaveTransactor.Client.(*api.Client)
+			log.Printf("Scheduling Unwrap for: %v", resurrectionTime)
+			scheduleUnwrap(&arch.SarcoSession, arweaveClient, resurrectionTime, arch, event.Identifier, privateKey, event.AssetId)
 
-		arweaveClient := arch.ArweaveTransactor.Client.(*api.Client)
-		log.Printf("Scheduling Unwrap for: %v", resurrectionTime)
-		scheduleUnwrap(&arch.SarcoSession, arweaveClient, resurrectionTime, arch, event.Identifier, privateKey, event.AssetId)
-
-		// key pair has been used for this sarcophagus, increment the account index and update the current public key
-		arch.AccountIndex += 1
-		arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
+			// key pair has been used for this sarcophagus, increment the account index and update the current public key
+			arch.AccountIndex += 1
+			arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
+		}
 	} else {
 		log.Printf("We dont have a sarcophagus to update for the double hash: %v",  event.Identifier)
 	}

@@ -35,8 +35,15 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 		return
 	}
 
-	// add the sarcophagus to state and open the endpoint for the file to be received from the embalmer
-	arch.Sarcophaguses[event.Identifier] = event.ResurrectionTime
+	// add sarcophagus to state
+	arch.Sarcophaguses[event.Identifier] = models.Sarco{
+		ResurrectionTime: event.ResurrectionTime,
+		AccountIndex:     arch.AccountIndex,
+		Updated:          false,
+		UnwrapAttempts:   0,
+	}
+
+	// open the endpoint for the file to be received from the embalmer
 	arch.FileHandlers[event.Identifier] = event.StorageFee
 	go arch.ListenForFile()
 }

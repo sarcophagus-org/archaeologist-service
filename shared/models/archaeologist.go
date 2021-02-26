@@ -62,10 +62,8 @@ type Archaeologist struct {
 	Wallet                    *hdwallet.Wallet
 	AccountIndex              int
 	Server                    *http.Server
-	Sarcophaguses             map[[32]byte]*big.Int
-	SarcophagusesAccountIndex map[[32]byte]int
+	Sarcophaguses             map[[32]byte]Sarco
 	FileHandlers              map[[32]byte]*big.Int
-	UnwrapAttempts            map[[32]byte]int
 }
 
 // MB used for validating file size
@@ -513,12 +511,8 @@ func (arch *Archaeologist) IsArchSarcophagus(doubleHash [32]byte) bool {
 func (arch *Archaeologist) RemoveArchSarcophagus(doubleHash [32]byte) {
 	if arch.IsArchSarcophagus(doubleHash) {
 		delete(arch.Sarcophaguses, doubleHash)
-		_, ok := arch.SarcophagusesAccountIndex[doubleHash]
-		if ok {
-			delete(arch.SarcophagusesAccountIndex, doubleHash)
-		}
 
-		_, ok = arch.FileHandlers[doubleHash]
+		_, ok := arch.FileHandlers[doubleHash]
 		if ok {
 			arch.fileHandlerCheck()
 			delete(arch.FileHandlers, doubleHash)

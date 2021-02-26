@@ -114,18 +114,16 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 
 	arch.FilePort = config.FILE_PORT
 
-	arch.Sarcophaguses, arch.SarcophagusesAccountIndex, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
+	arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
 
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
-	arch.UnwrapAttempts	= map[[32]byte]int{}
 
 	return errStrings
 }
 
-func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int, map[[32]byte]int, map[[32]byte]*big.Int, int) {
-	var sarcophaguses = map[[32]byte]*big.Int{}
-	var sarcophagusesAccountIndex = map[[32]byte]int{}
+func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]models.Sarco, map[[32]byte]*big.Int, int) {
+	var sarcophaguses = map[[32]byte]models.Sarco{}
 	var fileHandlers = map[[32]byte]*big.Int{}
 
 	// Create a slice of sarcos (double hashes) indexed by public keys
@@ -180,13 +178,17 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 					// as a file could potentially be sent for this sarcophagus
 					if pubKeyMatches {
 						fileHandlers[doubleHash] = sarco.StorageFee
+						// save created sarco to state
+						sarcophaguses[doubleHash] = models.Sarco{sarco.ResurrectionTime, accountIndex, false, 0}
 					}
 				} else {
 					// We have a sarcophagus that is updated but not unwrapped
 					// Schedule an unwrap using the current account index private key
 					// and increment the account index as this key pair has been used
 					privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
-					sarcophagusesAccountIndex[doubleHash] = accountIndex
+
+					// save updated sarco to state
+					sarcophaguses[doubleHash] = models.Sarco{sarco.ResurrectionTime, accountIndex, true, 0}
 					scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
 					fileHandlers = map[[32]byte]*big.Int{}
 					accountIndex += 1
@@ -197,10 +199,6 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 							delete(sarcophaguses, pubKeyMap[currentPublicKeyIndex][i])
 						}
 					}
-				}
-
-				if pubKeyMatches {
-					sarcophaguses[doubleHash] = sarco.ResurrectionTime
 				}
 			} else {
 				// Sarc's unwrap time + resurrection window is in the past
@@ -235,7 +233,7 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*big.Int
 	log.Printf("Sarcophaguses waiting for a file: %v", fileHandlers)
 	log.Printf("Current Account Index: %v", accountIndex)
 
-	return sarcophaguses, sarcophagusesAccountIndex, fileHandlers, accountIndex
+	return sarcophaguses, fileHandlers, accountIndex
 }
 
 // calculateFreeBond returns a negative big.Int if free bond should be withdrawn
