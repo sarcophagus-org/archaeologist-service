@@ -162,7 +162,7 @@ func (s *ArchTestSuite) InitEmbalmer() {
 func (s *ArchTestSuite) simulateServiceRestart() {
 	s.T().Log("Simulating Service Restart...")
 	s.arch.FileHandlers = map[[32]byte]*big.Int{}
-	s.arch.Sarcophaguses = map[[32]byte]models.Sarco{}
+	s.arch.Sarcophaguses = map[[32]byte]*models.Sarco{}
 	_ = archaeologist.InitializeArchaeologist(s.arch, s.config)
 }
 
@@ -185,6 +185,7 @@ func (s *ArchTestSuite) TransferSarcoToEmbalmer(amount *big.Int) {
 //
 //	archaeologist.RegisterOrUpdateArchaeologist(s.arch)
 //
+//  go s.arch.ListenForFile()
 //	go archaeologist.EventsSubscribe(s.arch)
 //
 //	s.InitEmbalmer()
@@ -264,6 +265,7 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 		s.T().Fail()
 	}
 
+	go s.arch.ListenForFile()
 	go archaeologist.EventsSubscribe(s.arch)
 
 	/* Embalmer Creates First Sarco */
@@ -373,11 +375,13 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	s.embalmer.UpdateSarcophagus(assetDoubleHashBytesFive, fileBytesFive)
 
 	/* Embalmer Rewraps Sarco for time < current resurrection time */
-	s.embalmer.ResurrectionTime = big.NewInt(time.Now().Unix() + RESURRECTION_TIME - 10)
+	s.embalmer.ResurrectionTime = big.NewInt(time.Now().Unix() + (RESURRECTION_TIME - 7))
+	log.Printf("Rewrap Scheduled at: %v", s.embalmer.ResurrectionTime)
 	s.embalmer.RewrapSarcophagus(assetDoubleHashBytesFive, s.embalmer.ResurrectionTime)
 
 	/* Embalmer Rewraps Sarco for time > current resurrection time */
 	s.embalmer.ResurrectionTime = big.NewInt(time.Now().Unix() + RESURRECTION_TIME)
+	log.Printf("Rewrap Scheduled at: %v", s.embalmer.ResurrectionTime)
 	s.embalmer.RewrapSarcophagus(assetDoubleHashBytesFive, s.embalmer.ResurrectionTime)
 	time.Sleep(10000 * time.Millisecond)
 
@@ -390,8 +394,8 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 
 	/* Sarco is unwrapped after the final rewrap time */
 	sarcoUnwrapped, err = s.arch.SarcoSession.Sarcophagus(assetDoubleHashBytesFive)
+	time.Sleep(2000 * time.Millisecond)
 	s.Nil(err)
 	s.Equal(uint8(2), sarcoUnwrapped.State)
 	s.Equal(0, len(s.arch.Sarcophaguses))
-	time.Sleep(8000 * time.Millisecond)
 }

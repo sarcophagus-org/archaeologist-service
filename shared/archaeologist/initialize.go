@@ -122,8 +122,8 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 	return errStrings
 }
 
-func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]models.Sarco, map[[32]byte]*big.Int, int) {
-	var sarcophaguses = map[[32]byte]models.Sarco{}
+func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*models.Sarco, map[[32]byte]*big.Int, int) {
+	var sarcophaguses = map[[32]byte]*models.Sarco{}
 	var fileHandlers = map[[32]byte]*big.Int{}
 
 	// Create a slice of sarcos (double hashes) indexed by public keys
@@ -179,7 +179,7 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]models.S
 					if pubKeyMatches {
 						fileHandlers[doubleHash] = sarco.StorageFee
 						// save created sarco to state
-						sarcophaguses[doubleHash] = models.Sarco{sarco.ResurrectionTime, accountIndex, false, 0}
+						sarcophaguses[doubleHash] = &models.Sarco{sarco.ResurrectionTime, accountIndex, false, 0}
 					}
 				} else {
 					// We have a sarcophagus that is updated but not unwrapped
@@ -188,7 +188,7 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]models.S
 					privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
 
 					// save updated sarco to state
-					sarcophaguses[doubleHash] = models.Sarco{sarco.ResurrectionTime, accountIndex, true, 0}
+					sarcophaguses[doubleHash] = &models.Sarco{sarco.ResurrectionTime, accountIndex, true, 0}
 					scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
 					fileHandlers = map[[32]byte]*big.Int{}
 					accountIndex += 1

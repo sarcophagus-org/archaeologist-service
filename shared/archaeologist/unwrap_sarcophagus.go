@@ -67,10 +67,8 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 
 	var privateKeyBytes [32]byte
 	copy(privateKeyBytes[:], crypto.FromECDSA(privateKey))
-	log.Printf("Current Private Key BYTES: %v", privateKeyBytes)
 
 	time.AfterFunc(timeToUnwrap, func() {
-
 		// Confirm the sarcophagus is in state
 		if sarcophagus, ok := arch.Sarcophaguses[assetDoubleHash]; ok {
 			resTime := sarcophagus.ResurrectionTime

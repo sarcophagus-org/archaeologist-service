@@ -28,24 +28,29 @@ func main(){
 
 	config := new(models.Config)
 	config.LoadConfig(*configFile, configDir, true)
+
+	// Initialize the Archaeologist with values from the config
 	arch := new(models.Archaeologist)
 	errStrings := archaeologist.InitializeArchaeologist(arch, config)
 
+	// List any errors. If any errors, exit
 	if len(errStrings) > 0 {
 		fmt.Println(fmt.Errorf(strings.Join(errStrings, "\n")))
 		log.Fatal("**Please fix these errors in your config file and restart the service.**")
 	}
 
-	if len(arch.FileHandlers) > 0 {
-		go arch.ListenForFile()
-	}
+	// Start the server to listen for files
+	go arch.ListenForFile()
 
+	// Register/Update the Archaeologist on the contract
 	archaeologist.RegisterOrUpdateArchaeologist(arch)
 
 	log.Printf("Eth Balance: %v", utility.ToDecimal(arch.EthBalance(), 18))
 	log.Printf("Sarco Token Balance: %v", utility.ToDecimal(arch.SarcoBalance(), 18))
 	log.Println("Arweave Balance:", utility.ToDecimal(ar.ArweaveBalance(arch.ArweaveTransactor.Client.(*api.Client), arch.ArweaveWallet), 12))
 	log.Printf("Arweave Address: %v", arch.ArweaveWallet.Address())
+
+	// Listen for contract events
 	archaeologist.EventsSubscribe(arch)
 }
 
