@@ -175,46 +175,46 @@ func (s *ArchTestSuite) TransferSarcoToEmbalmer(amount *big.Int) {
 	}
 }
 
-//// TestTwoSarcosOneUnwrapTime - tests the case where two sarcophagi are scheduled to be unwrapped at the same resurrection time
-//func (s *ArchTestSuite) TestTwoSarcosOneUnwrapTime() {
-//	errStrings := archaeologist.InitializeArchaeologist(s.arch, s.config)
-//	if len(errStrings) > 0 {
-//		fmt.Println(fmt.Errorf(strings.Join(errStrings, "\n")))
-//	}
-//	s.Equal(0, len(errStrings))
-//
-//	archaeologist.RegisterOrUpdateArchaeologist(s.arch)
-//
-//  go s.arch.ListenForFile()
-//	go archaeologist.EventsSubscribe(s.arch)
-//
-//	s.InitEmbalmer()
-//	timeUntilUnwrap := time.Until(time.Unix(s.embalmer.ResurrectionTime.Int64(), 0))
-//
-//	/* Sarco One Scheduled */
-//	fileSeed := 200
-//	fileBytes, assetDoubleHashBytes := embalmer.DoubleHashBytesFromSeed(int64(fileSeed), FILE_BYTE_COUNT)
-//	s.embalmer.CreateSarcophagus(s.embalmerConfig.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytes, "Test Sarco")
-//	s.embalmer.UpdateSarcophagus(assetDoubleHashBytes, fileBytes)
-//	time.Sleep(3000 * time.Millisecond)
-//
-//	/* Sarco Two Scheduled */
-//	fileSeed = 201
-//	fileBytesTwo, assetDoubleHashBytesTwo := embalmer.DoubleHashBytesFromSeed(int64(fileSeed), FILE_BYTE_COUNT)
-//	s.embalmer.CreateSarcophagus(s.embalmerConfig.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytesTwo, "Test Sarco Two")
-//	s.embalmer.UpdateSarcophagus(assetDoubleHashBytesTwo, fileBytesTwo)
-//
-//	/* Wait for both sarcs to be unwrapped */
-//	time.Sleep(timeUntilUnwrap)
-//	time.Sleep(3000 * time.Millisecond)
-//
-//	/* Both sarcs should have a state of done */
-//	sarcoOne, _ := s.arch.SarcoSession.Sarcophagus(assetDoubleHashBytes)
-//	s.Equal(uint8(2), sarcoOne.State)
-//
-//	sarcoTwo, _ := s.arch.SarcoSession.Sarcophagus(assetDoubleHashBytes)
-//	s.Equal(uint8(2), sarcoTwo.State)
-//}
+// TestTwoSarcosOneUnwrapTime - tests the case where two sarcophagi are scheduled to be unwrapped at the same resurrection time
+func (s *ArchTestSuite) TestTwoSarcosOneUnwrapTime() {
+	errStrings := archaeologist.InitializeArchaeologist(s.arch, s.config)
+	if len(errStrings) > 0 {
+		fmt.Println(fmt.Errorf(strings.Join(errStrings, "\n")))
+	}
+	s.Equal(0, len(errStrings))
+
+	archaeologist.RegisterOrUpdateArchaeologist(s.arch)
+
+ go s.arch.ListenForFile()
+	go archaeologist.EventsSubscribe(s.arch)
+
+	s.InitEmbalmer()
+	timeUntilUnwrap := time.Until(time.Unix(s.embalmer.ResurrectionTime.Int64(), 0))
+
+	/* Sarco One Scheduled */
+	fileSeed := 200
+	fileBytes, assetDoubleHashBytes := embalmer.DoubleHashBytesFromSeed(int64(fileSeed), FILE_BYTE_COUNT)
+	s.embalmer.CreateSarcophagus(s.embalmerConfig.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytes, "Test Sarco")
+	s.embalmer.UpdateSarcophagus(assetDoubleHashBytes, fileBytes)
+	time.Sleep(3000 * time.Millisecond)
+
+	/* Sarco Two Scheduled */
+	fileSeed = 201
+	fileBytesTwo, assetDoubleHashBytesTwo := embalmer.DoubleHashBytesFromSeed(int64(fileSeed), FILE_BYTE_COUNT)
+	s.embalmer.CreateSarcophagus(s.embalmerConfig.RECIPIENT_PRIVATE_KEY, assetDoubleHashBytesTwo, "Test Sarco Two")
+	s.embalmer.UpdateSarcophagus(assetDoubleHashBytesTwo, fileBytesTwo)
+
+	/* Wait for both sarcs to be unwrapped */
+	time.Sleep(timeUntilUnwrap)
+	time.Sleep(3000 * time.Millisecond)
+
+	/* Both sarcs should have a state of done */
+	sarcoOne, _ := s.arch.SarcoSession.Sarcophagus(assetDoubleHashBytes)
+	s.Equal(uint8(2), sarcoOne.State)
+
+	sarcoTwo, _ := s.arch.SarcoSession.Sarcophagus(assetDoubleHashBytes)
+	s.Equal(uint8(2), sarcoTwo.State)
+}
 
 // TestArchaeologistHappyPathWorkflow tests the following:
 // 1. Archaeologist is successfully registered
