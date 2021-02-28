@@ -1,21 +1,29 @@
+###
+# EXAMPLE CONFIG FILE
+###
+
+# All values in this file are expressed as strings
+# and will be converted to the correct type when the service is started
+
+
 # ETH node address. Websockets must be enabled.
 # Type: String
-eth_node: ws://localhost:8545
-
-# (Optional) The ETH address where you want payments to be made.
-# Type: String
-# If no payment address is provided, the address derived from the eth_private_key will be used.
-# payment_address: 0x...
+eth_node: "ws://localhost:8545"
 
 # Private key for signing transactions.
 # Type: String
 # Eth will need to be in this address to pay for Gas.
-eth_private_key: 0x89ee060717762819b0dfa501d1f3c246f059fd70a1b54c7231e617b32594e555
+eth_private_key: "0x89ee060717762819b0dfa501d1f3c246f059fd70a1b54c7231e617b32594e555"
+
+# Payment Addres -- (Optional) The ETH address where you want payments to be made.
+# Type: String
+# If no payment address is provided, the address derived from the eth_private_key will be used.
+# payment_address: 0x...
 
 # Mnemonic used to generate wallet which will be used for generating public/private key pairs
 # Type: String
 # https://iancoleman.io/bip39/
-mnemonic: index cupboard city neither axis spot thumb pet rabbit stuff culture project top fault wisdom
+mnemonic: "index cupboard city neither axis spot thumb pet rabbit stuff culture project top fault wisdom"
 
 # Full path (including filename) to your arweave wallet
 # Type: String
@@ -24,70 +32,56 @@ arweave_key_file: "$GOPATH/bin/arweave.json"
 # Arweave node address
 # Type: String
 # If using rootmos/loom docker image to test locally, you can use: http://localhost:8000/arweave
-arweave_node: https://arweave.net:443
+arweave_node: "https://arweave.net:443"
 
 # Arweave fee multiplier
-# Type: String (must have 1 decimal and quotes)
+# Must have 1 decimal and quotes
 # The node you are connected to will estimate arweave winston fee to use when sending the file to arweave
 # However, you can increase this fee by using the multiplier (e.g. fee = 10, multiplier = 1.5, final fee = 15)
 arweave_multiplier: "1.0"
 
 # Sarcophagus Contract Address
-# Type: String
-contract_address: 0x65411a12F5Ddc37b6f1f7355cd3fCe77499961aB
+contract_address: "0x65411a12F5Ddc37b6f1f7355cd3fCe77499961aB"
 
 # Sarcophagus Token Contract Address
-# Type: String
-token_address: 0xa92BdfF0B44CcacFb2027c1292627a272AB7d87E
+token_address: "0xa92BdfF0B44CcacFb2027c1292627a272AB7d87E"
 
 # Endpoint domain to be exposed for receiving a sarcophagus asset file
-# Type: String
 # Must use https
 # You are responsible for exposing this endpoint and mapping it to your localhost port specified by file_port
-endpoint: https://myarch.sarcophagus.io
+endpoint: "https://myarch.sarcophagus.io"
 
 # The file port that will be opened to receive the sarcophagus asset file
-# Type: String
-file_port: 8080
+file_port: "8080"
 
-# Expressed in Sarco Tokens with up to 18 decimals.
-# Type: String (expressed as decimal, must use quotes)
-# Set as a string to allow for 18 decimals when config gets parsed.
 # Used to calculate the storage fee you expect to receive for doing a Sarcophagus job.
 # The minimum storage fee will be calculated as: fee_per_byte * file_bytes_size
-# Default is 1.000000000000000000 (1.0 Sarco Tokens)
+# Expressed in Sarco Tokens with up to 18 decimals.
+# Default is 1.000000000000000000 (1 Sarco Tokens)
 fee_per_byte: "1.000000000000000000"
 
+# The minimum amount of Sarco Tokens you want to receive for completing a Sarcophagus job.
 # Expressed in Sarco Tokens with up to 18 decimals
-# Type: String (expressed as decimal, must use quotes)
-# Set as a string to allow for 18 decimals when config gets parsed.
-# The minimum amount of Sarco Tokens you want to receive for doing a Sarcophagus job.
 # This is a 1-time payment that will be paid when a Sarcophagus job is complete (when the Sarcophagus is unwrapped).
-# Default is 100.000000000000000000 (100.0 Sarco Tokens)
+# Default is 100.000000000000000000 (100 Sarco Tokens)
 min_bounty: "100.000000000000000000"
 
+# The minimum amount of Sarco Tokens you want to receive as a digging fee when a Sarcophagus is rewrapped.
 # Expressed in Sarco Tokens with up to 18 decimals
-# Type: String (expressed as decimal, must use quotes)
-# Set as a string to allow for 18 decimals when config gets parsed.
-# The minimum amount of Sarco Tokens you want to receive for doing a Sarcophagus job.
-# Default is 10.000000000000000000 (10.0 Sarco Tokens)
+# Default is 10.000000000000000000 (10 Sarco Tokens)
 min_digging_fee: "10.000000000000000000"
 
-# The resurrection time is when the Sarcophagus will be unwrapped or need to be rewrapped by.
-# Type: String
-# MAX_RESURRECTION_TIME is the relative time interval from the creation or rewrapping of the sarcophagut that you are willing to accept jobs within.
+# MAX_RESURRECTION_TIME is the relative time interval from the creation or rewrapping of the sarcophagus that you are willing to accept jobs within.
 # For example, if you set max_resurrection_time to 1 month -- when a sarcophagus is created, the resurrection time set by the embalmer cannot be greater than 1 month in the future for you to accept the job.
 # Expressed in Seconds (1 year = 31536000)
 # https://www.unixtimestamp.com/
-max_resurrection_time: 31536000
+max_resurrection_time: "31536000"
 
-# Expressed in Sarco Tokens with up to 18 decimals
-# Type: String (expressed as decimal, must use quotes)
-# Set as a string to allow for 18 decimals when config gets parsed.
-# When the service starts, the number here will be added to your "Free Bond" on the Sarcophagus Contract
-# This number will be reset to 0 after the service attempts to transfer Tokens to the free bond.
+# When the service starts, the value here will be added to your "Free Bond" on the Sarcophagus Contract
 # You must have Free Bond available on the Sarcophagus Contract to accept new jobs.
-# Default is 100.000000000000000000 (100.0 Sarco Tokens)
+# Expressed in Sarco Tokens with up to 18 decimals
+# This number will be reset to 0 after the service attempts to transfer Tokens to the free bond.
+# Default is 100.000000000000000000 (100 Sarco Tokens)
 add_to_free_bond: "100.000000000000000000"
 
 # Expressed in Sarco Tokens with up to 18 decimals
