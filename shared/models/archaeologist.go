@@ -323,8 +323,11 @@ func (arch *Archaeologist) pingHandler(w http.ResponseWriter, r *http.Request) {
 // 2. Can be Decrypted using private key a the current account index from the hd wallet
 // 3. Storage Fee sent by embalmer is adequate
 func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Receiving File...")
+
 	fileHandlerLen := len(arch.FileHandlers)
 	if fileHandlerLen < 1 {
+		log.Print("Not expecting a file, but received request")
 		http.Error(w, "We are not expecting a file", 400)
 		arch.FileHandlers = map[[32]byte]*big.Int{}
 	}
@@ -435,6 +438,8 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		R:               R,
 		S:               S,
 	}
+
+	log.Printf("Sending Response to Embalmer: %v", response)
 
 	json.NewEncoder(w).Encode(response)
 	arch.fileHandlerCheck()

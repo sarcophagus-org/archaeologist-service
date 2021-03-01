@@ -157,7 +157,6 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*models.
 		// Sarco Exists
 		case 1:
 			if utility.TimeWithWindowInFuture(sarco.ResurrectionTime, sarco.ResurrectionWindow) {
-
 				// Track if the archaeologist public key on the sarcophagus matches
 				// our current account index public key
 				// If it does, no other updated sarcophagus has used this public key yet and so the sarcophagus should be added to state
