@@ -178,7 +178,6 @@ func (embalmer *Embalmer) UpdateSarcophagus(assetDoubleHash [32]byte, fileBytes 
 	encryptedBytes := embalmer.EncryptFileBytes(fileBytes)
 
 	body := &models.SarcoFile{
-		FileType:  "txt",
 		FileBytes: base64.StdEncoding.EncodeToString(encryptedBytes),
 	}
 

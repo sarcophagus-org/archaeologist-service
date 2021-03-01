@@ -67,13 +67,14 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 
 	var privateKeyBytes [32]byte
 	copy(privateKeyBytes[:], crypto.FromECDSA(privateKey))
-	log.Printf("Current Private Key BYTES: %v", privateKeyBytes)
 
 	time.AfterFunc(timeToUnwrap, func() {
+		// Delay the unwrap time by a couple seconds in case of unwraps scheduled during service startup that are in the past
+		time.Sleep(2000 * time.Millisecond)
 
 		// Confirm the sarcophagus is in state
-		if resTime, ok := arch.Sarcophaguses[assetDoubleHash]; ok {
-
+		if sarcophagus, ok := arch.Sarcophaguses[assetDoubleHash]; ok {
+			resTime := sarcophagus.ResurrectionTime
 			// Confirm resurrection time passed at the time of the function call matches the
 			// resurrection time in state for this sarcophagus
 			if resTime.Cmp(resurrectionTime) == 0 {
@@ -81,19 +82,16 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 				// Validate that we can generate the single hash
 				_, err := generateSingleHash(arweaveClient, assetId, privateKey)
 				if err != nil {
-					log.Printf("Error generating single hash during unwrapping process. Unwrapping cancelled: %v", err)
+					log.Printf("Error generating single hash during unwrapping process. Most likely the arweave transaction was not finished being mined or failed. Unwrapping cancelled: %v", err)
 				} else {
 					mutex.Lock()
-					attempts, ok := arch.UnwrapAttempts[assetDoubleHash]
+					attempts := sarcophagus.UnwrapAttempts
 					mutex.Unlock()
 
-					if !ok {
-						attempts = 1
-					} else {
-						attempts += 1
-					}
+					attempts += 1
+
 					mutex.Lock()
-					arch.UnwrapAttempts[assetDoubleHash] = attempts
+					sarcophagus.UnwrapAttempts = attempts
 					mutex.Unlock()
 
 					// estimate gas is used to check if the unwrap will succeed

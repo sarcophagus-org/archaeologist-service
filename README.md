@@ -5,26 +5,59 @@ This respository contains the archaeologist service.
 This service is responsible for executing Sarcophagus jobs created via the Sarcophagus contract:
 https://github.com/sarcophagus-org/smart-contracts
 
-### Quick Start
-You must have an arweave wallet (with Arweave tokens) to accept new jobs. [You can get a wallet here.](https://www.arweave.org/wallet)
+## Quick Start
 
+#### Build archaeologist service
 ```
 git clone https://github.com/sarcophagus-org/archaeologist-service
 cp config.example.yml config.yml
 go build
 ```
 
+#### Setup Arweave wallet
+- You must have an arweave wallet (with Arweave tokens) to accept new jobs. 
+- [You can get a wallet here.](https://www.arweave.org/wallet)
+
+#### Setup configuration file
 Update the config.yml file with the appropriate values. 
 - Use the comments in the config.example.yml file as a guide. 
 - **The config.yml must be writable.**
 - All comments in config.yml will be removed after the first time the service is run.
 - Put your arweave wallet file in a path on the filesystem, and update the config.yml `areave_key_file` value to point to the location of your arweave wallet. (e.g "/usr/local/arweave.json")
 
+#### Setup Endpoint
+- Expose the SSL endpoint (set in the config file) on port 443 and map to the "file_port" config value
+- One option for this is to use an [nginx reverse proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/). 
+
+A basic setup example for nginx proxy using letsencrypt SSL cert:
+```
+server {
+        # SSL Setup
+        listen 443 ssl;
+        server_name myarch.com;
+        ssl_certificate /etc/letsencrypt/live/myarch.com/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/myarch.com/privkey.pem;
+        ssl_stapling on;
+        ssl_stapling_verify on;
+
+        # End SSL Setup
+
+        access_log /var/log/nginx/reverse-access.log;
+        error_log /var/log/nginx/reverse-error.log;
+
+        location / {
+            proxy_pass http://127.0.0.1:8000;
+        }
+}
+```
+
+#### Run Service
 To run the service:
 ```
 ./archaeologist-service
 ```
 
+#### Install Service (optional)
 **Alternatively you can install the service globally with:**
 
 ```
@@ -44,7 +77,7 @@ If installing on Ubuntu, before building/installing, you may need to run:
 apt-get install build-essential
 ```
 
-### Local Development 
+## Local Development 
 ##### Deploy Sarcophagus Contract
 Clone https://github.com/sarcophagus-org/smart-contracts
 

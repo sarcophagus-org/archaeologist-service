@@ -162,7 +162,7 @@ func (s *ArchTestSuite) InitEmbalmer() {
 func (s *ArchTestSuite) simulateServiceRestart() {
 	s.T().Log("Simulating Service Restart...")
 	s.arch.FileHandlers = map[[32]byte]*big.Int{}
-	s.arch.Sarcophaguses = map[[32]byte]*big.Int{}
+	s.arch.Sarcophaguses = map[[32]byte]*models.Sarco{}
 	_ = archaeologist.InitializeArchaeologist(s.arch, s.config)
 }
 
@@ -185,6 +185,7 @@ func (s *ArchTestSuite) TestTwoSarcosOneUnwrapTime() {
 
 	archaeologist.RegisterOrUpdateArchaeologist(s.arch)
 
+ go s.arch.ListenForFile()
 	go archaeologist.EventsSubscribe(s.arch)
 
 	s.InitEmbalmer()
@@ -264,6 +265,7 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 		s.T().Fail()
 	}
 
+	go s.arch.ListenForFile()
 	go archaeologist.EventsSubscribe(s.arch)
 
 	/* Embalmer Creates First Sarco */
@@ -278,7 +280,7 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	s.Equal("Test Sarco", sarco.Name)
 	s.Equal(1, len(s.arch.FileHandlers))
 	s.Equal(1, len(s.arch.Sarcophaguses))
-	s.Equal(sarco.ResurrectionTime, s.arch.Sarcophaguses[assetDoubleHashBytes])
+	s.Equal(sarco.ResurrectionTime, s.arch.Sarcophaguses[assetDoubleHashBytes].ResurrectionTime)
 
 	/* Embalmer Creates Second Sarco */
 	log.Print("Creating Sarco 2")
@@ -290,7 +292,7 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	s.Equal("Test Sarco Two", sarcoTwo.Name)
 	s.Equal(2, len(s.arch.FileHandlers))
 	s.Equal(2, len(s.arch.Sarcophaguses))
-	s.Equal(sarcoTwo.ResurrectionTime, s.arch.Sarcophaguses[assetDoubleHashBytesTwo])
+	s.Equal(sarcoTwo.ResurrectionTime, s.arch.Sarcophaguses[assetDoubleHashBytesTwo].ResurrectionTime)
 
 	/* Embalmer Updates First Sarco */
 	s.embalmer.UpdateSarcophagus(assetDoubleHashBytes, fileBytes)
@@ -339,7 +341,7 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	/* Check state is correct on service restart */
 	s.simulateServiceRestart()
 	s.Equal(1, len(s.arch.Sarcophaguses))
-	s.Equal(s.embalmer.ResurrectionTime, s.arch.Sarcophaguses[assetDoubleHashBytesFour])
+	s.Equal(s.embalmer.ResurrectionTime, s.arch.Sarcophaguses[assetDoubleHashBytesFour].ResurrectionTime)
 	s.Equal(0, len(s.arch.FileHandlers))
 
 	/*
@@ -373,11 +375,13 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 	s.embalmer.UpdateSarcophagus(assetDoubleHashBytesFive, fileBytesFive)
 
 	/* Embalmer Rewraps Sarco for time < current resurrection time */
-	s.embalmer.ResurrectionTime = big.NewInt(time.Now().Unix() + RESURRECTION_TIME - 10)
+	s.embalmer.ResurrectionTime = big.NewInt(time.Now().Unix() + (RESURRECTION_TIME - 7))
+	log.Printf("Rewrap Scheduled at: %v", s.embalmer.ResurrectionTime)
 	s.embalmer.RewrapSarcophagus(assetDoubleHashBytesFive, s.embalmer.ResurrectionTime)
 
 	/* Embalmer Rewraps Sarco for time > current resurrection time */
 	s.embalmer.ResurrectionTime = big.NewInt(time.Now().Unix() + RESURRECTION_TIME)
+	log.Printf("Rewrap Scheduled at: %v", s.embalmer.ResurrectionTime)
 	s.embalmer.RewrapSarcophagus(assetDoubleHashBytesFive, s.embalmer.ResurrectionTime)
 	time.Sleep(10000 * time.Millisecond)
 
@@ -390,8 +394,8 @@ func (s *ArchTestSuite) TestArchaeologistHappyPathWorkflow() {
 
 	/* Sarco is unwrapped after the final rewrap time */
 	sarcoUnwrapped, err = s.arch.SarcoSession.Sarcophagus(assetDoubleHashBytesFive)
+	time.Sleep(2000 * time.Millisecond)
 	s.Nil(err)
 	s.Equal(uint8(2), sarcoUnwrapped.State)
 	s.Equal(0, len(s.arch.Sarcophaguses))
-	time.Sleep(8000 * time.Millisecond)
 }

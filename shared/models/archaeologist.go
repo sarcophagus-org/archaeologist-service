@@ -62,10 +62,8 @@ type Archaeologist struct {
 	Wallet                    *hdwallet.Wallet
 	AccountIndex              int
 	Server                    *http.Server
-	Sarcophaguses             map[[32]byte]*big.Int
-	SarcophagusesAccountIndex map[[32]byte]int
+	Sarcophaguses             map[[32]byte]*Sarco
 	FileHandlers              map[[32]byte]*big.Int
-	UnwrapAttempts            map[[32]byte]int
 }
 
 // MB used for validating file size
@@ -283,12 +281,12 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transactio
 	return txn, nil
 }
 
-// fileHandlerCheck closes the server if there are no file handlers in the mapping
+// fileHandlerCheck resets the file handlers if there is only 1 file handler open
+// called either when an error has occurred in the file upload process or a sarcophagus is removed from state
 func (arch *Archaeologist) fileHandlerCheck() {
 	fileHandlerLen := len(arch.FileHandlers)
 	if fileHandlerLen <= 1 {
 		arch.FileHandlers = map[[32]byte]*big.Int{}
-		arch.ShutdownServer()
 	}
 }
 
@@ -297,6 +295,7 @@ func (arch *Archaeologist) fileUploadError(logMsg string, httpErrMsg string, htt
 	log.Printf("Error uploading file: %v", logMsg)
 	http.Error(w, httpErrMsg, httpErrType)
 
+	// Check if only one file handler exists, and if so, remove it
 	arch.fileHandlerCheck()
 }
 
@@ -324,6 +323,15 @@ func (arch *Archaeologist) pingHandler(w http.ResponseWriter, r *http.Request) {
 // 2. Can be Decrypted using private key a the current account index from the hd wallet
 // 3. Storage Fee sent by embalmer is adequate
 func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
+	log.Print("Receiving File...")
+
+	fileHandlerLen := len(arch.FileHandlers)
+	if fileHandlerLen < 1 {
+		log.Print("Not expecting a file, but received request")
+		http.Error(w, "We are not expecting a file", 400)
+		arch.FileHandlers = map[[32]byte]*big.Int{}
+	}
+
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 
 	if r.Method != "POST" && r.Method != "OPTIONS" {
@@ -431,8 +439,10 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		S:               S,
 	}
 
+	log.Printf("Sending Response to Embalmer: %v", response)
+
 	json.NewEncoder(w).Encode(response)
-	arch.ShutdownServer()
+	arch.fileHandlerCheck()
 }
 
 // ListenForFile .
@@ -474,7 +484,7 @@ func (arch *Archaeologist) InitServer() {
 // Start Server .
 func (arch *Archaeologist) StartServer() {
 	go func() {
-		log.Printf("Listening for file on %s:", arch.Server.Addr)
+		log.Printf("Server starting on %s:", arch.Server.Addr)
 		if err := arch.Server.ListenAndServe(); err != nil {
 			log.Println("Server shutting down:", err)
 		}
@@ -509,16 +519,12 @@ func (arch *Archaeologist) IsArchSarcophagus(doubleHash [32]byte) bool {
 }
 
 // RemoveArchSarcophagus deletes the sarcophagus from state if it exists
-// also removes the corresponding account index and file handler
+// also removes the file handler
 func (arch *Archaeologist) RemoveArchSarcophagus(doubleHash [32]byte) {
 	if arch.IsArchSarcophagus(doubleHash) {
 		delete(arch.Sarcophaguses, doubleHash)
-		_, ok := arch.SarcophagusesAccountIndex[doubleHash]
-		if ok {
-			delete(arch.SarcophagusesAccountIndex, doubleHash)
-		}
 
-		_, ok = arch.FileHandlers[doubleHash]
+		_, ok := arch.FileHandlers[doubleHash]
 		if ok {
 			arch.fileHandlerCheck()
 			delete(arch.FileHandlers, doubleHash)
