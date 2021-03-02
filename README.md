@@ -5,6 +5,23 @@ This respository contains the archaeologist service.
 This service is responsible for executing Sarcophagus jobs created via the Sarcophagus contract:
 https://github.com/sarcophagus-org/smart-contracts
 
+## Prerequisites
+Before you can start accepting jobs, you must have the following:
+
+###### ARWEAVE tokens
+- You will need Arweave tokens to accept new jobs. 
+- [You can get a wallet here.](https://www.arweave.org/wallet)
+- Your wallet key file will need to be accessible to the service (further instructions provided below).
+
+###### SARCO Tokens
+- You must have a SARCO token balance to accept new jobs. [Get SARCO on Uniswap](https://app.uniswap.org/#/swap?inputCurrency=0x7697b462a7c4ff5f8b55bdbc2f4076c2af9cf51a)
+- The address that holds these tokens is the one derived from the "eth_private_key" value in the config file.
+
+###### ETH
+- The same address that holds your SARCO tokens must have an Eth balance.
+- This ETH will be used to create transactions necessary for the Archaeologist service to function (Registering Archaeologists, Unwrapping Sarcophogi, etc)
+
+
 ## Quick Start
 
 #### Build archaeologist service
@@ -14,27 +31,30 @@ cp config.example.yml config.yml
 go build
 ```
 
-#### Setup Arweave wallet
-- You must have an arweave wallet (with Arweave tokens) to accept new jobs. 
-- [You can get a wallet here.](https://www.arweave.org/wallet)
-
 #### Setup configuration file
 Update the config.yml file with the appropriate values. 
 - Use the comments in the config.example.yml file as a guide. 
 - **The config.yml must be writable.**
 - All comments in config.yml will be removed after the first time the service is run.
-- Put your arweave wallet file in a path on the filesystem, and update the config.yml `areave_key_file` value to point to the location of your arweave wallet. (e.g "/usr/local/arweave.json")
+- Put your arweave wallet file in a path on the filesystem, and update the config.yml `areave_key_file` value to point to the location of your arweave wallet. (i.e.`/usr/local/arweave.json`)
 
 #### Setup Endpoint
-- Expose the SSL endpoint (set in the config file) on port 443 and map to the "file_port" config value
-- One option for this is to use an [nginx reverse proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/). 
+- You will need to use a domain for your endpoint to accommodate SSL. This domain name will be used as the `endpoint` config file value (i.e. `https://arch1.myarch.com`)
+- Update your domain's DNS to point at the IP address of the server running the Archaeologist service.
+- Expose the IP address on port 443 and map to the "file_port" config value (default is 8080). One option for this is to use an [nginx reverse proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/). 
 
-A basic setup example for nginx proxy using letsencrypt SSL cert:
+A basic setup example for nginx proxy using letsencrypt SSL cert and `arch1.myarch.com` domain:
+
+1. Open Port 443 on your server
+2. [Use certbot to install SSL](https://certbot.eff.org/)
+3. [Install nginx](https://www.nginx.com/resources/wiki/start/topics/tutorials/install/)
+4. Create the reverse proxy file `/etc/nginx/sites-available/reverse-proxy.conf`
+
 ```
 server {
         # SSL Setup
         listen 443 ssl;
-        server_name myarch.com;
+        server_name arch1.myarch.com;
         ssl_certificate /etc/letsencrypt/live/myarch.com/fullchain.pem;
         ssl_certificate_key /etc/letsencrypt/live/myarch.com/privkey.pem;
         ssl_stapling on;
@@ -50,6 +70,12 @@ server {
         }
 }
 ```
+
+5. Create a sym link to sites-enabled
+`sudo ln -s /etc/nginx/sites-available/reverse-proxy.conf /etc/nginx/sites-enabled/reverse-proxy.conf`
+
+6. Restart nginx
+`sudo service nginx restart`
 
 #### Run Service
 To run the service:
