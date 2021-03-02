@@ -36,10 +36,12 @@ arweave_node: "https://arweave.net:443"
 arweave_multiplier: "1.0"
 
 # Sarcophagus Contract Address
-contract_address: "0x65411a12F5Ddc37b6f1f7355cd3fCe77499961aB"
+# Currently set to Rinkeby Address
+contract_address: "0xf8f7D52eFa7216f131fA31054221508B4c7ab37d"
 
 # Sarcophagus Token Contract Address
-token_address: "0xa92BdfF0B44CcacFb2027c1292627a272AB7d87E"
+# Currently set to Rinkeby Address
+token_address: "0x77ec161f6c2f2ce4554695a07e071d3f0ef3aef5"
 
 # Endpoint domain to be exposed for receiving a sarcophagus asset file
 # Must use https
