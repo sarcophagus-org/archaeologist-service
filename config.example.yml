@@ -7,30 +7,25 @@
 
 
 # ETH node address. Websockets must be enabled.
-# Type: String
 eth_node: "ws://localhost:8545"
 
 # Private key for signing transactions.
-# Type: String
-# Eth will need to be in this address to pay for Gas.
+# The address derived from this key will need to have an ETH balance to pay for Transaction Gas.
 eth_private_key: "0x89ee060717762819b0dfa501d1f3c246f059fd70a1b54c7231e617b32594e555"
 
-# Payment Addres -- (Optional) The ETH address where you want payments to be made.
-# Type: String
+# Payment Address -- (Optional) The ETH address where you want payments to be made.
 # If no payment address is provided, the address derived from the eth_private_key will be used.
 # payment_address: 0x...
 
 # Mnemonic used to generate wallet which will be used for generating public/private key pairs
-# Type: String
-# https://iancoleman.io/bip39/
+# Generate one here -- https://iancoleman.io/bip39/
 mnemonic: "index cupboard city neither axis spot thumb pet rabbit stuff culture project top fault wisdom"
 
-# Full path (including filename) to your arweave wallet
-# Type: String
+# Full path (including filename) to your arweave wallet key
 arweave_key_file: "$GOPATH/bin/arweave.json"
 
 # Arweave node address
-# Type: String
+# Defaults to Arweave's public node
 # If using rootmos/loom docker image to test locally, you can use: http://localhost:8000/arweave
 arweave_node: "https://arweave.net:443"
 
@@ -56,19 +51,19 @@ file_port: "8080"
 
 # Used to calculate the storage fee you expect to receive for doing a Sarcophagus job.
 # The minimum storage fee will be calculated as: fee_per_byte * file_bytes_size
-# Expressed in Sarco Tokens with up to 18 decimals.
-# Default is 1.000000000000000000 (1 Sarco Tokens)
+# Expressed in SARCO Tokens with up to 18 decimals.
+# Default is 1.000000000000000000 (1 SARCO Tokens)
 fee_per_byte: "1.000000000000000000"
 
-# The minimum amount of Sarco Tokens you want to receive for completing a Sarcophagus job.
-# Expressed in Sarco Tokens with up to 18 decimals
+# The minimum amount of SARCO Tokens you want to receive for completing a Sarcophagus job.
+# Expressed in SARCO Tokens with up to 18 decimals
 # This is a 1-time payment that will be paid when a Sarcophagus job is complete (when the Sarcophagus is unwrapped).
-# Default is 100.000000000000000000 (100 Sarco Tokens)
+# Default is 100.000000000000000000 (100 SARCO Tokens)
 min_bounty: "100.000000000000000000"
 
-# The minimum amount of Sarco Tokens you want to receive as a digging fee when a Sarcophagus is rewrapped.
-# Expressed in Sarco Tokens with up to 18 decimals
-# Default is 10.000000000000000000 (10 Sarco Tokens)
+# The minimum amount of SARCO Tokens you want to receive as a digging fee when a Sarcophagus is rewrapped.
+# Expressed in SARCO Tokens with up to 18 decimals
+# Default is 10.000000000000000000 (10 SARCO Tokens)
 min_digging_fee: "10.000000000000000000"
 
 # MAX_RESURRECTION_TIME is the relative time interval from the creation or rewrapping of the sarcophagus that you are willing to accept jobs within.
@@ -78,15 +73,16 @@ min_digging_fee: "10.000000000000000000"
 max_resurrection_time: "31536000"
 
 # When the service starts, the value here will be added to your "Free Bond" on the Sarcophagus Contract
+# This SARCO will be transferred from the address derived from the eth_private_key config value, so you must have enough a SARCO balance to cover this amount.  
 # You must have Free Bond available on the Sarcophagus Contract to accept new jobs.
-# Expressed in Sarco Tokens with up to 18 decimals
-# This number will be reset to 0 after the service attempts to transfer Tokens to the free bond.
-# Default is 100.000000000000000000 (100 Sarco Tokens)
+# Expressed in SARCO Tokens with up to 18 decimals
+# This number will be reset to 0 after the service is started, so it must be manually set before running the service each time you want to deposit to free bond.
+# Default is 100.000000000000000000 (100 SARCO Tokens)
 add_to_free_bond: "100.000000000000000000"
 
-# Expressed in Sarco Tokens with up to 18 decimals
+# Expressed in SARCO Tokens with up to 18 decimals
 # Type: String (expressed as decimal, must use quotes)
 # Set as a string to allow for 18 decimals when config gets parsed.
 # When the service starts, the number here will be subtracted from your "Free Bond" on the Sarcophagus Contract
-# This number will be reset to 0 after the service attempts to transfer Tokens from the free bond.
+# This number will be reset to 0 after the service is started, so it must be manually set before running the service each time you want to withdraw from free bond.
 remove_from_free_bond: "0"

@@ -323,6 +323,8 @@ func (arch *Archaeologist) pingHandler(w http.ResponseWriter, r *http.Request) {
 // 2. Can be Decrypted using private key a the current account index from the hd wallet
 // 3. Storage Fee sent by embalmer is adequate
 func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Request) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
+
 	log.Print("Receiving File...")
 
 	fileHandlerLen := len(arch.FileHandlers)
@@ -331,8 +333,6 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "We are not expecting a file", 400)
 		arch.FileHandlers = map[[32]byte]*big.Int{}
 	}
-
-	(w).Header().Set("Access-Control-Allow-Origin", "*")
 
 	if r.Method != "POST" && r.Method != "OPTIONS" {
 		arch.fileUploadError("File handler received non-post method, exiting.", "Method not allowed", http.StatusMethodNotAllowed, w)
