@@ -215,7 +215,7 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 //    LastTransaction was failing when testing locally.
 func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arweave.WalletSigner, amount string, data []byte, target string) (*tx.Transaction, error) {
 	tr := arch.ArweaveTransactor
-	lastTx, err := tr.Client.LastTransaction(ctx, w.Address())
+	lastTx, err := tr.Client.TxAnchor(ctx)
 	if err != nil {
 		return nil, err
 	}
