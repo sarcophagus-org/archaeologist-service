@@ -35,6 +35,12 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 		return
 	}
 
+	sarco, _ := arch.SarcoSession.Sarcophagus(event.Identifier)
+	if sarco.State != 1 {
+		log.Printf("Created Sarco state is not 1, not adding sarco to state")
+		return
+	}
+
 	// add sarcophagus to state
 	arch.Sarcophaguses[event.Identifier] = &models.Sarco{
 		ResurrectionTime: event.ResurrectionTime,

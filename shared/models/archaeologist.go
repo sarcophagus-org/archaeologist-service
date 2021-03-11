@@ -209,13 +209,10 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 
 // CreateArweaveTransaction
 // Emulates CreateTransaction in the arweave-go library's tx package
-// There are 2 differences:
-// 1. Multiplier set in config can increase the estimated fee
-// 2. Uses tr.Client.LastTransaction instead of tr.Client.TxAnchor(ctx)
-//    LastTransaction was failing when testing locally.
+// There is 1 difference: The arweave_multiplier set in config can increase the estimated fee to increase chances of successfully confirmed tx
 func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arweave.WalletSigner, amount string, data []byte, target string) (*tx.Transaction, error) {
 	tr := arch.ArweaveTransactor
-	lastTx, err := tr.Client.LastTransaction(ctx, w.Address())
+	lastTx, err := tr.Client.TxAnchor(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +252,7 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transactio
 
 	// amount and Target are blank, b/c arweave tokens are not being sent
 	log.Printf("Uploading file bytes to arweave: %v", fileBytes)
-	txBuilder, err := arch.CreateArweaveTransaction(context.TODO(), w, "0", fileBytes, "")
+	txBuilder, err := arch.CreateArweaveTransaction(context.Background(), w, "0", fileBytes, "")
 	if err != nil {
 		log.Printf("Error creating transaction: %v", err)
 		return &tx.Transaction{}, err
@@ -270,7 +267,7 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transactio
 
 	// send the transaction
 	log.Printf("Sending transaction: %v", txn.Hash())
-	resp, err := arTrans.SendTransaction(context.TODO(), txn)
+	resp, err := arTrans.SendTransaction(context.Background(), txn)
 	if err != nil {
 		log.Printf("Error sending transaction: %v", err)
 		return &tx.Transaction{}, err
