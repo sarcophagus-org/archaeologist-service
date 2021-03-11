@@ -209,8 +209,7 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 
 // CreateArweaveTransaction
 // Emulates CreateTransaction in the arweave-go library's tx package
-// There are 1 difference:
-// 1. Multiplier set in config can increase the estimated fee
+// There is 1 difference: The arweave_multiplier set in config can increase the estimated fee to increase chances of successfully confirmed tx
 func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arweave.WalletSigner, amount string, data []byte, target string) (*tx.Transaction, error) {
 	tr := arch.ArweaveTransactor
 	lastTx, err := tr.Client.TxAnchor(ctx)
