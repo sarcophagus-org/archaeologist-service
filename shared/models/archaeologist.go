@@ -255,7 +255,7 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transactio
 
 	// amount and Target are blank, b/c arweave tokens are not being sent
 	log.Printf("Uploading file bytes to arweave: %v", fileBytes)
-	txBuilder, err := arch.CreateArweaveTransaction(context.TODO(), w, "0", fileBytes, "")
+	txBuilder, err := arch.CreateArweaveTransaction(context.Background(), w, "0", fileBytes, "")
 	if err != nil {
 		log.Printf("Error creating transaction: %v", err)
 		return &tx.Transaction{}, err
@@ -270,7 +270,7 @@ func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transactio
 
 	// send the transaction
 	log.Printf("Sending transaction: %v", txn.Hash())
-	resp, err := arTrans.SendTransaction(context.TODO(), txn)
+	resp, err := arTrans.SendTransaction(context.Background(), txn)
 	if err != nil {
 		log.Printf("Error sending transaction: %v", err)
 		return &tx.Transaction{}, err
