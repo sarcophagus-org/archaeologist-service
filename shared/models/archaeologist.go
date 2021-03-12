@@ -328,6 +328,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	if fileHandlerLen < 1 {
 		log.Print("Not expecting a file, but received request")
 		http.Error(w, "We are not expecting a file", 406)
+		return
 	}
 
 	if r.Method != "POST" && r.Method != "OPTIONS" {
