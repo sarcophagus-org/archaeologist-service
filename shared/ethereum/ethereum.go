@@ -37,6 +37,7 @@ func SarcoAddress(contractAddress string, client *ethclient.Client) (common.Addr
 // Returns an error if there was an error confirming the transaction
 func WaitMined(client *ethclient.Client, txHash common.Hash, label string) error {
 	var miningErr error = nil
+	retries := 4
 
 	log.Printf("Waiting for %s transaction to be mined", label)
 
@@ -44,8 +45,14 @@ func WaitMined(client *ethclient.Client, txHash common.Hash, label string) error
 		_, pending, err := client.TransactionByHash(context.Background(), txHash)
 
 		if err != nil {
-			miningErr = err
-			break
+			if retries > 0 {
+				log.Printf("%v transaction not found, retrying", label)
+				time.Sleep(3 * time.Second)
+				retries -= 1
+			} else {
+				miningErr = err
+				break
+			}
 		}
 
 		fmt.Print(".")

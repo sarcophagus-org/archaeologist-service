@@ -121,7 +121,7 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 
 							if err != nil {
 								if attempts <= UNWRAP_RETRY_LIMIT {
-									log.Printf("There was an error mining the update archaeologist transaction: %v. Retrying...", err)
+									log.Printf("There was an error mining the unwrap archaeologist transaction: %v. Retrying...", err)
 									scheduleUnwrap(session, arweaveClient, resTime, arch, assetDoubleHash, privateKey, assetId)
 								}
 							} else {
