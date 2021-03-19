@@ -22,9 +22,9 @@ import (
 )
 
 const (
-	UNWRAP_RETRY_LIMIT = 2 // How many attempts after first failure to retry the unwrapping if it fails
-	UNWRAP_RETRY_INTERVAL_LB = 100 // lower bound of retry (will be multiplied by 10 milliseconds)
-	UNWRAP_RETRY_INTERVAL_UB = 1000 // upper bound of retry (will be multiplied by 10 milliseconds)
+	UNWRAP_RETRY_LIMIT = 3 // How many attempts after first failure to retry the unwrapping if it fails
+	UNWRAP_RETRY_INTERVAL_LB = 1000 // lower bound of retry in centiseconds (10 seconds)
+	UNWRAP_RETRY_INTERVAL_UB = 10000 // upper bound of retry in centiseconds (100 seconds)
 )
 var mutex = &sync.Mutex{}
 
