@@ -37,7 +37,7 @@ arweave_multiplier: "1.0"
 
 # Sarcophagus Contract Address
 # Currently set to Rinkeby Address
-contract_address: "0xf8f7D52eFa7216f131fA31054221508B4c7ab37d"
+contract_address: "0x939BE928b0d5fBb7f3FA07217c816496FcBEBa46"
 
 # Sarcophagus Token Contract Address
 # Currently set to Rinkeby Address
