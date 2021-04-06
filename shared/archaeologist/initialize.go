@@ -210,12 +210,14 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*models.
 				}
 
 				// Lets get some money by cleaning it up
-				tx, err := arch.SarcoSession.CleanUpSarcophagus(doubleHash, arch.PaymentAddress)
-				if err != nil {
-					log.Printf("Cleanup Sarcophagus error: %v", err)
-				}
-				log.Printf("Cleanup Sarcophagus Tx Submitted. Transaction ID: %s", tx.Hash().Hex())
-				log.Printf("Gas Used: %v", tx.Gas())
+				// TODO: Re-enable once it makes economic sense to do so
+				// TODO: Add a WaitMined step here as well (this is missing)
+				// tx, err := arch.SarcoSession.CleanUpSarcophagus(doubleHash, arch.PaymentAddress)
+				// if err != nil {
+				//	 log.Printf("Cleanup Sarcophagus error: %v", err)
+				// }
+				// log.Printf("Cleanup Sarcophagus Tx Submitted. Transaction ID: %s", tx.Hash().Hex())
+				// log.Printf("Gas Used: %v", tx.Gas())
 			}
 		// Sarco is Done
 		case 2:

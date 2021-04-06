@@ -113,31 +113,31 @@ func EventsSubscribe(arch *models.Archaeologist) {
 		select {
 		case err := <-createSub.Err():
 			if err != nil {
-				log.Println("Error with Create Sarcophagus Subscription:", err)
+				log.Fatalln("Error with Create Sarcophagus Subscription:", err)
 			}
 		case err := <-updateSub.Err():
 			if err != nil {
-				log.Println("Error with Update Sarcophagus Subscription:", err)
+				log.Fatalln("Error with Update Sarcophagus Subscription:", err)
 			}
 		case err := <-rewrapSub.Err():
 			if err != nil {
-				log.Println("Error with Rewrap Sarcophagus Subscription:", err)
+				log.Fatalln("Error with Rewrap Sarcophagus Subscription:", err)
 			}
 		case err := <-cleanSub.Err():
 			if err != nil {
-				log.Println("Error with Clean Sarcophagus Subscription:", err)
+				log.Fatalln("Error with Clean Sarcophagus Subscription:", err)
 			}
 		case err := <-burySub.Err():
 			if err != nil {
-				log.Println("Error with Bury Sarcophagus Subscription:", err)
+				log.Fatalln("Error with Bury Sarcophagus Subscription:", err)
 			}
 		case err := <-cancelSub.Err():
 			if err != nil {
-				log.Println("Error with Cancel Sarcophagus Subscription:", err)
+				log.Fatalln("Error with Cancel Sarcophagus Subscription:", err)
 			}
 		case err := <-accuseSub.Err():
 			if err != nil {
-				log.Println("Error with Accuse Archaeologist Subscription:", err)
+				log.Fatalln("Error with Accuse Archaeologist Subscription:", err)
 			}
 		case event := <-createSink:
 			// the createSink only returns sarcophagi related to this archaeologist
