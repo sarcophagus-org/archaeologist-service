@@ -271,9 +271,11 @@ func RebuildArchStateListener(arch *models.Archaeologist) {
 		case msg := <-arch.RebuildChan:
 			if msg == "start" {
 				log.Print("Rebuilding State")
+				mutex.Lock()
 				arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
 				arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 				arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
+				mutex.Unlock()
 				arch.RebuildChan <- "finish"
 			}
 		}

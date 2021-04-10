@@ -125,8 +125,8 @@ func (arch *Archaeologist) ApproveFreeBondTransfer() {
 		log.Fatalf("There was an error mining the approval of free bond transaction: %v", err)
 	}
 
-	// 5 second buffer added to avoid issue with post-approval tx failing
-	time.Sleep(5 * time.Second)
+	// buffer added to avoid issue with post-approval tx failing
+	time.Sleep(10 * time.Second)
 }
 
 // WithdrawBond withdraws Sarco tokens from the archaeologist's Free Bond balance
