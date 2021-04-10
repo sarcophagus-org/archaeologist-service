@@ -189,9 +189,17 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*models.
 					// and increment the account index as this key pair has been used
 					privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
 
-					// save updated sarco to state
-					sarcophaguses[doubleHash] = &models.Sarco{sarco.ResurrectionTime, accountIndex, true, 0}
-					scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
+					// check if sarco is already in state
+					if stateSarco, ok := arch.Sarcophaguses[doubleHash]; ok {
+						// if resurrection time is different in state, then schedule unwrap
+						if stateSarco.ResurrectionTime.Cmp(sarco.ResurrectionTime) != 0 {
+							sarcophaguses[doubleHash] = &models.Sarco{sarco.ResurrectionTime, accountIndex, true, 0}
+							scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
+						}
+					} else {
+						sarcophaguses[doubleHash] = &models.Sarco{sarco.ResurrectionTime, accountIndex, true, 0}
+						scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
+					}
 					fileHandlers = map[[32]byte]*big.Int{}
 					accountIndex += 1
 
@@ -258,12 +266,14 @@ func ReInitializeArchaeologistScheduler(arch *models.Archaeologist, config *mode
 }
 
 func timeToReInitialize() time.Duration {
-	nearestHour := time.Now().Round(time.Hour)
+	// nearestHour := time.Now().Round(time.Hour)
 
 	if time.Now().Minute() >= 30 {
-		return time.Until(nearestHour.Add(15* time.Minute))
+		return time.Until(time.Now().Add(2 * time.Minute))
+		// return time.Until(nearestHour.Add(15* time.Minute))
 	} else {
-		return time.Until(nearestHour.Add(1 * time.Hour).Add(15* time.Minute))
+		return time.Until(time.Now().Add(2 * time.Minute))
+		//return time.Until(nearestHour.Add(1 * time.Hour).Add(15* time.Minute))
 	}
 }
 

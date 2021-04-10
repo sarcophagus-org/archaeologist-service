@@ -68,6 +68,8 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 	var privateKeyBytes [32]byte
 	copy(privateKeyBytes[:], crypto.FromECDSA(privateKey))
 
+	log.Println("Unwrap scheduled in:", timeToUnwrap)
+
 	time.AfterFunc(timeToUnwrap, func() {
 		// Delay the unwrap time by a couple seconds in case of unwraps scheduled during service startup that are in the past
 		time.Sleep(2000 * time.Millisecond)
@@ -144,8 +146,6 @@ func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Cl
 			log.Printf("Unwrapping cancelled. Sarcophagus was cancelled, buried, or cleaned, or archaeologist was successfully accused.")
 		}
 	})
-
-	log.Println("Unwrap scheduled in:", timeToUnwrap)
 }
 
 // randomRetryInterval - used to schedule the unwrap time randomly between 2 values in the future

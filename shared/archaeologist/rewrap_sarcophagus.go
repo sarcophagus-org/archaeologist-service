@@ -18,9 +18,7 @@ func handleRewrapSarcophagus(event *contracts.EventsRewrapSarcophagus, arch *mod
 			privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, sarcophagus.AccountIndex)
 
 			// Update resurrection time for Sarcophagus in state
-			mutex.Lock()
 			sarcophagus.ResurrectionTime = event.ResurrectionTime
-			mutex.Unlock()
 
 			scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), event.ResurrectionTime, arch, event.Identifier, privateKey, event.AssetId)
 		} else {
