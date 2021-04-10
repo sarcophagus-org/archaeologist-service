@@ -162,7 +162,6 @@ func EventsSubscribe(arch *models.Archaeologist) {
 		case sarcoEvent := <-accuseSink:
 			arch.RemoveArchSarcophagus(sarcoEvent.Identifier)
 		case <-arch.ReconnectChan:
-			log.Printf("reconnecting...")
 			return
 		}
 	}
