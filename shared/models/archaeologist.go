@@ -38,34 +38,34 @@ import (
 )
 
 type Archaeologist struct {
-	Client                    *ethclient.Client
-	ArweaveWallet             *wallet.Wallet
-	ArweaveTransactor         *transactor.Transactor
-	ArweaveMultiplier		  decimal.Decimal
-	PrivateKey                *ecdsa.PrivateKey
-	CurrentPublicKeyBytes     []byte
-	CurrentPrivateKey         *ecdsa.PrivateKey
-	ArchAddress               common.Address
-	PaymentAddress            common.Address
-	SarcoAddress              common.Address
-	SarcoSession              contracts.SarcophagusSession
-	SarcoTokenAddress         common.Address
-	TokenSession              contracts.TokenSession
-	FreeBond                  *big.Int
-	FeePerByte                *big.Int
-	MinBounty                 *big.Int
-	MinDiggingFee             *big.Int
-	MaxResurectionTime        *big.Int
-	Endpoint                  string
-	FilePort                  string
-	Mnemonic                  string
-	Wallet                    *hdwallet.Wallet
-	AccountIndex              int
-	Server                    *http.Server
-	Sarcophaguses             map[[32]byte]*Sarco
-	FileHandlers              map[[32]byte]*big.Int
-	RebuildChan				  chan string
-	ReconnectChan			  chan string
+	Client                *ethclient.Client
+	ArweaveWallet         *wallet.Wallet
+	ArweaveTransactor     *transactor.Transactor
+	ArweaveMultiplier     decimal.Decimal
+	PrivateKey            *ecdsa.PrivateKey
+	CurrentPublicKeyBytes []byte
+	CurrentPrivateKey     *ecdsa.PrivateKey
+	ArchAddress           common.Address
+	PaymentAddress        common.Address
+	SarcoAddress          common.Address
+	SarcoSession          contracts.SarcophagusSession
+	SarcoTokenAddress     common.Address
+	TokenSession          contracts.TokenSession
+	FreeBond              *big.Int
+	FeePerByte            *big.Int
+	MinBounty             *big.Int
+	MinDiggingFee         *big.Int
+	MaxResurectionTime    *big.Int
+	Endpoint              string
+	FilePort              string
+	Mnemonic              string
+	Wallet                *hdwallet.Wallet
+	AccountIndex          int
+	Server                *http.Server
+	Sarcophaguses         map[[32]byte]*Sarco
+	FileHandlers          map[[32]byte]*big.Int
+	RebuildChan           chan string
+	ReconnectChan         chan string
 }
 
 // MB used for validating file size
@@ -328,10 +328,12 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 
 	log.Print("Receiving File...")
-	log.Printf("file handler length: %v", len(arch.FileHandlers))
 
+	log.Print("Starting Arch State Rebuild in fileHandler")
 	arch.RebuildChan <- "start"
+	log.Print("Waiting for Rebuild Response in fileHandler...")
 	<-arch.RebuildChan
+	log.Print("Finished Rebuild in fileHandler...")
 
 	if len(arch.FileHandlers) < 1 {
 		http.Error(w, "We are not expecting a file", 406)

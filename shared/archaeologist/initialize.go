@@ -189,9 +189,19 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*models.
 					// and increment the account index as this key pair has been used
 					privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex)
 
-					// save updated sarco to state
+
+					// add updated sarco to sarcophagi mapping
 					sarcophaguses[doubleHash] = &models.Sarco{sarco.ResurrectionTime, accountIndex, true, 0}
-					scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
+
+					// check if sarco is already in state
+					if stateSarco, ok := arch.Sarcophaguses[doubleHash]; ok {
+						// if resurrection time is different in state, then schedule unwrap
+						if stateSarco.ResurrectionTime.Cmp(sarco.ResurrectionTime) != 0 {
+							scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
+						}
+					} else {
+						scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
+					}
 					fileHandlers = map[[32]byte]*big.Int{}
 					accountIndex += 1
 
@@ -246,9 +256,11 @@ func ReInitializeArchaeologistScheduler(arch *models.Archaeologist, config *mode
 	timeToRun := timeToReInitialize()
 	log.Printf("Rebuild Arch Scheduled in: %v", timeToRun)
 	time.AfterFunc(timeToRun, func() {
-		log.Print("Starting Arch State Rebuild")
+		log.Print("Starting Arch State Rebuild in Init")
 		arch.RebuildChan <- "start"
+		log.Print("Waiting for Rebuild Response in Init...")
 		<-arch.RebuildChan
+		log.Print("Finished Rebuild in Init...")
 		log.Print("Reconnecting Client")
 		ReconnectArchClient(arch, config)
 		ReInitializeArchaeologistScheduler(arch, config)
@@ -269,13 +281,13 @@ func RebuildArchStateListener(arch *models.Archaeologist) {
 	for {
 		select {
 		case msg := <-arch.RebuildChan:
+			log.Printf("Rebuild State MSG: %v", msg)
 			if msg == "start" {
 				log.Print("Rebuilding State")
-				mutex.Lock()
 				arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
 				arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 				arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
-				mutex.Unlock()
+				log.Print("Rebuilding State Finished")
 				arch.RebuildChan <- "finish"
 			}
 		}

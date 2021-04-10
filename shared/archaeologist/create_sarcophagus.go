@@ -41,7 +41,6 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 		return
 	}
 
-	mutex.Lock()
 	// add sarcophagus to state
 	arch.Sarcophaguses[event.Identifier] = &models.Sarco{
 		ResurrectionTime: event.ResurrectionTime,
@@ -52,5 +51,4 @@ func handleCreateSarcophagus(event *contracts.EventsCreateSarcophagus, arch *mod
 
 	// open the endpoint for the file to be received from the embalmer
 	arch.FileHandlers[event.Identifier] = event.StorageFee
-	mutex.Unlock()
 }
