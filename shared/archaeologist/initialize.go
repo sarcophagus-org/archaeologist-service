@@ -22,6 +22,7 @@ import (
 	"github.com/shopspring/decimal"
 	"log"
 	"math/big"
+	"time"
 )
 
 // InitializeArchaeologist Sets archaeologist struct fields.
@@ -118,7 +119,8 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
-	arch.RebuildChan = make(chan int)
+	arch.RebuildChan = make(chan string)
+	arch.ReconnectChan = make(chan string)
 
 	return errStrings
 }
@@ -238,17 +240,45 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*models.
 	return sarcophaguses, fileHandlers, accountIndex
 }
 
+func ReInitializeArchaeologistLoop(arch *models.Archaeologist, config *models.Config) {
+	ticker := time.NewTicker(20 * time.Second)
+	quit := make(chan struct{})
+	for {
+		select {
+		case <- ticker.C:
+			log.Print("Scheduling Arch State Rebuild")
+			arch.RebuildChan <- "start"
+			<-arch.RebuildChan
+			log.Print("Reconnecting Client")
+			ReconnectArchClient(arch, config)
+		case <- quit:
+			ticker.Stop()
+			return
+		}
+	}
+}
+
+func RebuildArchStateListener(arch *models.Archaeologist) {
+	for {
+		select {
+		case msg := <-arch.RebuildChan:
+			if msg == "start" {
+				log.Print("Rebuilding State")
+				arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
+				arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
+				arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
+				arch.RebuildChan <- "finish"
+			}
+		}
+	}
+}
+
 func ReconnectArchClient(arch *models.Archaeologist, config *models.Config) {
 	arch.Client.Close()
 	arch.Client, _ = ethereum.InitEthClient(config.ETH_NODE)
 	arch.SarcoSession, _ = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
 	arch.TokenSession, _ = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
-}
-
-func RebuildArchState(arch *models.Archaeologist) {
-	arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
-	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
-	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
+	arch.ReconnectChan <- "done"
 }
 
 // calculateFreeBond returns a negative big.Int if free bond should be withdrawn

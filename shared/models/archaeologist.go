@@ -64,7 +64,8 @@ type Archaeologist struct {
 	Server                    *http.Server
 	Sarcophaguses             map[[32]byte]*Sarco
 	FileHandlers              map[[32]byte]*big.Int
-	RebuildChan				  chan int
+	RebuildChan				  chan string
+	ReconnectChan			  chan string
 }
 
 // MB used for validating file size
@@ -327,10 +328,12 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	(w).Header().Set("Access-Control-Allow-Origin", "*")
 
 	log.Print("Receiving File...")
+	log.Printf("file handler length: %v", len(arch.FileHandlers))
 
-	fileHandlerLen := len(arch.FileHandlers)
-	if fileHandlerLen < 1 {
-		log.Print("Not expecting a file, but received request")
+	arch.RebuildChan <- "start"
+	<-arch.RebuildChan
+
+	if len(arch.FileHandlers) < 1 {
 		http.Error(w, "We are not expecting a file", 406)
 		return
 	}

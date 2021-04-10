@@ -50,8 +50,18 @@ func main(){
 	log.Println("Arweave Balance:", utility.ToDecimal(ar.ArweaveBalance(arch.ArweaveTransactor.Client.(*api.Client), arch.ArweaveWallet), 12))
 	log.Printf("Arweave Address: %v", arch.ArweaveWallet.Address())
 
+	go archaeologist.RebuildArchStateListener(arch)
+	go archaeologist.ReInitializeArchaeologistLoop(arch, config)
+
 	// Listen for contract events
-	archaeologist.EventsSubscribe(arch)
+	for {
+		select {
+		case <-arch.ReconnectChan:
+			archaeologist.EventsSubscribe(arch)
+		default:
+			archaeologist.EventsSubscribe(arch)
+		}
+	}
 }
 
 func loadArt() string{

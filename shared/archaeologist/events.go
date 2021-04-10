@@ -139,28 +139,31 @@ func EventsSubscribe(arch *models.Archaeologist) {
 			if err != nil {
 				log.Fatalln("Error with Accuse Archaeologist Subscription:", err)
 			}
-		case event := <-createSink:
+		case sarcoEvent := <-createSink:
 			// the createSink only returns sarcophagi related to this archaeologist
 			// updateSink and rewrapSink do not, so those have manual filtering before handling the event
-			go handleCreateSarcophagus(event, arch)
-		case event := <-updateSink:
-			if arch.IsArchSarcophagus(event.Identifier) {
-				go handleUpdateSarcophagus(event, arch)
+			go handleCreateSarcophagus(sarcoEvent, arch)
+		case sarcoEvent := <-updateSink:
+			if arch.IsArchSarcophagus(sarcoEvent.Identifier) {
+				go handleUpdateSarcophagus(sarcoEvent, arch)
 			}
-		case event := <-rewrapSink:
-			if arch.IsArchSarcophagus(event.Identifier) {
-				go handleRewrapSarcophagus(event, arch)
+		case sarcoEvent := <-rewrapSink:
+			if arch.IsArchSarcophagus(sarcoEvent.Identifier) {
+				go handleRewrapSarcophagus(sarcoEvent, arch)
 			}
 		// these events indicate a sarcophagus is 'done'
 		// and can be removed from state
-		case event := <-cleanSink:
-			arch.RemoveArchSarcophagus(event.Identifier)
-		case event := <-burySink:
-			arch.RemoveArchSarcophagus(event.Identifier)
-		case event := <-cancelSink:
-			arch.RemoveArchSarcophagus(event.Identifier)
-		case event := <-accuseSink:
-			arch.RemoveArchSarcophagus(event.Identifier)
+		case sarcoEvent := <-cleanSink:
+			arch.RemoveArchSarcophagus(sarcoEvent.Identifier)
+		case sarcoEvent := <-burySink:
+			arch.RemoveArchSarcophagus(sarcoEvent.Identifier)
+		case sarcoEvent := <-cancelSink:
+			arch.RemoveArchSarcophagus(sarcoEvent.Identifier)
+		case sarcoEvent := <-accuseSink:
+			arch.RemoveArchSarcophagus(sarcoEvent.Identifier)
+		case <-arch.ReconnectChan:
+			log.Printf("reconnecting...")
+			return
 		}
 	}
 }
