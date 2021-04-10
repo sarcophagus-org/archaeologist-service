@@ -51,7 +51,7 @@ func main(){
 	log.Printf("Arweave Address: %v", arch.ArweaveWallet.Address())
 
 	go archaeologist.RebuildArchStateListener(arch)
-	go archaeologist.ReInitializeArchaeologistLoop(arch, config)
+	go archaeologist.ReInitializeArchaeologistScheduler(arch, config)
 
 	// Listen for contract events
 	for {

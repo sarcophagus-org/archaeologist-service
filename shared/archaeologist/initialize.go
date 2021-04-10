@@ -240,21 +240,28 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*models.
 	return sarcophaguses, fileHandlers, accountIndex
 }
 
-func ReInitializeArchaeologistLoop(arch *models.Archaeologist, config *models.Config) {
-	ticker := time.NewTicker(20 * time.Second)
-	quit := make(chan struct{})
-	for {
-		select {
-		case <- ticker.C:
-			log.Print("Scheduling Arch State Rebuild")
-			arch.RebuildChan <- "start"
-			<-arch.RebuildChan
-			log.Print("Reconnecting Client")
-			ReconnectArchClient(arch, config)
-		case <- quit:
-			ticker.Stop()
-			return
-		}
+// ReInitializeArchaeologist rebuilds the state and reconnects the eth client
+// Reschedules itself to run every hour at the 15 minute mark
+func ReInitializeArchaeologistScheduler(arch *models.Archaeologist, config *models.Config) {
+	timeToRun := timeToReInitialize()
+	log.Printf("Rebuilding Arch Scheduled in: %v", timeToRun)
+	time.AfterFunc(timeToRun, func() {
+		log.Print("Starting Arch State Rebuild")
+		arch.RebuildChan <- "start"
+		<-arch.RebuildChan
+		log.Print("Reconnecting Client")
+		ReconnectArchClient(arch, config)
+		ReInitializeArchaeologistScheduler(arch, config)
+	})
+}
+
+func timeToReInitialize() time.Duration {
+	nearestHour := time.Now().Round(time.Hour)
+
+	if time.Now().Minute() >= 30 {
+		return time.Until(nearestHour.Add(15* time.Minute))
+	} else {
+		return time.Until(nearestHour.Add(1 * time.Hour).Add(15* time.Minute))
 	}
 }
 
