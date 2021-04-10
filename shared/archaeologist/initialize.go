@@ -258,14 +258,12 @@ func ReInitializeArchaeologistScheduler(arch *models.Archaeologist, config *mode
 }
 
 func timeToReInitialize() time.Duration {
-	// nearestHour := time.Now().Round(time.Hour)
+	nearestHour := time.Now().Round(time.Hour)
 
 	if time.Now().Minute() >= 30 {
-		// return time.Until(nearestHour.Add(15* time.Minute))
-		return time.Until(time.Now().Add(3 * time.Minute))
+		return time.Until(nearestHour.Add(15* time.Minute))
 	} else {
-		//return time.Until(nearestHour.Add(1 * time.Hour).Add(15* time.Minute))
-		return time.Until(time.Now().Add(3 * time.Minute))
+		return time.Until(nearestHour.Add(1 * time.Hour).Add(15* time.Minute))
 	}
 }
 
