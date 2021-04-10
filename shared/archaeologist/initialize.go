@@ -22,6 +22,7 @@ import (
 	"github.com/shopspring/decimal"
 	"log"
 	"math/big"
+	"time"
 )
 
 // InitializeArchaeologist Sets archaeologist struct fields.
@@ -118,6 +119,8 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
+	arch.RebuildChan = make(chan string)
+	arch.ReconnectChan = make(chan string)
 
 	return errStrings
 }
@@ -235,6 +238,56 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*models.
 	log.Printf("Current Account Index: %v", accountIndex)
 
 	return sarcophaguses, fileHandlers, accountIndex
+}
+
+// ReInitializeArchaeologist rebuilds the state and reconnects the eth client
+// Reschedules itself to run every hour at the 15 minute mark
+func ReInitializeArchaeologistScheduler(arch *models.Archaeologist, config *models.Config) {
+	timeToRun := timeToReInitialize()
+	log.Printf("Rebuild Arch Scheduled in: %v", timeToRun)
+	time.AfterFunc(timeToRun, func() {
+		log.Print("Starting Arch State Rebuild")
+		arch.RebuildChan <- "start"
+		<-arch.RebuildChan
+		log.Print("Reconnecting Client")
+		ReconnectArchClient(arch, config)
+		ReInitializeArchaeologistScheduler(arch, config)
+	})
+}
+
+func timeToReInitialize() time.Duration {
+	nearestHour := time.Now().Round(time.Hour)
+
+	if time.Now().Minute() >= 30 {
+		return time.Until(nearestHour.Add(15* time.Minute))
+	} else {
+		return time.Until(nearestHour.Add(1 * time.Hour).Add(15* time.Minute))
+	}
+}
+
+func RebuildArchStateListener(arch *models.Archaeologist) {
+	for {
+		select {
+		case msg := <-arch.RebuildChan:
+			if msg == "start" {
+				log.Print("Rebuilding State")
+				mutex.Lock()
+				arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
+				arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
+				arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
+				mutex.Unlock()
+				arch.RebuildChan <- "finish"
+			}
+		}
+	}
+}
+
+func ReconnectArchClient(arch *models.Archaeologist, config *models.Config) {
+	arch.Client.Close()
+	arch.Client, _ = ethereum.InitEthClient(config.ETH_NODE)
+	arch.SarcoSession, _ = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
+	arch.TokenSession, _ = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
+	arch.ReconnectChan <- "done"
 }
 
 // calculateFreeBond returns a negative big.Int if free bond should be withdrawn

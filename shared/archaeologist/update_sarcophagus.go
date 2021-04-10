@@ -19,7 +19,6 @@ func handleUpdateSarcophagus(event *contracts.EventsUpdateSarcophagus, arch *mod
 	if sarcophagus, ok := arch.Sarcophaguses[event.Identifier]; ok {
 		// Only schedule unwrap if sarcophagus has not been updated yet (in case of replayed events)
 		if !sarcophagus.Updated {
-			sarcophagus.Updated = true
 			privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 			resurrectionTime := sarcophagus.ResurrectionTime
 
@@ -28,8 +27,11 @@ func handleUpdateSarcophagus(event *contracts.EventsUpdateSarcophagus, arch *mod
 			scheduleUnwrap(&arch.SarcoSession, arweaveClient, resurrectionTime, arch, event.Identifier, privateKey, event.AssetId)
 
 			// key pair has been used for this sarcophagus, increment the account index and update the current public key
+			mutex.Lock()
 			arch.AccountIndex += 1
 			arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
+			sarcophagus.Updated = true
+			mutex.Lock()
 		}
 	} else {
 		log.Printf("We dont have a sarcophagus to update for the double hash: %v",  event.Identifier)

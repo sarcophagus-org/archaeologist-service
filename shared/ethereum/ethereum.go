@@ -64,5 +64,7 @@ func WaitMined(client *ethclient.Client, txHash common.Hash, label string) error
 		}
 	}
 
+	time.Sleep(3 * time.Second)
+
 	return miningErr
 }
