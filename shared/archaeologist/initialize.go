@@ -118,6 +118,7 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 
 	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
+	arch.RebuildChan = make(chan int)
 
 	return errStrings
 }
@@ -235,6 +236,19 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*models.
 	log.Printf("Current Account Index: %v", accountIndex)
 
 	return sarcophaguses, fileHandlers, accountIndex
+}
+
+func ReconnectArchClient(arch *models.Archaeologist, config *models.Config) {
+	arch.Client.Close()
+	arch.Client, _ = ethereum.InitEthClient(config.ETH_NODE)
+	arch.SarcoSession, _ = initSarcophagusSession(arch.SarcoAddress, arch.Client, arch.PrivateKey)
+	arch.TokenSession, _ = initTokenSession(config.TOKEN_ADDRESS, arch.Client, arch.PrivateKey)
+}
+
+func RebuildArchState(arch *models.Archaeologist) {
+	arch.Sarcophaguses, arch.FileHandlers, arch.AccountIndex = buildSarcophagusesState(arch)
+	arch.CurrentPrivateKey = hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
+	arch.CurrentPublicKeyBytes = hdw.PublicKeyBytesFromIndex(arch.Wallet, arch.AccountIndex)
 }
 
 // calculateFreeBond returns a negative big.Int if free bond should be withdrawn

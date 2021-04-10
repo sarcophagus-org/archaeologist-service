@@ -64,6 +64,7 @@ type Archaeologist struct {
 	Server                    *http.Server
 	Sarcophaguses             map[[32]byte]*Sarco
 	FileHandlers              map[[32]byte]*big.Int
+	RebuildChan				  chan int
 }
 
 // MB used for validating file size
