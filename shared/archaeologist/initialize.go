@@ -244,7 +244,7 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*models.
 // Reschedules itself to run every hour at the 15 minute mark
 func ReInitializeArchaeologistScheduler(arch *models.Archaeologist, config *models.Config) {
 	timeToRun := timeToReInitialize()
-	log.Printf("Rebuilding Arch Scheduled in: %v", timeToRun)
+	log.Printf("Rebuild Arch Scheduled in: %v", timeToRun)
 	time.AfterFunc(timeToRun, func() {
 		log.Print("Starting Arch State Rebuild")
 		arch.RebuildChan <- "start"
