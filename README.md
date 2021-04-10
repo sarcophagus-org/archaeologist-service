@@ -46,8 +46,8 @@ Update the config.yml file with the appropriate values.
 A basic setup example for nginx proxy using letsencrypt SSL cert and `arch1.myarch.com` domain:
 
 1. Open Port 443 on your server
-2. [Use certbot to install SSL](https://certbot.eff.org/)
-3. [Install nginx](https://www.nginx.com/resources/wiki/start/topics/tutorials/install/)
+2. [Install nginx](https://www.nginx.com/resources/wiki/start/topics/tutorials/install/)
+3. [Use certbot to install SSL](https://certbot.eff.org/) 
 4. Create the reverse proxy file `/etc/nginx/sites-available/reverse-proxy.conf`
 
 ```
