@@ -168,12 +168,11 @@ func (arch *Archaeologist) RegisterArchaeologist() {
 		log.Fatalf("Transaction reverted. Error registering Archaeologist: %v Config values ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND have been reset to 0. You will need to reset this.", err)
 	}
 
-	arch.FreeBond = big.NewInt(0)
 	log.Printf("Register Archaeologist Transaction Submitted. Transaction ID: %s", txn.Hash().Hex())
 	log.Printf("Gas Used: %v", txn.Gas())
 
 	err = ethereum.WaitMined(arch.Client, txn.Hash(), "Registering Archaeologist")
-
+	arch.FreeBond = big.NewInt(0)
 	if err != nil {
 		log.Fatalf("There was an error mining the register archaeologist transaction: %v", err)
 	} else {
@@ -184,6 +183,13 @@ func (arch *Archaeologist) RegisterArchaeologist() {
 // UpdateArchaeologist .
 func (arch *Archaeologist) UpdateArchaeologist() {
 	log.Println("***UPDATING ARCHAEOLOGIST***")
+	log.Printf("Free Bond: %v", arch.FreeBond)
+	log.Printf("Endpoint: %v", arch.Endpoint)
+	log.Printf("ArchAddress: %v", arch.ArchAddress)
+	log.Printf("FeePerByte: %v", arch.FeePerByte)
+	log.Printf("MinBounty: %v", arch.MinBounty)
+	log.Printf("MinDiggingFee: %v", arch.MinDiggingFee)
+	log.Printf("MaxResurectionTime: %v", arch.MaxResurectionTime)
 	txn, err := arch.SarcoSession.UpdateArchaeologist(
 		arch.Endpoint,
 		arch.CurrentPublicKeyBytes,
@@ -199,12 +205,11 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 		log.Fatalf("Transaction reverted. Error updating Archaeologist: %v Config values ADD_TO_FREE_BOND and REMOVE_FROM_FREE_BOND have been reset to 0. You will need to reset these.", err)
 	}
 
-	arch.FreeBond = big.NewInt(0)
 	log.Printf("Update Archaeologist Transaction Submitted. Transaction ID: %s", txn.Hash().Hex())
 	log.Printf("Gas Used: %v", txn.Gas())
 
 	err = ethereum.WaitMined(arch.Client, txn.Hash(), "Update Archaeologist")
-
+	arch.FreeBond = big.NewInt(0)
 	if err != nil {
 		log.Fatalf("There was an error mining the update archaeologist transaction: %v", err)
 	} else {
