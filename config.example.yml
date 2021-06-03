@@ -37,10 +37,12 @@ arweave_multiplier: "1.0"
 
 # Sarcophagus Contract Address
 # Currently set to Rinkeby Address
+# Mainnet Address: 0xD227e63E7d74Ba0374E1d5B2479666b21ba7811c
 contract_address: "0x939BE928b0d5fBb7f3FA07217c816496FcBEBa46"
 
 # Sarcophagus Token Contract Address
 # Currently set to Rinkeby Address
+# Mainnet Address: 0x7697b462a7c4ff5f8b55bdbc2f4076c2af9cf51a
 token_address: "0x77ec161f6c2f2ce4554695a07e071d3f0ef3aef5"
 
 # Endpoint domain to be exposed for receiving a sarcophagus asset file
@@ -54,8 +56,8 @@ file_port: "8080"
 # Used to calculate the storage fee you expect to receive for doing a Sarcophagus job.
 # The minimum storage fee will be calculated as: fee_per_byte * file_bytes_size
 # Expressed in SARCO Tokens with up to 18 decimals.
-# Default is 1.000000000000000000 (1 SARCO Tokens)
-fee_per_byte: "1.000000000000000000"
+# Default is 0.000010000000000000 (.00001 SARCO Tokens)
+fee_per_byte: "0.000010000000000000"
 
 # The minimum amount of SARCO Tokens you want to receive for completing a Sarcophagus job.
 # Expressed in SARCO Tokens with up to 18 decimals
