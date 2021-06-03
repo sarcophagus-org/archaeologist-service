@@ -68,10 +68,9 @@ min_bounty: "100.000000000000000000"
 # Default is 10.000000000000000000 (10 SARCO Tokens)
 min_digging_fee: "10.000000000000000000"
 
-# MAX_RESURRECTION_TIME is the relative time interval from the creation or rewrapping of the sarcophagus that you are willing to accept jobs within.
+# MAX_RESURRECTION_TIME is the relative time interval (in seconds) from the creation or rewrapping of the sarcophagus that you are willing to accept jobs within.
 # For example, if you set max_resurrection_time to 1 month -- when a sarcophagus is created, the resurrection time set by the embalmer cannot be greater than 1 month in the future for you to accept the job.
 # Expressed in Seconds (1 year = 31536000)
-# https://www.unixtimestamp.com/
 max_resurrection_time: "31536000"
 
 # When the service starts, the value here will be added to your "Free Bond" on the Sarcophagus Contract
