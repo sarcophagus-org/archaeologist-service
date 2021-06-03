@@ -85,7 +85,7 @@ server {
         error_log /var/log/nginx/reverse-error.log;
 
         location / {
-            proxy_pass http://127.0.0.1:8000;
+            proxy_pass http://127.0.0.1:8080;
         }
 }
 ```
