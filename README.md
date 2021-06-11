@@ -148,7 +148,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=ubuntu
+User=<your-user>
 WorkingDirectory=<full-path-to-arch-service-directory>  (e.g. /home/ubuntu/go/bin)
 ExecStart=<full-path-to-arch-service>  (e.g. /home/ubuntu/go/bin/archaeologist-service)
 
