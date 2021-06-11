@@ -133,6 +133,45 @@ If installing on Ubuntu, before building/installing, you may need to run:
 $ apt-get install build-essential
 ```
 
+## System Service
+You will probably want to run the archaeologist service in the background.
+
+Below are instructions for setting up a systemd service on ubuntu. The example outputs service logs to syslog, you can setup custom logging if you want.
+
+1. Create the service file - `sudo nano /etc/systemd/system/archservice.service`
+2. Use the file contents below as a template:
+```
+[Unit]
+Description=Archaeologist service
+ConditionPathExists=<full-path-to-arch-service-directory>  (e.g. /home/ubuntu/go/bin)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=<full-path-to-arch-service-directory>  (e.g. /home/ubuntu/go/bin)
+ExecStart=<full-path-to-arch-service>  (e.g. /home/ubuntu/go/bin/archaeologist-service)
+
+TimeoutSec=10
+Restart=always
+RestartSec=10
+
+PermissionsStartOnly=true
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=archservice
+
+[Install]
+WantedBy=multi-user.target
+```
+
+3. Exit and save the file.
+4. Reload systemd `sudo systemctl daemon-reload`
+5. Start the service `sudo service archservice start`
+6. To restart the service at any point -- `sudo service archservice restart`
+7. To view the service logs in realtime -- `sudo journalctl -f -u archservice`
+8. To view most recent logs `sudo nano /var/log/syslog`
+
 ## Local Development
 
 ### Deploy Sarcophagus Contract
