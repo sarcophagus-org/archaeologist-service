@@ -246,6 +246,8 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*models.
 	log.Printf("Sarcophaguses not yet complete: %v", sarcophaguses)
 	log.Printf("Sarcophaguses waiting for a file: %v", fileHandlers)
 	log.Printf("Current Account Index: %v", accountIndex)
+	log.Printf("Current Pub Key at account index: %v", hdw.PublicKeyBytesFromIndex(arch.Wallet, accountIndex))
+	log.Printf("Current Priv Key at account index: %v", hdw.PrivateKeyFromIndex(arch.Wallet, accountIndex))
 
 	return sarcophaguses, fileHandlers, accountIndex
 }
