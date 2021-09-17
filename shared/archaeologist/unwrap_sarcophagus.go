@@ -4,15 +4,14 @@ package archaeologist
 import (
 	"context"
 	"crypto/ecdsa"
-	"github.com/Dev43/arweave-go/api"
-	"github.com/Dev43/arweave-go/utils"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
-	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	eth "github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
+	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/everFinance/goar"
 	"log"
 	"math/big"
 	"math/rand"
@@ -62,7 +61,7 @@ var mutex = &sync.Mutex{}
 //   - In this case, there may be a nonce issue when creating the
 //     unwrapSarcophagus transaction, so this avoids rescheduling
 //     unwraps at the same time
-func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *api.Client, resurrectionTime *big.Int, arch *models.Archaeologist, assetDoubleHash [32]byte, privateKey *ecdsa.PrivateKey, assetId string) {
+func scheduleUnwrap(session *contracts.SarcophagusSession, arweaveClient *goar.Client, resurrectionTime *big.Int, arch *models.Archaeologist, assetDoubleHash [32]byte, privateKey *ecdsa.PrivateKey, assetId string) {
 	timeToUnwrap := time.Until(time.Unix(resurrectionTime.Int64(), 0))
 
 	var privateKeyBytes [32]byte
@@ -156,14 +155,9 @@ func randomRetryInterval() time.Duration {
 }
 
 // generateSingleHash - returns a hash of the arweave file bytes decrypted with the private key
-func generateSingleHash(arweaveClient *api.Client, assetId string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+func generateSingleHash(arweaveClient *goar.Client, assetId string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	log.Printf("Getting arweave data for assetID: %v", assetId)
-	dataString, err := arweaveClient.GetData(context.Background(), assetId)
-	if err != nil {
-		return nil, err
-	}
-
-	dataBytes, err := utils.DecodeString(dataString)
+	dataBytes, err := arweaveClient.GetTransactionData(assetId)
 	if err != nil {
 		return nil, err
 	}

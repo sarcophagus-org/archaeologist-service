@@ -14,18 +14,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Dev43/arweave-go"
-	"github.com/Dev43/arweave-go/api"
-	"github.com/Dev43/arweave-go/transactor"
 	"github.com/Dev43/arweave-go/tx"
-	"github.com/Dev43/arweave-go/wallet"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
-	ar "github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/hdw"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/everFinance/goar"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"github.com/shopspring/decimal"
 	"log"
@@ -39,8 +36,8 @@ import (
 
 type Archaeologist struct {
 	Client                *ethclient.Client
-	ArweaveWallet         *wallet.Wallet
-	ArweaveTransactor     *transactor.Transactor
+	ArweaveWallet         *goar.Wallet
+	ArweaveClient         *goar.Client
 	ArweaveMultiplier     decimal.Decimal
 	PrivateKey            *ecdsa.PrivateKey
 	CurrentPublicKeyBytes []byte
@@ -221,13 +218,13 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 // Emulates CreateTransaction in the arweave-go library's tx package
 // There is 1 difference: The arweave_multiplier set in config can increase the estimated fee to increase chances of successfully confirmed tx
 func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arweave.WalletSigner, amount string, data []byte, target string) (*tx.Transaction, error) {
-	tr := arch.ArweaveTransactor
-	lastTx, err := tr.Client.TxAnchor(ctx)
+	tr := arch.ArweaveClient
+	lastTx, err := tr.GetTransactionAnchor()
 	if err != nil {
 		return nil, err
 	}
 
-	price, err := tr.Client.GetReward(ctx, []byte(data))
+	price, err := tr.GetTransactionPrice(data, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -257,7 +254,7 @@ func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arwea
 // Creates and returns an arweave tx
 func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transaction, error) {
 	// create a transaction
-	arTrans := arch.ArweaveTransactor
+	arTrans := arch.ArweaveClient
 	w := arch.ArweaveWallet
 
 	// amount and Target are blank, b/c arweave tokens are not being sent
@@ -304,20 +301,6 @@ func (arch *Archaeologist) fileUploadError(logMsg string, httpErrMsg string, htt
 
 	// Check if only one file handler exists, and if so, remove it
 	arch.fileHandlerCheck()
-}
-
-// validateArweaveBalance returns false if user's balance is not enough to cover
-// not currently being used
-// TODO: Add arweave_multiplier to the validated amount
-func (arch *Archaeologist) validateArweaveBalance(fileBytes []byte) bool {
-	txFeeInt := new(big.Int)
-	balanceInt := new(big.Int)
-	txFee, _ := arch.ArweaveTransactor.Client.GetReward(context.Background(), fileBytes)
-	balance := ar.ArweaveBalance(arch.ArweaveTransactor.Client.(*api.Client), arch.ArweaveWallet)
-	txFeeInt, _ = txFeeInt.SetString(txFee, 10)
-	balanceInt, _ = balanceInt.SetString(balance, 10)
-
-	return balanceInt.Cmp(txFeeInt) != -1
 }
 
 func (arch *Archaeologist) pingHandler(w http.ResponseWriter, r *http.Request) {

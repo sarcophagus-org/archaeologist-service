@@ -20,7 +20,7 @@ func handleRewrapSarcophagus(event *contracts.EventsRewrapSarcophagus, arch *mod
 			// Update resurrection time for Sarcophagus in state
 			sarcophagus.ResurrectionTime = event.ResurrectionTime
 
-			scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), event.ResurrectionTime, arch, event.Identifier, privateKey, event.AssetId)
+			scheduleUnwrap(&arch.SarcoSession, arch.ArweaveClient.Client.(*api.Client), event.ResurrectionTime, arch, event.Identifier, privateKey, event.AssetId)
 		} else {
 			log.Printf("Unwrapping already scheduled for: %v, skipping rewrap",  event.Identifier)
 		}

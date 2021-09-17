@@ -22,7 +22,7 @@ func handleUpdateSarcophagus(event *contracts.EventsUpdateSarcophagus, arch *mod
 			privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 			resurrectionTime := sarcophagus.ResurrectionTime
 
-			arweaveClient := arch.ArweaveTransactor.Client.(*api.Client)
+			arweaveClient := arch.ArweaveClient.Client.(*api.Client)
 			log.Printf("Scheduling Unwrap for: %v", resurrectionTime)
 			scheduleUnwrap(&arch.SarcoSession, arweaveClient, resurrectionTime, arch, event.Identifier, privateKey, event.AssetId)
 

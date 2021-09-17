@@ -15,7 +15,7 @@ import (
 )
 
 func main(){
-	tr, _ := ar.InitArweaveTransactor("https://arweave.net:443")
+	tr, _ := ar.InitArweaveClient("https://arweave.net:443")
 	feeOneByte, _ := tr.Client.GetReward(context.Background(), genBytes(1))
 	feeOneMB, _ := tr.Client.GetReward(context.Background(), genBytes(1000000))
 
