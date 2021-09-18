@@ -13,8 +13,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/Dev43/arweave-go"
-	"github.com/Dev43/arweave-go/tx"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/hdw"
@@ -23,8 +21,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/everFinance/goar"
+	"github.com/everFinance/goar/types"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
-	"github.com/shopspring/decimal"
 	"log"
 	"math/big"
 	"net"
@@ -38,7 +36,7 @@ type Archaeologist struct {
 	Client                *ethclient.Client
 	ArweaveWallet         *goar.Wallet
 	ArweaveClient         *goar.Client
-	ArweaveMultiplier     decimal.Decimal
+	ArweaveMultiplier     int64
 	PrivateKey            *ecdsa.PrivateKey
 	CurrentPublicKeyBytes []byte
 	CurrentPrivateKey     *ecdsa.PrivateKey
@@ -214,75 +212,21 @@ func (arch *Archaeologist) UpdateArchaeologist() {
 	}
 }
 
-// CreateArweaveTransaction
-// Emulates CreateTransaction in the arweave-go library's tx package
-// There is 1 difference: The arweave_multiplier set in config can increase the estimated fee to increase chances of successfully confirmed tx
-func (arch *Archaeologist) CreateArweaveTransaction(ctx context.Context, w arweave.WalletSigner, amount string, data []byte, target string) (*tx.Transaction, error) {
-	tr := arch.ArweaveClient
-	lastTx, err := tr.GetTransactionAnchor()
-	if err != nil {
-		return nil, err
-	}
-
-	price, err := tr.GetTransactionPrice(data, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Apply fee multiplier
-	priceDecimal, err := decimal.NewFromString(price)
-	if err != nil {
-		return nil, err
-	}
-
-	priceMultiplied := priceDecimal.Mul(arch.ArweaveMultiplier).Round(0).String()
-
-	// Non encoded transaction fields
-	txn := tx.NewTransaction(
-		lastTx,
-		w.PubKeyModulus(),
-		amount,
-		target,
-		data,
-		priceMultiplied,
-	)
-
-	return txn, nil
-}
-
 // UploadFileToArweave uploads the double encrypted file bytes to arweave
 // Creates and returns an arweave tx
-func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (*tx.Transaction, error) {
-	// create a transaction
-	arTrans := arch.ArweaveClient
+func (arch *Archaeologist) UploadFileToArweave(fileBytes []byte) (string, error) {
 	w := arch.ArweaveWallet
 
-	// amount and Target are blank, b/c arweave tokens are not being sent
 	log.Printf("Uploading file bytes to arweave: %v", fileBytes)
-	txBuilder, err := arch.CreateArweaveTransaction(context.Background(), w, "0", fileBytes, "")
+	id, err := w.SendDataSpeedUp(fileBytes, []types.Tag{}, arch.ArweaveMultiplier)
 	if err != nil {
 		log.Printf("Error creating transaction: %v", err)
-		return &tx.Transaction{}, err
+		return "", err
 	}
 
-	// sign the transaction
-	txn, err := txBuilder.Sign(w)
-	if err != nil {
-		log.Printf("Error signing transaction: %v", err)
-		return &tx.Transaction{}, err
-	}
+	log.Printf("Arweave Transaction Sent: %v", id)
 
-	// send the transaction
-	log.Printf("Sending transaction: %v", txn.Hash())
-	resp, err := arTrans.SendTransaction(context.Background(), txn)
-	if err != nil {
-		log.Printf("Error sending transaction: %v", err)
-		return &tx.Transaction{}, err
-	}
-
-	log.Printf("Arweave Transaction Sent: %v", resp)
-
-	return txn, nil
+	return id, nil
 }
 
 // fileHandlerCheck resets the file handlers if there is only 1 file handler open
@@ -397,23 +341,22 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	log.Printf("File was validated successfully")
 
 	// create arweave tx
-	arweaveTx, err := arch.UploadFileToArweave(fileBytes)
+	arweaveTxId, err := arch.UploadFileToArweave(fileBytes)
 	if err != nil {
 		errMsg := fmt.Sprintf("There was an error with the file. Error: %v", err)
 		arch.fileUploadError(errMsg, errMsg, http.StatusBadRequest, w)
 		return
 	}
 
-	log.Printf("Transaction from arweave successful: %v", arweaveTx.Hash())
+	log.Printf("Transaction from arweave successful: %v", arweaveTxId)
 
 	// respond to embalmer with:
 	// 1. Public key from the hd wallet at the next index
 	// 2. Sarcophagus identifier
 	// 3. Arweave Tx Hash
 	// 4. Signature of New Public Key + Tx Hash (concatenated)
-	arweaveTxHash := arweaveTx.Hash()
 	newPublicKey := hdw.PublicKeyFromIndex(arch.Wallet, arch.AccountIndex+1)
-	pubKeyConcatTxHash := append(crypto.FromECDSAPub(newPublicKey)[1:], []byte(arweaveTxHash)...)
+	pubKeyConcatTxHash := append(crypto.FromECDSAPub(newPublicKey)[1:], []byte(arweaveTxId)...)
 	hash := crypto.Keccak256Hash(pubKeyConcatTxHash)
 	assetIdSig, err := crypto.Sign(hash.Bytes(), arch.PrivateKey)
 	if err != nil {
@@ -427,7 +370,7 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 	response := ResponseToEmbalmer{
 		NewPublicKey:    crypto.FromECDSAPub(newPublicKey)[1:],
 		AssetDoubleHash: assetDoubleHash,
-		AssetId:         arweaveTxHash,
+		AssetId:         arweaveTxId,
 		V:               V,
 		R:               R,
 		S:               S,

@@ -1,7 +1,6 @@
 package archaeologist
 
 import (
-	"github.com/Dev43/arweave-go/api"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/hdw"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
@@ -22,7 +21,7 @@ func handleUpdateSarcophagus(event *contracts.EventsUpdateSarcophagus, arch *mod
 			privateKey := hdw.PrivateKeyFromIndex(arch.Wallet, arch.AccountIndex)
 			resurrectionTime := sarcophagus.ResurrectionTime
 
-			arweaveClient := arch.ArweaveClient.Client.(*api.Client)
+			arweaveClient := arch.ArweaveClient
 			log.Printf("Scheduling Unwrap for: %v", resurrectionTime)
 			scheduleUnwrap(&arch.SarcoSession, arweaveClient, resurrectionTime, arch, event.Identifier, privateKey, event.AssetId)
 

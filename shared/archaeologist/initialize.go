@@ -18,9 +18,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
-	"github.com/shopspring/decimal"
 	"log"
 	"math/big"
+	"strconv"
 	"time"
 )
 
@@ -83,13 +83,9 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.ArweaveMultiplier, err = decimal.NewFromString(config.ARWEAVE_MULTIPLIER)
+	arch.ArweaveMultiplier, err = strconv.ParseInt(config.ARWEAVE_MULTIPLIER, 10, 64)
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
-	}
-
-	if !arch.ArweaveMultiplier.IsPositive() {
-		errStrings = append(errStrings, "Arweave Multiplier must be positive")
 	}
 
 	arch.MinBounty, err = utility.ValidatePositiveNumber(utility.ToWei(config.MIN_BOUNTY, 18), "MIN_BOUNTY")
