@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/Dev43/arweave-go/api"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/archaeologist"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
@@ -47,8 +46,8 @@ func main(){
 
 	log.Printf("Eth Balance: %v", utility.ToDecimal(arch.EthBalance(), 18))
 	log.Printf("Sarco Token Balance: %v", utility.ToDecimal(arch.SarcoBalance(), 18))
-	log.Println("Arweave Balance:", utility.ToDecimal(ar.ArweaveBalance(arch.ArweaveTransactor.Client.(*api.Client), arch.ArweaveWallet), 12))
-	log.Printf("Arweave Address: %v", arch.ArweaveWallet.Address())
+	log.Println("Arweave Balance:", ar.ArweaveBalance(arch.ArweaveClient, arch.ArweaveWallet))
+	log.Printf("Arweave Address: %v", arch.ArweaveWallet.Address)
 
 	go archaeologist.RebuildArchStateListener(arch)
 	go archaeologist.ReInitializeArchaeologistScheduler(arch, config)

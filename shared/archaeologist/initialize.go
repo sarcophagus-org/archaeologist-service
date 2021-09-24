@@ -9,7 +9,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"github.com/Dev43/arweave-go/api"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/ethereum"
@@ -19,9 +18,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
-	"github.com/shopspring/decimal"
 	"log"
 	"math/big"
+	"strconv"
 	"time"
 )
 
@@ -41,12 +40,9 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.ArweaveTransactor, err = ar.InitArweaveTransactor(config.ARWEAVE_NODE)
-	if err != nil {
-		errStrings = append(errStrings, err.Error())
-	}
+	arch.ArweaveClient = ar.InitArweaveClient(config.ARWEAVE_NODE)
 
-	arch.ArweaveWallet, err = ar.InitArweaveWallet(config.ARWEAVE_KEY_FILE)
+	arch.ArweaveWallet, err = ar.InitArweaveWallet(config.ARWEAVE_KEY_FILE, config.ARWEAVE_NODE)
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
 	}
@@ -87,13 +83,9 @@ func InitializeArchaeologist(arch *models.Archaeologist, config *models.Config) 
 		errStrings = append(errStrings, err.Error())
 	}
 
-	arch.ArweaveMultiplier, err = decimal.NewFromString(config.ARWEAVE_MULTIPLIER)
+	arch.ArweaveMultiplier, err = strconv.ParseInt(config.ARWEAVE_MULTIPLIER, 10, 64)
 	if err != nil {
 		errStrings = append(errStrings, err.Error())
-	}
-
-	if !arch.ArweaveMultiplier.IsPositive() {
-		errStrings = append(errStrings, "Arweave Multiplier must be positive")
 	}
 
 	arch.MinBounty, err = utility.ValidatePositiveNumber(utility.ToWei(config.MIN_BOUNTY, 18), "MIN_BOUNTY")
@@ -197,10 +189,10 @@ func buildSarcophagusesState (arch *models.Archaeologist) (map[[32]byte]*models.
 					if stateSarco, ok := arch.Sarcophaguses[doubleHash]; ok {
 						// if resurrection time is different in state, then schedule unwrap
 						if stateSarco.ResurrectionTime.Cmp(sarco.ResurrectionTime) != 0 {
-							scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
+							scheduleUnwrap(&arch.SarcoSession, arch.ArweaveClient, sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
 						}
 					} else {
-						scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
+						scheduleUnwrap(&arch.SarcoSession, arch.ArweaveClient, sarco.ResurrectionTime, arch, doubleHash, privateKey, sarco.AssetId)
 					}
 					fileHandlers = map[[32]byte]*big.Int{}
 					accountIndex += 1

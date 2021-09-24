@@ -1,16 +1,14 @@
 package ar
 
 import (
-	"context"
 	"fmt"
-	"github.com/Dev43/arweave-go/api"
-	"github.com/Dev43/arweave-go/transactor"
-	"github.com/Dev43/arweave-go/wallet"
+	"github.com/everFinance/goar"
 	"log"
+	"math/big"
 )
 
-func ArweaveBalance(client *api.Client, arWallet *wallet.Wallet) string {
-	balance, err := client.GetBalance(context.Background(), arWallet.Address())
+func ArweaveBalance(client *goar.Client, arWallet *goar.Wallet) *big.Float {
+	balance, err := client.GetWalletBalance(arWallet.Address)
 	if err != nil {
 		log.Fatal("couldnt get arweave balance %s", balance)
 	}
@@ -18,20 +16,14 @@ func ArweaveBalance(client *api.Client, arWallet *wallet.Wallet) string {
 	return balance
 }
 
-func InitArweaveTransactor(arweaveNode string) (*transactor.Transactor, error) {
-	ar, err := transactor.NewTransactor(arweaveNode)
-
-	if err != nil {
-		return nil, fmt.Errorf("Could not connect to arweave node. Error: %v\n", err)
-	}
-
-	return ar, nil
+func InitArweaveClient(arweaveNode string) (*goar.Client) {
+	return goar.NewClient(arweaveNode)
 }
 
-func InitArweaveWallet(arweaveKeyFileName string) (*wallet.Wallet, error) {
-	wallet_ := wallet.NewWallet()
+func InitArweaveWallet(arweaveKeyFileName string, arweaveNode string) (*goar.Wallet, error) {
+	wallet_, err := goar.NewWalletFromPath(arweaveKeyFileName, arweaveNode)
 
-	if err := wallet_.LoadKeyFromFile(arweaveKeyFileName); err != nil {
+	if err != nil {
 		return nil, fmt.Errorf("Could not load config value ARWEAVE_KEY_FILE. Please check the config.yml file Error: %v", err)
 	}
 
