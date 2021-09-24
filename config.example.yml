@@ -30,10 +30,9 @@ arweave_key_file: "$GOPATH/bin/arweave.json"
 arweave_node: "https://arweave.net:443"
 
 # Arweave fee multiplier
-# Must have 1 decimal and quotes
 # The node you are connected to will estimate arweave winston fee to use when sending the file to arweave
-# However, you can increase this fee by using the multiplier (e.g. fee = 10, multiplier = 1.5, final fee = 15)
-arweave_multiplier: "1.0"
+# eg: arweave_multiplier = 10, reward = 1.1 * reward
+arweave_multiplier: "20"
 
 # Sarcophagus Contract Address
 # Currently set to Rinkeby Address
@@ -70,10 +69,11 @@ min_bounty: "100.000000000000000000"
 # Default is 10.000000000000000000 (10 SARCO Tokens)
 min_digging_fee: "10.000000000000000000"
 
-# MAX_RESURRECTION_TIME is the relative time interval (in seconds) from the creation or rewrapping of the sarcophagus that you are willing to accept jobs within.
-# For example, if you set max_resurrection_time to 1 month -- when a sarcophagus is created, the resurrection time set by the embalmer cannot be greater than 1 month in the future for you to accept the job.
-# Expressed in Seconds (1 year = 31536000)
-max_resurrection_time: "31536000"
+# The resurrection time is when the Sarcophagus will be unwrapped or need to be rewrapped by.
+# MAX_RESURRECTION_TIME is the farthest point in the future for which you will accept Sarcophagus jobs.
+# Expressed in Unix Time
+# https://www.unixtimestamp.com/
+max_resurrection_time: "1726632214"
 
 # When the service starts, the value here will be added to your "Free Bond" on the Sarcophagus Contract
 # This SARCO will be transferred from the address derived from the eth_private_key config value, so you must have enough a SARCO balance to cover this amount.  

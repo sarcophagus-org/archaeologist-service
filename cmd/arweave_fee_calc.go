@@ -5,7 +5,6 @@
 package main
 
 import (
-	"context"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/arweave"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/utility"
 	"log"
@@ -15,12 +14,12 @@ import (
 )
 
 func main(){
-	tr, _ := ar.InitArweaveTransactor("https://arweave.net:443")
-	feeOneByte, _ := tr.Client.GetReward(context.Background(), genBytes(1))
-	feeOneMB, _ := tr.Client.GetReward(context.Background(), genBytes(1000000))
+	arClient := ar.InitArweaveClient("https://arweave.net:443")
+	feeOneByte, _ := arClient.GetTransactionPrice(genBytes(1), nil)
+	feeOneMB, _ := arClient.GetTransactionPrice(genBytes(1000000), nil)
 
-	one, _ := strconv.Atoi(feeOneByte)
-	mb, _ := strconv.Atoi(feeOneMB)
+	one, _ := strconv.Atoi(strconv.FormatInt(feeOneByte, 10))
+	mb, _ := strconv.Atoi(strconv.FormatInt(feeOneMB, 10))
 
 	perByte := (mb - one) / 1000000
 	transCost := one - perByte

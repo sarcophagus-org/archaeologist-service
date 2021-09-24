@@ -1,7 +1,6 @@
 package archaeologist
 
 import (
-	"github.com/Dev43/arweave-go/api"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/contracts"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/hdw"
 	"github.com/decent-labs/airfoil-sarcophagus-archaeologist-service/shared/models"
@@ -20,7 +19,7 @@ func handleRewrapSarcophagus(event *contracts.EventsRewrapSarcophagus, arch *mod
 			// Update resurrection time for Sarcophagus in state
 			sarcophagus.ResurrectionTime = event.ResurrectionTime
 
-			scheduleUnwrap(&arch.SarcoSession, arch.ArweaveTransactor.Client.(*api.Client), event.ResurrectionTime, arch, event.Identifier, privateKey, event.AssetId)
+			scheduleUnwrap(&arch.SarcoSession, arch.ArweaveClient, event.ResurrectionTime, arch, event.Identifier, privateKey, event.AssetId)
 		} else {
 			log.Printf("Unwrapping already scheduled for: %v, skipping rewrap",  event.Identifier)
 		}

@@ -63,12 +63,12 @@ func (s *ArchTestSuite) exitArweave() {
 
 // deployArweave inits the arweave wallet and deploys arweave client locally using bash script
 func (s *ArchTestSuite) deployArweave() {
-	arweaveWallet, err := ar.InitArweaveWallet(s.config.ARWEAVE_KEY_FILE)
+	arweaveWallet, err := ar.InitArweaveWallet(s.config.ARWEAVE_KEY_FILE, s.config.ARWEAVE_NODE)
 	if err != nil {
 		s.T().Fatalf("Arweave Wallet could not be initialized: %v", err)
 	}
 
-	arweaveAddress := arweaveWallet.Address()
+	arweaveAddress := arweaveWallet.Address
 
 	s.T().Logf("Arweave Address: %v", arweaveAddress)
 

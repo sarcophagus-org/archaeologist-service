@@ -1,7 +1,7 @@
 add_to_free_bond: "1000.000000000000000000"
 arweave_key_file: ./arweave.json
 arweave_node: http://localhost:8000/arweave
-arweave_multiplier: 1.0
+arweave_multiplier: 20
 contract_address: 0xB8ffBEE761744D00f39658F07ee3186b4CaD5AcC
 endpoint: https://200.200.200.100
 eth_node: ws://localhost:9545
