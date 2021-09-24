@@ -32,7 +32,7 @@ arweave_node: "https://arweave.net:443"
 # Arweave fee multiplier
 # The node you are connected to will estimate arweave winston fee to use when sending the file to arweave
 # eg: arweave_multiplier = 10, reward = 1.1 * reward
-arweave_multiplier: "0"
+arweave_multiplier: "30"
 
 # Sarcophagus Contract Address
 # Currently set to Rinkeby Address
