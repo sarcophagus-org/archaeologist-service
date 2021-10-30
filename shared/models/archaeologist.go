@@ -272,7 +272,12 @@ func (arch *Archaeologist) fileUploadHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if r.Method != "POST" && r.Method != "OPTIONS" {
+	if r.Method == "OPTIONS" {
+		http.StatusText(http.StatusOK)
+		return
+	}
+
+	if r.Method != "POST" {
 		arch.fileUploadError("File handler received non-post method, exiting.", "Method not allowed", http.StatusMethodNotAllowed, w)
 		return
 	}
